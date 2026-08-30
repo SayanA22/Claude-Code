@@ -22,7 +22,7 @@ export function Timeline({
   onAction: (block: ScheduleBlockWithTask) => void;
 }) {
   return (
-    <ol className="relative space-y-1">
+    <ol className="relative space-y-1.5">
       {blocks.map((block) => {
         const start = new Date(block.start_at);
         const end = new Date(block.end_at);
@@ -40,12 +40,12 @@ export function Timeline({
           <li
             key={block.id}
             className={cn(
-              "flex items-start gap-3 rounded-xl px-2 py-2.5 transition-colors",
+              "flex items-start gap-3 rounded-xl px-2 py-3 transition-colors",
               running && "bg-accent-soft",
               (done || skipped) && "opacity-55",
             )}
           >
-            <div className="tnum w-[68px] shrink-0 pt-0.5 text-right text-[13px] text-muted">
+            <div className="tnum w-[68px] shrink-0 pt-0.5 text-right text-[0.8125rem] text-muted">
               {formatClock(start, timeZone)}
             </div>
 
@@ -68,14 +68,14 @@ export function Timeline({
             <div className="min-w-0 flex-1">
               <p
                 className={cn(
-                  "text-[15px] leading-snug",
+                  "text-[0.9375rem] leading-snug",
                   isBreak ? "text-muted" : "font-medium",
                   done && "line-through decoration-muted",
                 )}
               >
                 {block.title}
               </p>
-              <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12px] text-muted">
+              <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[0.8125rem] text-muted">
                 {block.task ? (
                   <span className="inline-flex items-center gap-1.5">
                     <CategoryDot category={block.task.category} />

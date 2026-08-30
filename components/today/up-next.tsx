@@ -57,7 +57,7 @@ export function UpNextCard({
       <div className="flex items-center justify-between">
         <h2
           id="up-next-heading"
-          className="text-[11px] font-semibold tracking-wider text-faint uppercase"
+          className="text-[0.75rem] font-semibold tracking-wider text-faint uppercase"
         >
           {isLate ? "Running late" : isNow ? "Right now" : "Up next"}
         </h2>
@@ -67,7 +67,7 @@ export function UpNextCard({
         </span>
       </div>
 
-      <p className="mt-3 text-[22px] leading-tight font-semibold tracking-tight">
+      <p className="mt-3 text-[1.375rem] leading-tight font-semibold tracking-tight">
         {block.title}
       </p>
       {block.task?.description ? (
@@ -76,7 +76,7 @@ export function UpNextCard({
         </p>
       ) : null}
 
-      <p className="tnum mt-3 text-[15px] text-muted">
+      <p className="tnum mt-3 text-[0.9375rem] text-muted">
         {formatRange(start, end, timeZone)}
         <span className="text-faint"> · {formatDuration(minutes)}</span>
       </p>

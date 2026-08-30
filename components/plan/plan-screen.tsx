@@ -276,7 +276,7 @@ function WeekView({
               isToday ? "border-accent bg-accent-soft/40" : "border-border",
             )}
           >
-            <p className="text-center text-[10px] tracking-wider text-faint uppercase">
+            <p className="text-center text-[0.625rem] tracking-wider text-faint uppercase">
               {weekdayLabel(dateKey)}
             </p>
             <p
@@ -313,7 +313,7 @@ function WeekView({
                 );
               })}
             </div>
-            <p className="mt-1 text-center text-[10px] text-muted">
+            <p className="mt-1 text-center text-[0.625rem] text-muted">
               {events.filter((e) => e.kind !== "fixed").length || ""}
             </p>
           </button>
@@ -345,7 +345,7 @@ function MonthView({
         {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
           <p
             key={d}
-            className="text-center text-[10px] tracking-wider text-faint uppercase"
+            className="text-center text-[0.625rem] tracking-wider text-faint uppercase"
           >
             {d}
           </p>
@@ -381,7 +381,7 @@ function MonthView({
             >
               <p
                 className={cn(
-                  "tnum text-[12px] font-medium",
+                  "tnum text-[0.75rem] font-medium",
                   isToday && "text-accent",
                 )}
               >
@@ -402,7 +402,7 @@ function MonthView({
                       />
                     ))}
                   </div>
-                  <p className="mt-0.5 text-[9px] text-faint">
+                  <p className="mt-0.5 text-[0.5625rem] text-faint">
                     {formatDuration(minutes)}
                   </p>
                 </>

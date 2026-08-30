@@ -64,10 +64,10 @@ export function ProjectsScreen({
                   <CardContent className="pt-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="truncate text-[16px] font-semibold tracking-tight">
+                        <p className="truncate text-[1rem] font-semibold tracking-tight">
                           {project.title}
                         </p>
-                        <p className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[12px] text-muted">
+                        <p className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[0.8125rem] text-muted">
                           <span className="inline-flex items-center gap-1.5">
                             <CategoryDot category={project.category} />
                             {project.category}

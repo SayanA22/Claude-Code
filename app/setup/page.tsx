@@ -43,7 +43,7 @@ export default function SetupPage() {
                   <Icon className="h-4 w-4" aria-hidden />
                 </span>
                 <div>
-                  <p className="text-[15px] font-medium">
+                  <p className="text-[0.9375rem] font-medium">
                     {i + 1}. {title}
                   </p>
                   <p className="mt-1 text-sm leading-relaxed text-muted">

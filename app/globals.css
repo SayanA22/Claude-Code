@@ -2,8 +2,10 @@
 
 /* ==========================================================================
    DayOS design tokens
-   A restrained system: one accent, a neutral ramp, and a small set of
-   semantic colors used only to communicate priority, category and state.
+   A restrained system: one accent at a time, a neutral ramp, and a small set
+   of semantic colors used only to communicate priority, category and state.
+   The accent is the one thing a user can change (see "Accent schemes" below);
+   everything else stays fixed so the interface reads the same for everyone.
    ========================================================================== */
 
 @theme {
@@ -17,8 +19,8 @@
   --color-border: oklch(0.912 0.004 250);
   --color-border-strong: oklch(0.855 0.006 250);
   --color-fg: oklch(0.21 0.012 260);
-  --color-muted: oklch(0.535 0.012 260);
-  --color-faint: oklch(0.665 0.011 260);
+  --color-muted: oklch(0.478 0.013 260);
+  --color-faint: oklch(0.598 0.012 260);
 
   --color-accent: oklch(0.52 0.17 268);
   --color-accent-fg: oklch(0.99 0 0);
@@ -41,8 +43,8 @@
   --color-border: oklch(0.305 0.011 265);
   --color-border-strong: oklch(0.375 0.013 265);
   --color-fg: oklch(0.965 0.003 265);
-  --color-muted: oklch(0.715 0.012 265);
-  --color-faint: oklch(0.585 0.012 265);
+  --color-muted: oklch(0.752 0.012 265);
+  --color-faint: oklch(0.642 0.012 265);
 
   --color-accent: oklch(0.68 0.15 268);
   --color-accent-fg: oklch(0.16 0.02 268);
@@ -51,6 +53,102 @@
   --color-success: oklch(0.72 0.14 158);
   --color-warning: oklch(0.78 0.14 78);
   --color-danger: oklch(0.68 0.17 25);
+}
+
+/* ==========================================================================
+   Accent schemes
+   Chosen in Settings and applied to <html data-accent="…"> before first paint.
+   Each has a dark-mode pair: on a dark ground the accent has to be lighter and
+   its foreground darker, or buttons stop being readable.
+   ========================================================================== */
+
+[data-accent="indigo"] {
+  --color-accent: oklch(0.52 0.17 268);
+  --color-accent-soft: oklch(0.955 0.024 268);
+}
+.dark[data-accent="indigo"] {
+  --color-accent: oklch(0.68 0.15 268);
+  --color-accent-fg: oklch(0.16 0.02 268);
+  --color-accent-soft: oklch(0.3 0.05 268);
+}
+
+[data-accent="violet"] {
+  --color-accent: oklch(0.53 0.19 305);
+  --color-accent-soft: oklch(0.955 0.028 305);
+}
+.dark[data-accent="violet"] {
+  --color-accent: oklch(0.7 0.16 305);
+  --color-accent-fg: oklch(0.17 0.03 305);
+  --color-accent-soft: oklch(0.31 0.055 305);
+}
+
+[data-accent="blue"] {
+  --color-accent: oklch(0.52 0.15 248);
+  --color-accent-soft: oklch(0.955 0.03 248);
+}
+.dark[data-accent="blue"] {
+  --color-accent: oklch(0.71 0.13 248);
+  --color-accent-fg: oklch(0.16 0.03 248);
+  --color-accent-soft: oklch(0.3 0.05 248);
+}
+
+[data-accent="teal"] {
+  --color-accent: oklch(0.51 0.1 200);
+  --color-accent-soft: oklch(0.95 0.03 200);
+}
+.dark[data-accent="teal"] {
+  --color-accent: oklch(0.73 0.1 200);
+  --color-accent-fg: oklch(0.16 0.02 200);
+  --color-accent-soft: oklch(0.29 0.045 200);
+}
+
+[data-accent="green"] {
+  --color-accent: oklch(0.51 0.12 155);
+  --color-accent-soft: oklch(0.95 0.035 155);
+}
+.dark[data-accent="green"] {
+  --color-accent: oklch(0.72 0.13 155);
+  --color-accent-fg: oklch(0.16 0.02 155);
+  --color-accent-soft: oklch(0.28 0.05 155);
+}
+
+/* The accent token doubles as text on light backgrounds, so warm hues have to
+   stay dark enough to read at 15px — hence bronze rather than a bright amber. */
+[data-accent="bronze"] {
+  --color-accent: oklch(0.545 0.13 70);
+  --color-accent-soft: oklch(0.955 0.04 75);
+}
+.dark[data-accent="bronze"] {
+  --color-accent: oklch(0.76 0.13 75);
+  --color-accent-fg: oklch(0.18 0.03 68);
+  --color-accent-soft: oklch(0.3 0.05 68);
+}
+
+[data-accent="rose"] {
+  --color-accent: oklch(0.54 0.18 15);
+  --color-accent-soft: oklch(0.955 0.03 15);
+}
+.dark[data-accent="rose"] {
+  --color-accent: oklch(0.71 0.16 15);
+  --color-accent-fg: oklch(0.17 0.03 15);
+  --color-accent-soft: oklch(0.31 0.06 15);
+}
+
+/* ==========================================================================
+   Text size
+   Every type size in the app is in rem, so moving the root size scales the
+   whole interface — text, control heights and spacing together — rather than
+   leaving big text in boxes built for small text.
+   ========================================================================== */
+
+html {
+  font-size: 16px;
+}
+html[data-text="large"] {
+  font-size: 17.5px;
+}
+html[data-text="xlarge"] {
+  font-size: 19px;
 }
 
 @layer base {
@@ -72,6 +170,8 @@
     background-color: var(--color-bg);
     color: var(--color-fg);
     font-family: var(--font-sans);
+    line-height: 1.55;
+    text-rendering: optimizeLegibility;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-font-smoothing: antialiased;
     overscroll-behavior-y: none;
@@ -86,6 +186,18 @@
 
   ::selection {
     background: var(--color-accent-soft);
+  }
+
+  /* Headings read better tightened up and balanced across lines. */
+  h1,
+  h2,
+  h3 {
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
   }
 
   input,

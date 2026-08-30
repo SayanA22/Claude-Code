@@ -235,7 +235,7 @@ export function TasksScreen({
             <section key={bucket.key} aria-labelledby={`bucket-${bucket.key}`}>
               <h2
                 id={`bucket-${bucket.key}`}
-                className="mb-2 px-1 text-[11px] font-semibold tracking-wider text-faint uppercase"
+                className="mb-2 px-1 text-[0.75rem] font-semibold tracking-wider text-faint uppercase"
               >
                 {bucket.label}
                 <span className="ml-1.5 font-normal normal-case">

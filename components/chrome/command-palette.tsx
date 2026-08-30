@@ -165,7 +165,7 @@ export function CommandPalette({
                   >
                     <Sparkles className="h-4 w-4 shrink-0 text-accent" aria-hidden />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[15px] font-medium">
+                      <span className="block truncate text-[0.9375rem] font-medium">
                         Ask DayOS
                       </span>
                       <span className="block truncate text-xs text-muted">
@@ -189,7 +189,7 @@ export function CommandPalette({
                   >
                     <command.icon className="h-4 w-4 shrink-0 text-muted" aria-hidden />
                     <span className="min-w-0 flex-1">
-                      <span className="block text-[15px] font-medium">
+                      <span className="block text-[0.9375rem] font-medium">
                         {command.label}
                       </span>
                       {command.hint ? (

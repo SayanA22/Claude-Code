@@ -7,6 +7,7 @@ import {
   Bell,
   Database,
   LogOut,
+  Palette,
   Sparkles,
   Target,
   TrendingUp,
@@ -17,7 +18,7 @@ import { Field, Input, Select } from "@/components/ui/input";
 import { SwitchRow } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/toast";
 import { PageHeader } from "@/components/page-header";
-import { ThemeToggle } from "./theme-toggle";
+import { AppearanceSettings } from "./appearance-settings";
 import {
   seedDemoData,
   updatePreferences,
@@ -145,7 +146,7 @@ export function ProfileScreen({
       <div className="mb-5 grid grid-cols-2 gap-2.5">
         <Card>
           <CardContent className="pt-4">
-            <p className="text-[11px] tracking-wider text-faint uppercase">
+            <p className="text-[0.75rem] tracking-wider text-faint uppercase">
               Open tasks
             </p>
             <p className="tnum mt-1 text-xl font-semibold">{stats.openTasks}</p>
@@ -153,7 +154,7 @@ export function ProfileScreen({
         </Card>
         <Card>
           <CardContent className="pt-4">
-            <p className="text-[11px] tracking-wider text-faint uppercase">
+            <p className="text-[0.75rem] tracking-wider text-faint uppercase">
               Completed
             </p>
             <p className="tnum mt-1 text-xl font-semibold">
@@ -252,7 +253,7 @@ export function ProfileScreen({
 
           <div className="flex items-start gap-2.5 rounded-xl bg-surface-2 px-3.5 py-3">
             <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-muted" aria-hidden />
-            <p className="text-[13px] text-muted">
+            <p className="text-[0.8125rem] text-muted">
               DayOS currently plans{" "}
               <span className="font-medium text-fg">
                 {Math.round(preferences.estimate_multiplier * 100)}%
@@ -312,8 +313,8 @@ export function ProfileScreen({
         </p>
       </Section>
 
-      <Section title="Appearance">
-        <ThemeToggle />
+      <Section title="Appearance" icon={Palette}>
+        <AppearanceSettings />
       </Section>
 
       <Section title="More">
@@ -376,7 +377,7 @@ function Section({
 }) {
   return (
     <section className="mb-6">
-      <h2 className="mb-2 flex items-center gap-1.5 px-1 text-[11px] font-semibold tracking-wider text-faint uppercase">
+      <h2 className="mb-2 flex items-center gap-1.5 px-1 text-[0.75rem] font-semibold tracking-wider text-faint uppercase">
         {Icon ? <Icon className="h-3 w-3" aria-hidden /> : null}
         {title}
       </h2>

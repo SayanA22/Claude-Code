@@ -176,7 +176,7 @@ export function GoalsScreen({
                 <CardContent className="pt-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-[16px] font-semibold tracking-tight">
+                      <p className="text-[1rem] font-semibold tracking-tight">
                         {goal.title}
                       </p>
                       {goal.description ? (
@@ -184,7 +184,7 @@ export function GoalsScreen({
                           {goal.description}
                         </p>
                       ) : null}
-                      <p className="mt-1 text-[12px] text-muted">
+                      <p className="mt-1 text-[0.8125rem] text-muted">
                         {goal.deadline
                           ? `Target ${formatRelativeDay(goal.deadline, todayKey)}`
                           : "No target date"}
@@ -380,7 +380,7 @@ export function GoalsScreen({
                       className="mt-1 h-4 w-4 accent-[var(--color-accent)]"
                     />
                     <label htmlFor={`goal-keep-${i}`} className="min-w-0 flex-1">
-                      <span className="block text-[15px] font-medium">
+                      <span className="block text-[0.9375rem] font-medium">
                         {task.title}
                       </span>
                       <span className="mt-1 block text-xs text-faint">

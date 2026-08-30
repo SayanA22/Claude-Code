@@ -105,10 +105,10 @@ export function FocusSession({
 
         {nextBlock ? (
           <div className="mt-6 w-full max-w-sm rounded-2xl border border-border bg-surface p-5 text-left">
-            <p className="text-[11px] font-semibold tracking-wider text-faint uppercase">
+            <p className="text-[0.75rem] font-semibold tracking-wider text-faint uppercase">
               Up next
             </p>
-            <p className="mt-2 text-[19px] leading-tight font-semibold">
+            <p className="mt-2 text-[1.1875rem] leading-tight font-semibold">
               {nextBlock.title}
             </p>
             <p className="tnum mt-1 text-sm text-muted">
@@ -188,7 +188,7 @@ export function FocusSession({
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <p
-              className="tnum text-[42px] leading-none font-semibold tracking-tight"
+              className="tnum text-[2.625rem] leading-none font-semibold tracking-tight"
               role="timer"
               aria-live="off"
             >

@@ -131,7 +131,7 @@ export function AssistantPanel({
           >
             <div
               className={cn(
-                "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[15px] leading-relaxed",
+                "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[0.9375rem] leading-relaxed",
                 turn.role === "user"
                   ? "bg-accent text-accent-fg"
                   : "bg-surface-2",

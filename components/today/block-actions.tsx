@@ -175,7 +175,7 @@ function ActionRow({
       >
         <Icon className="h-[18px] w-[18px] shrink-0 text-muted" aria-hidden />
         <span className="min-w-0">
-          <span className="block text-[15px] font-medium">{label}</span>
+          <span className="block text-[0.9375rem] font-medium">{label}</span>
           <span className="block text-xs text-muted">{hint}</span>
         </span>
         {loading ? (

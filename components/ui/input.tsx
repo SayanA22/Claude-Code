@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils/cn";
 
 const base =
-  "w-full rounded-xl border border-border bg-surface px-3.5 text-[15px] text-fg placeholder:text-faint transition-colors focus:border-accent focus-visible:outline-none disabled:opacity-60";
+  "w-full rounded-xl border border-border bg-surface px-3.5 text-[0.9375rem] text-fg placeholder:text-faint transition-colors focus:border-accent focus-visible:outline-none disabled:opacity-60";
 
 export const Input = React.forwardRef<
   HTMLInputElement,

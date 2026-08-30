@@ -104,13 +104,15 @@ export function DayGrid({
   }
 
   return (
-    <div className="relative flex">
+    // The hour labels sit above their gridline, so the grid needs top padding
+    // or the first one is clipped.
+    <div className="relative flex pt-2">
       <div className="w-14 shrink-0">
         {hours.map((hour) => (
           <div
             key={hour}
             style={{ height: PX_PER_HOUR }}
-            className="tnum relative -top-2 pr-2 text-right text-[11px] text-faint"
+            className="tnum relative -top-2 pr-2 text-right text-[0.75rem] text-faint"
           >
             {hour === 0
               ? "12 AM"
@@ -152,13 +154,30 @@ export function DayGrid({
           const isDragging = dragging?.id === item.id;
           const offset = isDragging ? dragging.offsetMinutes : 0;
           const top = minuteToY(item.startMinute + offset);
-          const height = Math.max(
-            18,
-            ((item.endMinute - item.startMinute) / 60) * PX_PER_HOUR - 2,
-          );
+          // Height stays proportional to real duration — a calendar that
+          // inflates short blocks lies about the day.
+          const rawHeight =
+            ((item.endMinute - item.startMinute) / 60) * PX_PER_HOUR;
           const done = item.status === "completed";
           const skipped = item.status === "skipped";
           const color = categoryColor(item.category);
+
+          // A ten-minute break is eight pixels tall; a label would spill over
+          // the block after it. Render it as a bar instead.
+          if (item.kind === "break" && rawHeight < 22) {
+            return (
+              <div
+                key={item.id}
+                aria-label={`${item.title}, ${item.endMinute - item.startMinute} minutes`}
+                title={item.title}
+                className="absolute right-1 left-1 rounded-full bg-surface-2"
+                style={{ top, height: Math.max(4, rawHeight - 2) }}
+              />
+            );
+          }
+
+          const height = Math.max(14, rawHeight - 2);
+          const roomy = rawHeight >= 30;
 
           return (
             <div
@@ -177,7 +196,8 @@ export function DayGrid({
               onPointerUp={() => onPointerUp(item)}
               onPointerCancel={() => setDragging(null)}
               className={cn(
-                "absolute right-1 left-1 overflow-hidden rounded-lg border px-2 py-1 text-left",
+                "absolute right-1 left-1 overflow-hidden rounded-lg border text-left",
+                roomy ? "px-2 py-1" : "px-2 py-0",
                 item.kind === "fixed"
                   ? "border-dashed bg-surface-2"
                   : "bg-surface",
@@ -194,14 +214,15 @@ export function DayGrid({
             >
               <p
                 className={cn(
-                  "truncate text-[12px] leading-tight font-medium",
+                  "truncate text-[0.75rem] font-medium",
+                  roomy ? "leading-tight" : "leading-[1.15]",
                   done && "line-through",
                 )}
               >
                 {item.title}
               </p>
-              {height > 32 ? (
-                <p className="tnum truncate text-[11px] text-muted">
+              {rawHeight >= 40 ? (
+                <p className="tnum truncate text-[0.75rem] text-muted">
                   {minutesToTimeString(item.startMinute + offset)} –{" "}
                   {minutesToTimeString(item.endMinute + offset)}
                 </p>

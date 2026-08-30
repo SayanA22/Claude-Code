@@ -143,7 +143,7 @@ export function ReviewScreen({
             <CardContent className="pt-4">
               <label
                 htmlFor="reflection"
-                className="text-[15px] font-medium"
+                className="text-[0.9375rem] font-medium"
               >
                 How did today go?
               </label>
@@ -169,14 +169,14 @@ export function ReviewScreen({
           {daily?.summary ? (
             <Card className="animate-rise">
               <CardContent className="pt-4">
-                <p className="text-[11px] font-semibold tracking-wider text-faint uppercase">
+                <p className="text-[0.75rem] font-semibold tracking-wider text-faint uppercase">
                   {formatRelativeDay(todayKey, todayKey)}
                 </p>
-                <p className="mt-2 text-[15px] leading-relaxed">
+                <p className="mt-2 text-[0.9375rem] leading-relaxed">
                   {daily.summary}
                 </p>
                 {daily.estimateNote ? (
-                  <p className="mt-3 flex items-start gap-2 rounded-xl bg-surface-2 px-3 py-2.5 text-[13px] text-muted">
+                  <p className="mt-3 flex items-start gap-2 rounded-xl bg-surface-2 px-3 py-2.5 text-[0.8125rem] text-muted">
                     <TrendingUp className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
                     {daily.estimateNote}
                   </p>
@@ -210,10 +210,10 @@ export function ReviewScreen({
 
               <Card className="animate-rise">
                 <CardContent className="pt-4">
-                  <p className="text-[11px] font-semibold tracking-wider text-faint uppercase">
+                  <p className="text-[0.75rem] font-semibold tracking-wider text-faint uppercase">
                     AI weekly summary
                   </p>
-                  <p className="mt-2 text-[15px] leading-relaxed">
+                  <p className="mt-2 text-[0.9375rem] leading-relaxed">
                     {weekly.summary}
                   </p>
                 </CardContent>
@@ -280,7 +280,7 @@ export function ReviewScreen({
                   className="mx-auto h-6 w-6 text-faint"
                   aria-hidden
                 />
-                <p className="mt-3 text-[15px] font-medium">
+                <p className="mt-3 text-[0.9375rem] font-medium">
                   Nothing summarised yet this week.
                 </p>
                 <p className="mt-1 text-sm text-muted">
@@ -304,7 +304,7 @@ export function ReviewScreen({
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-border bg-surface px-3.5 py-3">
-      <p className="text-[11px] tracking-wider text-faint uppercase">{label}</p>
+      <p className="text-[0.75rem] tracking-wider text-faint uppercase">{label}</p>
       <p className="tnum mt-1 text-xl font-semibold tracking-tight">{value}</p>
     </div>
   );
@@ -319,7 +319,7 @@ function Section({
 }) {
   return (
     <section>
-      <h2 className="mb-2 px-1 text-[11px] font-semibold tracking-wider text-faint uppercase">
+      <h2 className="mb-2 px-1 text-[0.75rem] font-semibold tracking-wider text-faint uppercase">
         {title}
       </h2>
       <Card>

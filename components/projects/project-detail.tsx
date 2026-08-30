@@ -131,7 +131,7 @@ export function ProjectDetail({
       </div>
 
       <header className="mb-5">
-        <h1 className="text-[26px] leading-tight font-semibold tracking-tight">
+        <h1 className="text-[1.625rem] leading-tight font-semibold tracking-tight">
           {project.title}
         </h1>
         {project.description ? (
@@ -139,7 +139,7 @@ export function ProjectDetail({
             {project.description}
           </p>
         ) : null}
-        <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted">
+        <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.8125rem] text-muted">
           <span>{project.category}</span>
           {project.deadline ? (
             <span>Due {formatRelativeDay(project.deadline, todayKey)}</span>
@@ -154,7 +154,7 @@ export function ProjectDetail({
 
       <section aria-label="Progress" className="mb-6">
         <div className="mb-1.5 flex items-baseline justify-between">
-          <span className="text-[11px] font-semibold tracking-wider text-faint uppercase">
+          <span className="text-[0.75rem] font-semibold tracking-wider text-faint uppercase">
             Progress
           </span>
           <span className="tnum text-sm font-medium">
@@ -170,7 +170,7 @@ export function ProjectDetail({
       <section className="mb-6" aria-labelledby="project-ai">
         <h2
           id="project-ai"
-          className="mb-2 text-[11px] font-semibold tracking-wider text-faint uppercase"
+          className="mb-2 text-[0.75rem] font-semibold tracking-wider text-faint uppercase"
         >
           Project assistant
         </h2>
@@ -206,7 +206,7 @@ export function ProjectDetail({
         <div className="mb-2 flex items-baseline justify-between px-1">
           <h2
             id="project-tasks"
-            className="text-[11px] font-semibold tracking-wider text-faint uppercase"
+            className="text-[0.75rem] font-semibold tracking-wider text-faint uppercase"
           >
             Tasks
           </h2>
@@ -277,7 +277,7 @@ export function ProjectDetail({
                       className="mt-1 h-4 w-4 accent-[var(--color-accent)]"
                     />
                     <label htmlFor={`keep-${i}`} className="min-w-0 flex-1">
-                      <span className="block text-[15px] font-medium">
+                      <span className="block text-[0.9375rem] font-medium">
                         {task.title}
                       </span>
                       {task.description ? (

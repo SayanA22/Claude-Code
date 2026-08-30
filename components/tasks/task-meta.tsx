@@ -45,7 +45,7 @@ export function TaskMeta({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[12px] text-muted",
+        "flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[0.8125rem] text-muted",
         className,
       )}
     >

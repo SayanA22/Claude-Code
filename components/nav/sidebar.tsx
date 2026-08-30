@@ -51,7 +51,7 @@ export function Sidebar() {
         <ul className="space-y-1">
           {NAV_ITEMS.map((i) => link(i.href, i.label, i.icon))}
         </ul>
-        <p className="mt-6 mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-faint">
+        <p className="mt-6 mb-2 px-3 text-[0.75rem] font-semibold uppercase tracking-wider text-faint">
           More
         </p>
         <ul className="space-y-1">

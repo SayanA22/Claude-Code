@@ -298,7 +298,7 @@ export function OnboardingFlow({
                     key={goal}
                     className="flex items-center gap-2 rounded-xl border border-border px-3.5 py-2.5"
                   >
-                    <span className="flex-1 text-[15px]">{goal}</span>
+                    <span className="flex-1 text-[0.9375rem]">{goal}</span>
                     <button
                       type="button"
                       onClick={() =>

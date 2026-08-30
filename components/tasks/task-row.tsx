@@ -66,7 +66,7 @@ export function TaskRow({
       >
         <p
           className={cn(
-            "text-[15px] leading-snug font-medium",
+            "text-[0.9375rem] leading-snug font-medium",
             done && "line-through decoration-muted",
           )}
         >

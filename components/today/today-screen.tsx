@@ -62,21 +62,21 @@ export function TodayScreen({
   return (
     <>
       <header className="mb-5">
-        <h1 className="text-[26px] leading-tight font-semibold tracking-tight">
+        <h1 className="text-[1.625rem] leading-tight font-semibold tracking-tight">
           {greetingFor(now, timeZone)}, {firstName}
         </h1>
         <p className="mt-0.5 text-sm text-muted">Here&apos;s what matters today.</p>
       </header>
 
       <div className="mb-5 flex items-baseline gap-2.5">
-        <span className="tnum text-[15px] font-medium">
+        <span className="tnum text-[0.9375rem] font-medium">
           {formatClock(now, timeZone)}
         </span>
         <span
           className={
             isRunningLate
-              ? "text-[15px] font-medium text-warning"
-              : "text-[15px] text-muted"
+              ? "text-[0.9375rem] font-medium text-warning"
+              : "text-[0.9375rem] text-muted"
           }
         >
           {state.statusLine}
@@ -115,10 +115,10 @@ export function TodayScreen({
         />
       ) : suggestion ? (
         <section className="rounded-2xl border border-border bg-surface p-5">
-          <h2 className="text-[11px] font-semibold tracking-wider text-faint uppercase">
+          <h2 className="text-[0.75rem] font-semibold tracking-wider text-faint uppercase">
             You&apos;re free right now
           </h2>
-          <p className="mt-3 text-[22px] leading-tight font-semibold tracking-tight">
+          <p className="mt-3 text-[1.375rem] leading-tight font-semibold tracking-tight">
             {suggestion.title}
           </p>
           <p className="mt-1.5 text-sm text-muted">
@@ -149,7 +149,7 @@ export function TodayScreen({
         >
           <p>{lastPlan.summary}</p>
           {lastPlan.deferred.length ? (
-            <ul className="mt-2 space-y-0.5 text-[13px] text-muted">
+            <ul className="mt-2 space-y-0.5 text-[0.8125rem] text-muted">
               {lastPlan.deferred.slice(0, 4).map((d) => (
                 <li key={d.taskId}>
                   <span className="font-medium">{d.title}</span> — {d.reason}
@@ -177,7 +177,7 @@ export function TodayScreen({
           <div className="mb-2 flex items-baseline justify-between px-1">
             <h2
               id="schedule-heading"
-              className="text-[11px] font-semibold tracking-wider text-faint uppercase"
+              className="text-[0.75rem] font-semibold tracking-wider text-faint uppercase"
             >
               Today&apos;s schedule
             </h2>
@@ -207,7 +207,7 @@ export function TodayScreen({
         <section className="mt-8" aria-labelledby="overdue-heading">
           <h2
             id="overdue-heading"
-            className="mb-2 px-1 text-[11px] font-semibold tracking-wider text-danger uppercase"
+            className="mb-2 px-1 text-[0.75rem] font-semibold tracking-wider text-danger uppercase"
           >
             Past due
           </h2>
@@ -217,7 +217,7 @@ export function TodayScreen({
                 key={task.id}
                 className="rounded-xl border border-danger/30 bg-surface px-3.5 py-3"
               >
-                <p className="text-[15px] font-medium">{task.title}</p>
+                <p className="text-[0.9375rem] font-medium">{task.title}</p>
                 <p className="mt-0.5 text-xs text-muted">
                   {task.category} · {formatDuration(task.estimated_duration)}
                 </p>

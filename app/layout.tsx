@@ -36,10 +36,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Apply the stored theme before paint so there is no light flash. */}
+        {/*
+          Apply the stored appearance before first paint, so there is no flash
+          of the wrong theme, accent or text size. Keep this in sync with
+          lib/appearance.ts.
+        */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var t=localStorage.getItem('dayos-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}`,
+            __html: `try{var d=document.documentElement,t=localStorage.getItem('dayos-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))d.classList.add('dark');d.dataset.accent=localStorage.getItem('dayos-accent')||'indigo';var s=localStorage.getItem('dayos-text');if(s)d.dataset.text=s}catch(e){document.documentElement.dataset.accent='indigo'}`,
           }}
         />
       </head>
