@@ -51,9 +51,15 @@ export interface StructuredRequest<S extends z.ZodType> {
 /**
  * Ask the model for a value matching `schema`.
  *
- * Structured outputs mean the response is constrained to the schema's shape,
- * and the schema is re-validated here regardless — a malformed response is a
- * failure the caller can fall back from, never data that reaches the database.
+ * Structured output constrains the response to the schema's *shape* — which
+ * keys exist and their types. It does not enforce the finer constraints: the
+ * SDK's converter passes enums, string patterns and length limits to the model
+ * as descriptions rather than as JSON Schema keywords (see
+ * `tests/ai-schemas.test.ts`).
+ *
+ * So the schema is re-validated here regardless. This is the boundary where
+ * model output becomes application data, and a response that doesn't validate
+ * is a failure the caller can fall back from — never a row in the database.
  */
 export async function askStructured<S extends z.ZodType>(
   req: StructuredRequest<S>,
@@ -88,8 +94,9 @@ export async function askStructured<S extends z.ZodType>(
       throw new AiUnavailableError("The model returned no usable output");
     }
 
-    // Re-validate: `parsed_output` is already schema-shaped, but this is the
-    // boundary where model output becomes application data.
+    // Re-validate. `parsed_output` is schema-shaped, but the constraints that
+    // matter here — a time that is really HH:MM, a `kind` that is really one
+    // of two values — are only enforced on this side.
     return req.schema.parse(parsed);
   } catch (error) {
     if (error instanceof AiUnavailableError) throw error;

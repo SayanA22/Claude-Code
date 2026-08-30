@@ -181,7 +181,7 @@ client could be built against the same database and the same rules.
 npm run test
 ```
 
-236 tests over the parts that have to be correct: timezone and DST handling,
+266 tests over the parts that have to be correct: timezone and DST handling,
 interval maths and overlap detection, the priority model, availability, the
 scheduler, the repair pass, estimate calibration, natural-language task parsing,
 "now" logic, notification scheduling, and the validation schemas.
@@ -192,6 +192,13 @@ one evening, planned and then replanned after something slips.
 
 `tests/server-actions.test.ts` holds the application-side security properties
 as structural assertions, so they can't quietly regress.
+
+`tests/ai-schemas.test.ts` checks the one path that can't run without an API
+key: that every schema DayOS asks a model to fill converts into valid
+structured-output JSON Schema. It also pins down what that does *not* do — the
+converter passes enums, patterns and length limits to the model as
+descriptions rather than enforced keywords, which is why every response is
+re-validated with Zod before it becomes application data.
 
 `npm run test:db` covers the database side. It needs only a local PostgreSQL —
 no Supabase project, no network — and spins up a throwaway instance, applies
