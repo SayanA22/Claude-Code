@@ -24,10 +24,13 @@ export function AuthForm({
   mode,
   next,
   footer,
+  initialNotice,
 }: {
   mode: "signin" | "signup";
   next?: string;
   footer: React.ReactNode;
+  /** Shown before the user submits anything — e.g. an expired auth link. */
+  initialNotice?: string;
 }) {
   const action = mode === "signin" ? signIn : signUp;
   const [state, formAction, pending] = useActionState<AuthState, FormData>(
@@ -35,6 +38,7 @@ export function AuthForm({
     {},
   );
   const copy = COPY[mode];
+  const notice = state.notice ?? initialNotice;
 
   return (
     <div className="animate-rise">
@@ -99,13 +103,13 @@ export function AuthForm({
           </p>
         ) : null}
 
-        {state.notice ? (
+        {notice ? (
           <p
             role="status"
             className="flex items-start gap-2 rounded-xl bg-accent-soft px-3 py-2.5 text-sm"
           >
             <Mail className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-            {state.notice}
+            {notice}
           </p>
         ) : null}
 

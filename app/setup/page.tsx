@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Database, KeyRound, Terminal } from "lucide-react";
+import { Database, KeyRound, Mail, Terminal } from "lucide-react";
 import { Wordmark } from "@/components/brand";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -17,6 +17,11 @@ const STEPS = [
     body: "Copy .env.example to .env.local and fill in NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY. Add ANTHROPIC_API_KEY for AI planning — without it DayOS falls back to its built-in scheduler.",
   },
   {
+    icon: Mail,
+    title: "Decide how sign-up works",
+    body: "Supabase asks new accounts to confirm their email by default. For your own use, turn that off under Authentication → Sign In / Providers → Email, and sign-up will log you straight in. Leave it on and use a real address if you'd rather keep it.",
+  },
+  {
     icon: Terminal,
     title: "Restart the dev server",
     body: "npm run dev picks the new environment up on boot.",
@@ -28,7 +33,7 @@ export default function SetupPage() {
     <main className="mx-auto flex min-h-svh max-w-lg flex-col justify-center px-5 py-12">
       <Wordmark className="mb-8" />
       <h1 className="text-2xl font-semibold tracking-tight">
-        Three steps to go
+        Four steps to go
       </h1>
       <p className="mt-2 text-sm text-muted">
         DayOS needs a Supabase project before it can store anything.

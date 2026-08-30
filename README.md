@@ -81,7 +81,7 @@ npm run dev
 ```
 
 Visiting the app before it's configured lands you on `/setup`, which walks
-through the same three steps:
+through the same steps:
 
 1. **Create a Supabase project**, then run `supabase/migrations/0001_init.sql`
    in its SQL editor. That creates every table and the Row Level Security
@@ -89,7 +89,13 @@ through the same three steps:
 2. **Fill in `.env.local`** — `NEXT_PUBLIC_SUPABASE_URL` and
    `NEXT_PUBLIC_SUPABASE_ANON_KEY` are required; `ANTHROPIC_API_KEY` unlocks the
    AI paths.
-3. **Restart the dev server.**
+3. **Decide how sign-up works.** Supabase asks new accounts to confirm their
+   email by default. For your own use, turn that off under Authentication →
+   Sign In / Providers → Email and sign-up logs you straight in. If you leave it
+   on, use a real address — and note that Supabase sends the confirmation link
+   to your project's Site URL rather than to `/auth/callback`, so DayOS routes
+   a stray `?code=` from any path to the handler that can exchange it.
+4. **Restart the dev server.**
 
 Set `NEXT_PUBLIC_ENABLE_DEMO_MODE=true` and Profile gains a **Load demo data**
 button: a believable week of a student's school, sports, music and coding work,

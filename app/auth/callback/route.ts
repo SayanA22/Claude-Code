@@ -2,7 +2,11 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 /**
- * Exchanges the Supabase email-confirmation code for a session cookie.
+ * Exchanges a Supabase auth code for a session cookie.
+ *
+ * Reached either directly, or via the proxy when a confirmation link lands on
+ * the site root — Supabase redirects to the project's Site URL, which is the
+ * root by default.
  */
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
@@ -19,7 +23,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.redirect(
-    new URL("/login?error=link_expired", origin),
-  );
+  // An expired or already-used link is the common case here, and it is
+  // recoverable: the account exists, it just needs a fresh link or a sign-in.
+  return NextResponse.redirect(new URL("/login?error=link", origin));
 }

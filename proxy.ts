@@ -17,6 +17,22 @@ const PUBLIC_PATHS = ["/login", "/signup", "/auth", "/setup", "/manifest.webmani
 export default async function proxy(request: NextRequest) {
   if (!isSupabaseConfigured) return NextResponse.next();
 
+  // Supabase sends confirmation and recovery links back to the project's Site
+  // URL, which is the site root by default — not /auth/callback. Landing there
+  // with a code and no session would otherwise bounce to /login and drop the
+  // code, leaving the account permanently unconfirmable. Route any stray code
+  // to the handler that can exchange it.
+  const code = request.nextUrl.searchParams.get("code");
+  if (code && !request.nextUrl.pathname.startsWith("/auth/")) {
+    const url = request.nextUrl.clone();
+    const next = request.nextUrl.searchParams.get("next");
+    url.pathname = "/auth/callback";
+    url.search = "";
+    url.searchParams.set("code", code);
+    if (next?.startsWith("/")) url.searchParams.set("next", next);
+    return NextResponse.redirect(url);
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {

@@ -68,10 +68,16 @@ export async function signUp(
     return { error: error.message };
   }
 
-  // With email confirmation on, there's no session yet.
+  // With email confirmation on (Supabase's default), there is no session yet.
+  //
+  // Supabase also returns a user with no identities when the address is
+  // already registered, rather than saying so — which stops address
+  // enumeration but can leave someone waiting for an email that will never
+  // arrive. One message covers both without revealing which happened.
   if (!data.session) {
     return {
-      notice: "Check your inbox to confirm your address, then sign in.",
+      notice:
+        "Check your inbox to confirm your address, then sign in. If you already have an account, sign in instead.",
     };
   }
 
