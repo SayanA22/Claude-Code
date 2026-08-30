@@ -2,7 +2,8 @@ import "server-only";
 
 import type { ParsedTask } from "@/lib/validation/task";
 import { parseTaskResponseSchema } from "@/lib/validation/task";
-import { addDaysToKey, fromLocalParts, wallClockIn } from "@/lib/utils/time";
+import { wallClockIn } from "@/lib/utils/time";
+import { resolveRelativeDeadline } from "@/lib/utils/deadline";
 import { askStructured, isAiConfigured } from "./client";
 import { TASK_PARSER_SYSTEM } from "./prompts";
 import { fallbackParseTasks } from "./fallback-parse";
@@ -61,19 +62,8 @@ export async function parseTasks(
   };
 }
 
-/**
- * Resolves a parsed task's relative deadline into an absolute instant.
- * A day with no time means end of that day.
- */
-export function resolveDeadline(
-  task: ParsedTask,
-  todayKey: string,
-  timeZone: string,
-): string | null {
-  if (task.deadline_days_from_today == null) return null;
-  const dateKey = addDaysToKey(todayKey, task.deadline_days_from_today);
-  return fromLocalParts(dateKey, task.deadline_time ?? "23:59", timeZone).toISOString();
-}
+/** Re-exported so callers have one import for parsing and its deadline maths. */
+export const resolveDeadline = resolveRelativeDeadline;
 
 function dayName(weekday: number): string {
   return [

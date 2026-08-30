@@ -9,6 +9,8 @@ export function Logo({ className }: { className?: string }) {
       aria-hidden
       fill="none"
     >
+      {/* Circumference is ~66; the 14-unit gap is centred at the top, under
+          the marker. */}
       <circle
         cx="16"
         cy="16"
@@ -16,7 +18,7 @@ export function Logo({ className }: { className?: string }) {
         stroke="currentColor"
         strokeWidth="2.75"
         strokeDasharray="52 14"
-        strokeDashoffset="-19"
+        strokeDashoffset="9.5"
         strokeLinecap="round"
       />
       <circle cx="16" cy="5.5" r="3.6" fill="currentColor" />

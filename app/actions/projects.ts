@@ -14,7 +14,8 @@ import {
   text,
   uuidSchema,
 } from "@/lib/validation/common";
-import { addDaysToKey, fromLocalParts, localDateKey } from "@/lib/utils/time";
+import { localDateKey } from "@/lib/utils/time";
+import { deadlineFromOffset } from "@/lib/utils/deadline";
 import type { Project, Task } from "@/types/db";
 import { createTasks } from "./tasks";
 import { type ActionResult, handleActionError, ok } from "./result";
@@ -156,14 +157,11 @@ export async function proposeBreakdown(
         description: t.description,
         estimated_duration: t.estimated_duration,
         priority: t.priority,
-        deadline:
-          t.deadline_days_from_today == null
-            ? null
-            : fromLocalParts(
-                addDaysToKey(todayKey, t.deadline_days_from_today),
-                "23:59",
-                ctx.timeZone,
-              ).toISOString(),
+        deadline: deadlineFromOffset(
+          t.deadline_days_from_today,
+          todayKey,
+          ctx.timeZone,
+        ),
       })),
     });
   } catch (error) {

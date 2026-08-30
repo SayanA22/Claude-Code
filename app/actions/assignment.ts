@@ -9,12 +9,8 @@ import {
 } from "@/lib/ai/assignment";
 import { isAiConfigured } from "@/lib/ai/client";
 import { calibrate } from "@/lib/planner/estimates";
-import {
-  addDaysToKey,
-  fromLocalParts,
-  localDateKey,
-  wallClockIn,
-} from "@/lib/utils/time";
+import { localDateKey, wallClockIn } from "@/lib/utils/time";
+import { deadlineFromOffset } from "@/lib/utils/deadline";
 import { type ActionResult, handleActionError, ok } from "./result";
 
 const schema = z.object({
@@ -75,14 +71,11 @@ export async function readAssignmentImage(
       };
     }
 
-    const deadline =
-      extraction.due_date_days_from_today == null
-        ? null
-        : fromLocalParts(
-            addDaysToKey(todayKey, extraction.due_date_days_from_today),
-            "23:59",
-            ctx.timeZone,
-          ).toISOString();
+    const deadline = deadlineFromOffset(
+      extraction.due_date_days_from_today,
+      todayKey,
+      ctx.timeZone,
+    );
 
     return ok({
       title: extraction.title.trim(),

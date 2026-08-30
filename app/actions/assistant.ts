@@ -7,7 +7,8 @@ import { getUserContext, displayName } from "@/lib/data/profile";
 import { listOpenTasks } from "@/lib/data/tasks";
 import { listBlocksForDate, listFixedEvents } from "@/lib/data/schedule";
 import { computeAvailability } from "@/lib/planner/availability";
-import { addDaysToKey, fromLocalParts, localDateKey } from "@/lib/utils/time";
+import { localDateKey } from "@/lib/utils/time";
+import { deadlineFromOffset } from "@/lib/utils/deadline";
 import {
   askAssistant,
   fallbackAssistantAnswer,
@@ -165,14 +166,11 @@ export async function runAssistantAction(
           category: value.category,
           priority: value.priority,
           estimated_duration: value.estimated_duration,
-          deadline:
-            value.deadline_days_from_today == null
-              ? null
-              : fromLocalParts(
-                  addDaysToKey(todayKey, value.deadline_days_from_today),
-                  "23:59",
-                  ctx.timeZone,
-                ).toISOString(),
+          deadline: deadlineFromOffset(
+            value.deadline_days_from_today,
+            todayKey,
+            ctx.timeZone,
+          ),
         });
         if (!result.ok) return result;
         return ok({ message: `Added "${value.title}".` });
@@ -190,11 +188,11 @@ export async function runAssistantAction(
       case "rescheduleTask": {
         const result = await updateTask({
           id: value.taskId,
-          deadline: fromLocalParts(
-            addDaysToKey(todayKey, value.days_from_today),
-            "23:59",
+          deadline: deadlineFromOffset(
+            value.days_from_today,
+            todayKey,
             ctx.timeZone,
-          ).toISOString(),
+          ),
         });
         if (!result.ok) return result;
         revalidatePath("/today");
