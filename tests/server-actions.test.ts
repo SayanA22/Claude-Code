@@ -54,11 +54,16 @@ describe("server actions", () => {
     }
   });
 
-  it("never uses the service-role client outside scripts", () => {
-    const offenders: string[] = [];
-    for (const file of actionFiles) {
-      if (read(file).includes("createAdminClient")) offenders.push(file);
-    }
+  it("never reaches for a client that would bypass Row Level Security", () => {
+    // DayOS ships no service-role client: every write runs as the signed-in
+    // user, so RLS is always in the enforcement path.
+    const offenders = actionFiles.filter((file) => {
+      const source = read(file);
+      return (
+        source.includes("createAdminClient") ||
+        source.includes("SERVICE_ROLE")
+      );
+    });
     expect(offenders).toEqual([]);
   });
 
@@ -95,9 +100,7 @@ describe("client bundle safety", () => {
     const offenders = clientFiles.filter((path) => {
       const source = readFileSync(join(process.cwd(), path), "utf8");
       return (
-        source.includes("@/lib/ai/client") ||
-        source.includes("@/lib/supabase/admin") ||
-        source.includes("@anthropic-ai/sdk")
+        source.includes("@/lib/ai/client") || source.includes("@anthropic-ai/sdk")
       );
     });
     expect(offenders).toEqual([]);

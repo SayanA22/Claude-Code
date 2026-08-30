@@ -115,9 +115,12 @@ so you can see what the product is for in one click.
 - **The client never names a user.** Every server action resolves identity from
   the session with `requireUser()`. A structural test enforces this: no action
   schema may accept a `user_id`, and every direct mutation must be scoped.
-- **Secrets stay server-side.** The service-role key is used only by the demo
-  seeder; every model call happens in a server action. A test asserts no client
-  component imports the AI client, the admin client, or a server-only secret.
+- **No service-role key at all.** Every write — demo seeding included — goes
+  through the signed-in user's own session, so RLS is always in the enforcement
+  path and there is no key that could bypass it.
+- **Secrets stay server-side.** Every model call happens in a server action. A
+  test asserts no client component imports the AI client or a server-only
+  secret.
 - **Every input is validated with Zod** — from the browser and from the model
   alike. Model output is schema-constrained *and* re-validated at the boundary
   where it becomes application data.
@@ -173,7 +176,7 @@ client could be built against the same database and the same rules.
 npm run test
 ```
 
-226 tests over the parts that have to be correct: timezone and DST handling,
+234 tests over the parts that have to be correct: timezone and DST handling,
 interval maths and overlap detection, the priority model, availability, the
 scheduler, the repair pass, estimate calibration, natural-language task parsing,
 "now" logic, notification scheduling, and the validation schemas.

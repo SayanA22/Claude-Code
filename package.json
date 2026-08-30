@@ -10,8 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "icons": "node scripts/generate-icons.mjs",
-    "seed:demo": "node --experimental-strip-types scripts/seed-demo.ts"
+    "icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.122.0",

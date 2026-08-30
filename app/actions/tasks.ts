@@ -9,6 +9,9 @@ import {
   updateTaskSchema,
 } from "@/lib/validation/task";
 import { uuidSchema } from "@/lib/validation/common";
+import { getUserContext } from "@/lib/data/profile";
+import { nextOccurrence } from "@/lib/planner/recurrence";
+import { wallClockIn } from "@/lib/utils/time";
 import type { Task } from "@/types/db";
 import { type ActionResult, handleActionError, ok } from "./result";
 
@@ -135,14 +138,16 @@ export async function setTaskStatus(
 
     if (error) throw error;
 
-    // Completing a task closes out any block still pointing at it today.
     if (status === "completed") {
+      // Completing a task closes out any block still pointing at it today.
       await supabase
         .from("schedule_blocks")
         .update({ status: "completed" })
         .eq("task_id", id)
         .eq("user_id", user.id)
         .in("status", ["planned", "in_progress"]);
+
+      await rollOverRecurring(data as Task);
     }
 
     revalidateTaskViews();
@@ -226,5 +231,47 @@ export async function deleteTask(id: string): Promise<ActionResult> {
     return ok();
   } catch (error) {
     return handleActionError("deleteTask", error, "Couldn't delete that task.");
+  }
+}
+
+/**
+ * Creates the next instance of a recurring task once this one is finished.
+ *
+ * Exactly one open instance exists at a time — see `lib/planner/recurrence`
+ * for why the series isn't materialised in advance. Failure here is logged and
+ * swallowed: the completion the user asked for has already succeeded, and
+ * failing it afterwards would be worse than a missed repeat.
+ */
+async function rollOverRecurring(task: Task): Promise<void> {
+  if (!task.recurring) return;
+
+  try {
+    const ctx = await getUserContext();
+    if (!ctx) return;
+
+    const { supabase } = await requireUser();
+    const from = task.deadline ? new Date(task.deadline) : new Date();
+    const { hour, minute } = wallClockIn(from, ctx.timeZone);
+    const time = task.deadline
+      ? `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`
+      : "23:59";
+
+    const deadline = nextOccurrence(task.recurring, from, ctx.timeZone, time);
+    if (!deadline) return;
+
+    await supabase.from("tasks").insert({
+      user_id: ctx.userId,
+      project_id: task.project_id,
+      title: task.title,
+      description: task.description,
+      category: task.category,
+      priority: task.priority,
+      deadline,
+      estimated_duration: task.estimated_duration,
+      recurring: task.recurring,
+      notes: task.notes,
+    });
+  } catch (error) {
+    console.error("[dayos:rollOverRecurring]", error);
   }
 }

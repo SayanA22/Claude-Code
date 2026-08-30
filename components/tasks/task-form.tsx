@@ -23,6 +23,7 @@ export interface TaskDraft {
   /** "HH:MM" or "" */
   deadlineTime: string;
   estimated_duration: number;
+  recurring: string;
   notes: string;
   project_id: string | null;
 }
@@ -39,6 +40,7 @@ export function draftFromTask(task: Task, timeZone: string): TaskDraft {
     deadlineDate: parts?.date ?? "",
     deadlineTime: parts?.time ?? "",
     estimated_duration: task.estimated_duration,
+    recurring: task.recurring ?? "",
     notes: task.notes ?? "",
     project_id: task.project_id,
   };
@@ -53,6 +55,7 @@ export function emptyDraft(overrides: Partial<TaskDraft> = {}): TaskDraft {
     deadlineDate: "",
     deadlineTime: "",
     estimated_duration: 30,
+    recurring: "",
     notes: "",
     project_id: null,
     ...overrides,
@@ -127,6 +130,7 @@ export function TaskForm({
       priority: draft.priority,
       deadline: deadlineToIso(draft.deadlineDate, draft.deadlineTime, timeZone),
       estimated_duration: Number(draft.estimated_duration) || 30,
+      recurring: draft.recurring,
       notes: draft.notes,
       project_id: projectId ?? draft.project_id,
     };
@@ -252,6 +256,23 @@ export function TaskForm({
             ))}
           </div>
         </div>
+      </Field>
+
+      <Field
+        label="Repeats"
+        htmlFor="recurring"
+        hint="A new instance appears each time you finish this one."
+      >
+        <Select
+          id="recurring"
+          value={draft.recurring}
+          onChange={(e) => set("recurring", e.target.value)}
+        >
+          <option value="">Doesn&apos;t repeat</option>
+          <option value="daily">Every day</option>
+          <option value="weekdays">Every weekday</option>
+          <option value="weekly">Every week</option>
+        </Select>
       </Field>
 
       <Field label="Notes" htmlFor="notes">
