@@ -102,6 +102,7 @@ so you can see what the product is for in one click.
 | `npm run dev` | Development server |
 | `npm run build` | Production build |
 | `npm run test` | Unit tests (Vitest) |
+| `npm run test:db` | Schema + RLS tests against a throwaway PostgreSQL |
 | `npm run typecheck` | TypeScript, no emit |
 | `npm run lint` | ESLint |
 | `npm run icons` | Regenerate the PWA icon set |
@@ -110,8 +111,12 @@ so you can see what the product is for in one click.
 
 ## Security
 
-- **Row Level Security on every table.** Policies compare `user_id` against
-  `auth.uid()`, which Postgres derives from the verified JWT.
+- **Row Level Security on every table**, and it is tested rather than asserted.
+  `npm run test:db` applies the migration to a throwaway PostgreSQL and then
+  tries to break the policies: reading another user's rows, updating them,
+  deleting them, planting a row under someone else's id, reassigning your own
+  row to another user, and reading anything at all with no session. It also
+  fails if any table in `public` is missing RLS or a policy. See below.
 - **The client never names a user.** Every server action resolves identity from
   the session with `requireUser()`. A structural test enforces this: no action
   schema may accept a `user_id`, and every direct mutation must be scoped.
@@ -185,8 +190,16 @@ scheduler, the repair pass, estimate calibration, natural-language task parsing,
 Supabase client — including the scenario the product is judged on: five tasks,
 one evening, planned and then replanned after something slips.
 
-`tests/server-actions.test.ts` holds the security properties above as structural
-assertions, so they can't quietly regress.
+`tests/server-actions.test.ts` holds the application-side security properties
+as structural assertions, so they can't quietly regress.
+
+`npm run test:db` covers the database side. It needs only a local PostgreSQL —
+no Supabase project, no network — and spins up a throwaway instance, applies
+`supabase/migrations`, and runs `supabase/tests`. Those tests were themselves
+verified by mutation: disabling RLS on a table, replacing a policy's `USING`
+with `true`, dropping a `WITH CHECK`, removing the bootstrap trigger, and
+dropping a delete cascade each make the suite fail with the specific assertion
+you would want, and the unmutated schema passes.
 
 ---
 
