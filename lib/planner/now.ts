@@ -24,7 +24,11 @@ export interface DayState {
   currentBlock: ScheduleBlockWithTask | null;
   /** The next planned block after now. */
   nextBlock: ScheduleBlockWithTask | null;
-  /** What the "Up next" card should show — current if running, else next. */
+  /**
+   * What the "Up next" card should show: the block running now, else the next
+   * one, else the session you most recently missed — being behind is not the
+   * same as being free.
+   */
   focusBlock: ScheduleBlockWithTask | null;
   /** Planned blocks whose window has passed without being finished. */
   missedBlocks: ScheduleBlockWithTask[];
@@ -115,7 +119,13 @@ export function computeDayState(
     }),
     currentBlock,
     nextBlock,
-    focusBlock: currentBlock ?? nextBlock,
+    focusBlock:
+      currentBlock ??
+      nextBlock ??
+      // Nothing scheduled right now, but something was: offer the most recent
+      // miss so it can be started or moved, rather than showing an empty day.
+      missedBlocks[missedBlocks.length - 1] ??
+      null,
     missedBlocks,
     overdueTasks,
     dueSoonTasks,

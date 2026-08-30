@@ -96,6 +96,36 @@ describe("computeDayState", () => {
     expect(state.statusLine).toMatch(/behind/i);
   });
 
+  it("offers the missed session rather than calling the user free", () => {
+    // Being behind is not the same as being free: the card must still have
+    // something to start or move.
+    const missed = block({
+      id: "missed",
+      start_at: new Date(NOW.getTime() - 3 * H).toISOString(),
+      end_at: new Date(NOW.getTime() - 2 * H).toISOString(),
+    });
+    const state = computeDayState([missed], [task()], NOW);
+    expect(state.status).toBe("behind");
+    expect(state.currentBlock).toBeNull();
+    expect(state.nextBlock).toBeNull();
+    expect(state.focusBlock?.id).toBe("missed");
+  });
+
+  it("prefers the block happening now over an earlier miss", () => {
+    const missed = block({
+      id: "missed",
+      start_at: new Date(NOW.getTime() - 3 * H).toISOString(),
+      end_at: new Date(NOW.getTime() - 2 * H).toISOString(),
+    });
+    const running = block({
+      id: "running",
+      start_at: new Date(NOW.getTime() - 10 * 60_000).toISOString(),
+      end_at: new Date(NOW.getTime() + 20 * 60_000).toISOString(),
+    });
+    const state = computeDayState([missed, running], [task()], NOW);
+    expect(state.focusBlock?.id).toBe("running");
+  });
+
   it("does not count completed or skipped blocks as missed", () => {
     const done = block({
       id: "done",

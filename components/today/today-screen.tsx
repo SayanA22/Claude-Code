@@ -50,7 +50,7 @@ export function TodayScreen({
     [blocks, openTasks, now],
   );
 
-  // With nothing scheduled, still answer the question — recommend the
+  // With nothing scheduled at all, still answer the question — recommend the
   // highest-value open task rather than showing an empty screen.
   const suggestion = React.useMemo(() => {
     if (state.focusBlock || !openTasks.length) return null;

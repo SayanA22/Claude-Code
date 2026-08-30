@@ -176,7 +176,7 @@ client could be built against the same database and the same rules.
 npm run test
 ```
 
-234 tests over the parts that have to be correct: timezone and DST handling,
+236 tests over the parts that have to be correct: timezone and DST handling,
 interval maths and overlap detection, the priority model, availability, the
 scheduler, the repair pass, estimate calibration, natural-language task parsing,
 "now" logic, notification scheduling, and the validation schemas.
