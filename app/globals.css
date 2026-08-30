@@ -1,0 +1,156 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   DayOS design tokens
+   A restrained system: one accent, a neutral ramp, and a small set of
+   semantic colors used only to communicate priority, category and state.
+   ========================================================================== */
+
+@theme {
+  --font-sans:
+    ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+
+  --color-bg: oklch(0.985 0.002 250);
+  --color-surface: oklch(1 0 0);
+  --color-surface-2: oklch(0.972 0.003 250);
+  --color-border: oklch(0.912 0.004 250);
+  --color-border-strong: oklch(0.855 0.006 250);
+  --color-fg: oklch(0.21 0.012 260);
+  --color-muted: oklch(0.535 0.012 260);
+  --color-faint: oklch(0.665 0.011 260);
+
+  --color-accent: oklch(0.52 0.17 268);
+  --color-accent-fg: oklch(0.99 0 0);
+  --color-accent-soft: oklch(0.955 0.024 268);
+
+  --color-success: oklch(0.58 0.13 158);
+  --color-warning: oklch(0.68 0.14 72);
+  --color-danger: oklch(0.57 0.19 26);
+
+  --radius-card: 1rem;
+
+  --spacing-safe-b: env(safe-area-inset-bottom, 0px);
+}
+
+/* Dark theme -------------------------------------------------------------- */
+.dark {
+  --color-bg: oklch(0.175 0.008 265);
+  --color-surface: oklch(0.215 0.009 265);
+  --color-surface-2: oklch(0.255 0.010 265);
+  --color-border: oklch(0.305 0.011 265);
+  --color-border-strong: oklch(0.375 0.013 265);
+  --color-fg: oklch(0.965 0.003 265);
+  --color-muted: oklch(0.715 0.012 265);
+  --color-faint: oklch(0.585 0.012 265);
+
+  --color-accent: oklch(0.68 0.15 268);
+  --color-accent-fg: oklch(0.16 0.02 268);
+  --color-accent-soft: oklch(0.30 0.05 268);
+
+  --color-success: oklch(0.72 0.14 158);
+  --color-warning: oklch(0.78 0.14 78);
+  --color-danger: oklch(0.68 0.17 25);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: none;
+  }
+
+  /* Visible, consistent focus for keyboard users. */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  ::selection {
+    background: var(--color-accent-soft);
+  }
+
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+  }
+}
+
+@layer utilities {
+  .pb-safe {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
+  }
+  .pt-safe {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 0.5rem);
+  }
+  .h-nav {
+    height: calc(4rem + env(safe-area-inset-bottom, 0px));
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Motion: present but restrained, and fully disabled on request. ---------- */
+@keyframes dayos-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes dayos-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-rise {
+  animation: dayos-rise 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-fade {
+  animation: dayos-fade 0.2s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
