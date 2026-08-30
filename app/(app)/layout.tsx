@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
+import { AppChrome } from "@/components/chrome/app-chrome";
 import { BottomNav } from "@/components/nav/bottom-nav";
 import { Sidebar } from "@/components/nav/sidebar";
 import { getUserContext } from "@/lib/data/profile";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { localDateKey } from "@/lib/utils/time";
 
 /**
  * The signed-in shell: a sidebar on desktop, a bottom bar on phones, and a
@@ -21,6 +23,12 @@ export default async function AppLayout({
 
   return (
     <div className="min-h-svh">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:bg-surface focus:px-3 focus:py-2 focus:shadow-lg"
+      >
+        Skip to content
+      </a>
       <Sidebar />
       <div className="md:pl-60">
         <main
@@ -30,6 +38,11 @@ export default async function AppLayout({
           {children}
         </main>
       </div>
+      <AppChrome
+        timeZone={ctx.timeZone}
+        todayKey={localDateKey(new Date(), ctx.timeZone)}
+        aiEnabled={Boolean(process.env.ANTHROPIC_API_KEY)}
+      />
       <BottomNav />
     </div>
   );

@@ -134,3 +134,14 @@ export const assistantResponseSchema = z.object({
   actions: z.array(assistantActionSchema).max(5),
 });
 export type AssistantResponse = z.infer<typeof assistantResponseSchema>;
+
+/** Actions that change or remove existing work need an explicit confirmation. */
+const DESTRUCTIVE_ACTIONS: AssistantAction["type"][] = [
+  "deleteTask",
+  "completeTask",
+  "rescheduleTask",
+];
+
+export function isDestructive(action: AssistantAction): boolean {
+  return DESTRUCTIVE_ACTIONS.includes(action.type);
+}
