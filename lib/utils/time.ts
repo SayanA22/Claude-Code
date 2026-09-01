@@ -224,6 +224,9 @@ export function formatRelativeDay(
 
 export function greetingFor(date: Date, timeZone: string): string {
   const { hour } = wallClockIn(date, timeZone);
+  // Before 5am you are up late, not up early — "Good morning" at 2am reads as
+  // a bug to the person still awake.
+  if (hour < 5) return "Good evening";
   if (hour < 12) return "Good morning";
   if (hour < 18) return "Good afternoon";
   return "Good evening";

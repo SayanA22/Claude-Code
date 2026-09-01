@@ -11,6 +11,7 @@ import type {
 import { localDateKey } from "@/lib/utils/time";
 import { computeAvailability } from "./availability";
 import { generateSchedule, type GeneratedPlan, type PlannedBlock } from "./generate";
+import { parseTimeBudget } from "./instruction";
 import { assertNoOverlaps, repairSchedule } from "./repair";
 
 /**
@@ -35,6 +36,11 @@ export interface PlanContext {
   tasks: Task[];
   fixedEvents: FixedEvent[];
   keptBlocks: ScheduleBlock[];
+  /**
+   * What the user said when they asked for a replan, if anything. The model
+   * reads it in full; the built-in scheduler reads a time budget out of it.
+   */
+  instruction?: string;
 }
 
 export interface PlanOutcome {
@@ -61,6 +67,7 @@ export async function loadPlanContext(
     timeZone: string;
     dateKey?: string;
     now?: Date;
+    instruction?: string;
   },
 ): Promise<PlanContext> {
   const now = args.now ?? new Date();
@@ -104,6 +111,7 @@ export async function loadPlanContext(
     tasks: (tasksRes.data ?? []) as Task[],
     fixedEvents: (eventsRes.data ?? []) as FixedEvent[],
     keptBlocks,
+    instruction: args.instruction,
   };
 }
 
@@ -133,12 +141,17 @@ export async function buildPlan(
 }> {
   const availability = availabilityFor(ctx);
 
+  // Without a model, the built-in scheduler still honours the one constraint
+  // users state most often — how long they have right now.
+  const budget = ctx.instruction ? parseTimeBudget(ctx.instruction) : null;
+
   const builtin = () =>
     generateSchedule({
       tasks: ctx.tasks,
       free: availability.free,
       preferences: ctx.preferences,
       now: ctx.now,
+      firstSessionCapMinutes: budget ?? undefined,
     });
 
   let source: "ai" | "builtin" = "builtin";

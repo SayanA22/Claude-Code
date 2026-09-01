@@ -69,6 +69,12 @@ export interface GenerateOptions {
   fillRatio?: number;
   /** Shortest useful work session. */
   minSessionMinutes?: number;
+  /**
+   * Cap on the first work session, for when the user has said how long they
+   * have right now. The rest of the day is unaffected — "I only have 30
+   * minutes" is a statement about this moment, not about the evening.
+   */
+  firstSessionCapMinutes?: number;
 }
 
 const DEFAULT_FILL_RATIO = 0.82;
@@ -84,6 +90,7 @@ export function generateSchedule(opts: GenerateOptions): GeneratedPlan {
     now,
     fillRatio = DEFAULT_FILL_RATIO,
     minSessionMinutes = DEFAULT_MIN_SESSION,
+    firstSessionCapMinutes,
   } = opts;
 
   const focusLen = Math.max(15, preferences.focus_session_minutes || 45);
@@ -162,8 +169,12 @@ export function generateSchedule(opts: GenerateOptions): GeneratedPlan {
 
     const budgetLeft = workBudget - workScheduled;
     const wanted = remaining.get(candidate.id) ?? 0;
+    const isFirstSession = blocks.every((b) => b.kind !== "task");
     const sessionMinutes = Math.min(
       wanted,
+      isFirstSession && firstSessionCapMinutes
+        ? Math.max(minSessionMinutes, firstSessionCapMinutes)
+        : focusLen,
       focusLen,
       gapMinutes,
       Math.max(minSessionMinutes, budgetLeft),

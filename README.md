@@ -33,7 +33,9 @@ names what has to move.
 **Execute.** The Today screen shows one thing: what's next, when, and a Start
 button. Focus Mode is a countdown and four controls. Can't do it right now?
 Reschedule, skip, mark it done, or tell DayOS what changed — *"I only have 30
-minutes"* — and it rebuilds the rest of the day around that.
+minutes"* — and it rebuilds the rest of the day around that. The model reads
+that sentence in full; without one, the built-in scheduler still reads a time
+budget out of it, so the promise holds either way.
 
 **Learn.** The daily review counts what actually happened and adjusts how long
 DayOS thinks your work takes. Consistently need 60 minutes for something you
@@ -187,7 +189,7 @@ client could be built against the same database and the same rules.
 npm run test
 ```
 
-266 tests over the parts that have to be correct: timezone and DST handling,
+275 tests over the parts that have to be correct: timezone and DST handling,
 interval maths and overlap detection, the priority model, availability, the
 scheduler, the repair pass, estimate calibration, natural-language task parsing,
 "now" logic, notification scheduling, and the validation schemas.

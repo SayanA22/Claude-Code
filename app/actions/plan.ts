@@ -43,6 +43,7 @@ export async function planDay(
       preferences: ctx.preferences,
       timeZone: ctx.timeZone,
       dateKey: parsed.data.dateKey,
+      instruction: parsed.data.instruction,
     });
 
     const strategy = parsed.data.instruction
