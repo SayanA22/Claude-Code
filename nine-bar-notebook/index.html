@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nine Bar Notebook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#F3F4F1; --surface:#FCFCFB; --sunken:#EDEEEA;
+  --ink:#151816; --ink-2:#464C48; --ink-3:#6C7369;
+  --rule:#DEE1DC; --rule-2:#C9CDC6;
+  --accent:#A6541A; --accent-soft:#F0E4D8;
+  --under:#2E6FA7; --dialed:#4F8A2B; --over:#98395F;
+  --under-wash:#E5EDF5; --dialed-wash:#E9F1DF; --over-wash:#F5E6EC;
+  --band:#E6EFDC;
+  --shadow:0 1px 2px rgba(21,24,22,.06), 0 8px 20px -14px rgba(21,24,22,.28);
+  --display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+  --body:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono","SFMono-Regular",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#111312; --surface:#1A1D1B; --sunken:#151816;
+    --ink:#E7EAE6; --ink-2:#B4BAB5; --ink-3:#8B928C;
+    --rule:#2A2E2B; --rule-2:#3A403C;
+    --accent:#D98243; --accent-soft:#33241A;
+    --under:#4E93D1; --dialed:#76A534; --over:#C9648F;
+    --under-wash:#17232E; --dialed-wash:#1B2616; --over-wash:#2B1A22;
+    --band:#1E2718;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 24px -16px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#111312; --surface:#1A1D1B; --sunken:#151816;
+  --ink:#E7EAE6; --ink-2:#B4BAB5; --ink-3:#8B928C;
+  --rule:#2A2E2B; --rule-2:#3A403C;
+  --accent:#D98243; --accent-soft:#33241A;
+  --under:#4E93D1; --dialed:#76A534; --over:#C9648F;
+  --under-wash:#17232E; --dialed-wash:#1B2616; --over-wash:#2B1A22;
+  --band:#1E2718;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 24px -16px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--display);font-weight:700;margin:0;text-wrap:balance;letter-spacing:-.015em}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 72px}
+
+/* ---- masthead ---- */
+.masthead{border-bottom:1px solid var(--rule);background:var(--surface)}
+.masthead .wrap{display:flex;align-items:center;gap:18px;padding-top:16px;padding-bottom:16px;flex-wrap:wrap}
+.mark{width:34px;height:34px;border-radius:50%;flex:none;background:
+   radial-gradient(circle at 50% 42%, var(--accent) 0 34%, transparent 35%),
+   conic-gradient(from 0deg, var(--rule-2), var(--rule-2));
+   box-shadow:inset 0 0 0 1px var(--rule-2)}
+.brand h1{font-size:19px;line-height:1.15}
+.brand p{margin:1px 0 0;font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.masthead-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+
+/* ---- generic panel ---- */
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:6px;box-shadow:var(--shadow)}
+.panel-head{display:flex;align-items:baseline;gap:10px;padding:14px 18px 0}
+.panel-head h2{font-size:15px}
+.panel-head .hint{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.04em;margin-left:auto}
+.panel-body{padding:14px 18px 18px}
+
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+
+/* ---- layout ---- */
+.deck{display:grid;grid-template-columns:minmax(320px,380px) 1fr;gap:18px;align-items:start;margin-top:18px}
+.stack{display:flex;flex-direction:column;gap:18px}
+@media (max-width:900px){.deck{grid-template-columns:1fr}}
+@media (max-width:760px){#beanForm{grid-template-columns:1fr 1fr!important}#beanForm button{grid-column:1/-1}}
+@media (max-width:560px){.grid3{grid-template-columns:1fr 1fr}.readout{grid-template-columns:1fr}.readout div{border-right:0;border-bottom:1px solid var(--rule)}.readout div:last-child{border-bottom:0}}
+
+/* ---- form ---- */
+.field{display:flex;flex-direction:column;gap:5px}
+.field > label{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+input[type=number],input[type=text],input[type=date],select,textarea{
+  width:100%;background:var(--sunken);border:1px solid var(--rule);border-radius:4px;padding:8px 10px;
+  font-family:var(--mono);font-variant-numeric:tabular-nums}
+input[type=number]{font-size:17px;font-weight:500}
+textarea{font-family:var(--body);resize:vertical;min-height:54px}
+select{font-family:var(--body)}
+.form-stack{display:flex;flex-direction:column;gap:14px}
+
+.seg{display:flex;gap:0;border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.seg button{flex:1;background:var(--sunken);border:0;border-right:1px solid var(--rule);padding:8px 4px;cursor:pointer;
+  font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{color:var(--surface);font-weight:600}
+.seg button[data-taste=under][aria-pressed="true"]{background:var(--under)}
+.seg button[data-taste=balanced][aria-pressed="true"]{background:var(--dialed)}
+.seg button[data-taste=over][aria-pressed="true"]{background:var(--over)}
+.seg button[data-style][aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+
+.stars{display:flex;gap:4px}
+.stars button{background:none;border:0;padding:2px;cursor:pointer;color:var(--rule-2);line-height:1}
+.stars button svg{display:block;width:20px;height:20px}
+.stars button.on{color:var(--accent)}
+
+.btn{border:1px solid var(--rule-2);background:var(--surface);color:var(--ink);border-radius:4px;padding:8px 13px;cursor:pointer;
+  font-size:13px;font-weight:500}
+.btn:hover{border-color:var(--ink-3)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn-sm{padding:5px 9px;font-size:12px}
+.btn-row{display:flex;gap:8px;align-items:center}
+
+/* ---- readout strip ---- */
+.readout{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:var(--sunken)}
+.readout div{padding:9px 11px;border-right:1px solid var(--rule)}
+.readout div:last-child{border-right:0}
+.readout dt{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);margin:0}
+.readout dd{margin:1px 0 0;font-family:var(--mono);font-size:17px;font-weight:500;font-variant-numeric:tabular-nums}
+
+/* ---- coach ---- */
+.coach{border-left:3px solid var(--rule-2)}
+.coach[data-status=under]{border-left-color:var(--under)}
+.coach[data-status=over]{border-left-color:var(--over)}
+.coach[data-status=dialed]{border-left-color:var(--dialed)}
+.coach[data-status=mixed]{border-left-color:var(--accent)}
+.verdict{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.06em;
+  text-transform:uppercase;padding:3px 8px;border-radius:3px;border:1px solid transparent}
+.chip.under{background:var(--under-wash);color:var(--under);border-color:var(--under)}
+.chip.over{background:var(--over-wash);color:var(--over);border-color:var(--over)}
+.chip.dialed{background:var(--dialed-wash);color:var(--dialed);border-color:var(--dialed)}
+.chip.neutral{background:var(--sunken);color:var(--ink-3);border-color:var(--rule-2)}
+.chip.accent{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+.move{font-family:var(--display);font-size:27px;line-height:1.15;font-weight:700;margin:12px 0 2px}
+.move .num{font-family:var(--mono);font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
+.because{margin:10px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+.because li{display:flex;gap:9px;font-size:13.5px;color:var(--ink-2);line-height:1.45}
+.because li::before{content:"";flex:none;width:5px;height:5px;border-radius:50%;background:var(--rule-2);margin-top:7px}
+.because li.warn::before{background:var(--accent)}
+.also{margin-top:14px;padding-top:12px;border-top:1px dashed var(--rule);display:flex;flex-direction:column;gap:6px;
+  font-size:13.5px;color:var(--ink-2)}
+.also b{font-weight:600;color:var(--ink)}
+
+/* ---- chart ---- */
+.chart-wrap{position:relative}
+svg.trace{display:block;width:100%;height:auto;overflow:visible}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--ground);border-radius:4px;padding:7px 9px;
+  font-family:var(--mono);font-size:11.5px;line-height:1.45;white-space:nowrap;opacity:0;transform:translate(-50%,-116%);
+  transition:opacity .08s linear;z-index:5;box-shadow:var(--shadow)}
+.tip.on{opacity:1}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--ink-3);
+  letter-spacing:.05em;text-transform:uppercase}
+.legend i{width:9px;height:9px;border-radius:50%;display:block}
+
+/* ---- table ---- */
+.table-scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:660px}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);
+  text-align:left;font-weight:500;padding:0 12px 7px;border-bottom:1px solid var(--rule);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--rule);font-size:13.5px;vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+th.right,td.right{text-align:right}
+tr.pinned td{background:var(--accent-soft)}
+.icon-btn{background:none;border:0;cursor:pointer;color:var(--rule-2);padding:2px;line-height:1}
+.icon-btn.on{color:var(--accent)}
+.icon-btn:hover{color:var(--ink-3)}
+.icon-btn.on:hover{color:var(--accent)}
+.icon-btn svg{display:block;width:16px;height:16px}
+
+/* ---- bean shelf ---- */
+.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.bean{border:1px solid var(--rule);border-radius:5px;padding:13px 14px;background:var(--sunken);display:flex;flex-direction:column;gap:9px}
+.bean.active{border-color:var(--accent);background:var(--surface);box-shadow:inset 3px 0 0 var(--accent)}
+.bean h3{font-size:14.5px;font-family:var(--body);font-weight:600}
+.bean .roaster{font-size:12.5px;color:var(--ink-3);margin:0}
+.rest{display:flex;flex-direction:column;gap:4px}
+.rest-bar{height:5px;border-radius:3px;background:var(--rule);position:relative;overflow:hidden}
+.rest-bar i{position:absolute;inset:0 auto 0 0;display:block;border-radius:3px}
+.rest-note{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:var(--ink-3);display:flex;justify-content:space-between;gap:8px}
+.recipe{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);background:var(--surface);border:1px dashed var(--rule-2);
+  border-radius:3px;padding:5px 7px}
+.bean-actions{display:flex;gap:6px;margin-top:auto;padding-top:2px}
+
+/* ---- misc ---- */
+.notice{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--accent-soft);border:1px solid var(--accent);
+  border-radius:5px;padding:9px 13px;margin-top:18px;font-size:13.5px;color:var(--ink-2)}
+.notice b{color:var(--ink)}
+.notice .btn{margin-left:auto}
+.empty{color:var(--ink-3);font-size:13.5px;padding:8px 0}
+details.tools{margin-top:18px;border:1px solid var(--rule);border-radius:6px;background:var(--surface);padding:0 18px}
+details.tools summary{cursor:pointer;padding:13px 0;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+details.tools[open] summary{border-bottom:1px solid var(--rule);margin-bottom:14px}
+.tools-body{padding-bottom:18px;display:flex;flex-direction:column;gap:14px}
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--rule);font-size:12.5px;color:var(--ink-3);
+  display:flex;gap:14px;flex-wrap:wrap}
+.status-msg{font-family:var(--mono);font-size:11.5px;color:var(--dialed)}
+</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <div class="mark" aria-hidden="true"></div>
+    <div class="brand">
+      <h1>Nine Bar Notebook</h1>
+      <p>Espresso dial-in log</p>
+    </div>
+    <div class="masthead-actions">
+      <label class="sr" for="beanPick">Bean on the hopper</label>
+      <select id="beanPick" style="width:auto;min-width:190px"></select>
+      <button class="btn btn-sm" id="themeBtn" title="Switch theme">Theme</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="sampleNotice"></div>
+
+  <div class="deck">
+    <!-- ---------- shot entry ---------- -->
+    <section class="panel" aria-labelledby="shotHead">
+      <div class="panel-head"><h2 id="shotHead">This shot</h2><span class="hint" id="grinderName">grinder</span></div>
+      <div class="panel-body form-stack">
+        <div class="field">
+          <label for="grind">Grind setting</label>
+          <input type="number" id="grind" step="0.1" inputmode="decimal">
+        </div>
+        <div class="grid3">
+          <div class="field"><label for="dose">Dose g</label><input type="number" id="dose" step="0.1" inputmode="decimal"></div>
+          <div class="field"><label for="yield">Yield g</label><input type="number" id="yield" step="0.1" inputmode="decimal"></div>
+          <div class="field"><label for="time">Time s</label><input type="number" id="time" step="1" inputmode="numeric"></div>
+        </div>
+        <dl class="readout" id="liveReadout"></dl>
+        <div class="field">
+          <label id="tasteLabel">Taste</label>
+          <div class="seg" role="group" aria-labelledby="tasteLabel" id="tasteSeg">
+            <button type="button" data-taste="under" aria-pressed="false">Sour · thin</button>
+            <button type="button" data-taste="balanced" aria-pressed="false">Balanced</button>
+            <button type="button" data-taste="over" aria-pressed="false">Bitter · dry</button>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="field"><label for="temp">Brew temp °C</label><input type="number" id="temp" step="0.5" inputmode="decimal" placeholder="optional"></div>
+          <div class="field">
+            <label id="rateLabel">Rating</label>
+            <div class="stars" role="group" aria-labelledby="rateLabel" id="stars"></div>
+          </div>
+        </div>
+        <div class="field"><label for="note">Note</label><textarea id="note" placeholder="Blackcurrant up front, dries out at the end."></textarea></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="logBtn">Log shot</button>
+          <button class="btn" id="repeatBtn">Copy last shot</button>
+          <span class="status-msg" id="saveMsg" role="status"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- coach + trace ---------- -->
+    <div class="stack">
+      <section class="panel coach" id="coach" aria-labelledby="coachHead" aria-live="polite">
+        <div class="panel-head"><h2 id="coachHead">Next shot</h2><span class="hint" id="coachBasis"></span></div>
+        <div class="panel-body" id="coachBody"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="traceHead">
+        <div class="panel-head"><h2 id="traceHead">Dial-in trace</h2><span class="hint" id="traceHint"></span></div>
+        <div class="panel-body">
+          <div class="chart-wrap">
+            <svg class="trace" id="trace" viewBox="0 0 660 250" role="img" aria-labelledby="traceHead traceDesc"><desc id="traceDesc"></desc></svg>
+            <div class="tip" id="tip"></div>
+          </div>
+          <div class="legend">
+            <span><i style="background:var(--under)"></i>Sour · thin</span>
+            <span><i style="background:var(--dialed)"></i>Balanced</span>
+            <span><i style="background:var(--over)"></i>Bitter · dry</span>
+            <span><i style="background:var(--band);box-shadow:inset 0 0 0 1px var(--rule-2)"></i>Target window</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ---------- history ---------- -->
+  <section class="panel" style="margin-top:18px" aria-labelledby="histHead">
+    <div class="panel-head"><h2 id="histHead">Shot log</h2><span class="hint" id="histHint"></span></div>
+    <div class="panel-body">
+      <div class="table-scroll"><table id="histTable">
+        <thead><tr>
+          <th>When</th><th>Bean</th><th class="right">Grind</th><th class="right">Dose → Yield</th>
+          <th class="right">Ratio</th><th class="right">Time</th><th class="right">Flow</th><th>Taste</th>
+          <th class="right">Rating</th><th class="right">Keep</th><th class="right"><span class="sr">Delete</span></th>
+        </tr></thead>
+        <tbody id="histBody"></tbody>
+      </table></div>
+      <p class="empty" id="histEmpty" hidden>No shots logged yet. Pull one and fill in the panel on the left.</p>
+    </div>
+  </section>
+
+  <!-- ---------- beans ---------- -->
+  <section class="panel" style="margin-top:18px" aria-labelledby="beanHead">
+    <div class="panel-head"><h2 id="beanHead">The shelf</h2><span class="hint">rest window · reference recipe</span></div>
+    <div class="panel-body" style="display:flex;flex-direction:column;gap:16px">
+      <div class="shelf" id="shelf"></div>
+      <form id="beanForm" style="display:grid;grid-template-columns:1.4fr 1.2fr .9fr .9fr auto;gap:10px;align-items:end;border-top:1px dashed var(--rule);padding-top:16px">
+        <div class="field"><label for="bName">Coffee</label><input type="text" id="bName" placeholder="Guji Halo Berti" required></div>
+        <div class="field"><label for="bRoaster">Roaster</label><input type="text" id="bRoaster" placeholder="Northbound"></div>
+        <div class="field"><label for="bDate">Roasted</label><input type="date" id="bDate"></div>
+        <div class="field"><label for="bLevel">Roast</label>
+          <select id="bLevel"><option value="light">Light</option><option value="medium" selected>Medium</option><option value="dark">Dark</option></select>
+        </div>
+        <button class="btn" type="submit">Add bean</button>
+      </form>
+    </div>
+  </section>
+
+  <details class="tools">
+    <summary>Setup &amp; backup</summary>
+    <div class="tools-body">
+      <div class="tools-grid">
+        <div class="field"><label for="grinderName2">Grinder</label><input type="text" id="grinderName2" placeholder="Niche Zero"></div>
+        <div class="field"><label for="stepSize">One step =</label><input type="number" id="stepSize" step="0.1" min="0.1"></div>
+        <div class="field"><label for="stepDir">Finer is</label>
+          <select id="stepDir"><option value="lower">a lower number</option><option value="higher">a higher number</option></select>
+        </div>
+        <div class="field"><label id="styleLabel">Shot style</label>
+          <div class="seg" role="group" aria-labelledby="styleLabel" id="styleSeg">
+            <button type="button" data-style="ristretto" aria-pressed="false">Ristretto</button>
+            <button type="button" data-style="classic" aria-pressed="false">Classic</button>
+            <button type="button" data-style="lungo" aria-pressed="false">Lungo</button>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label for="backup">Backup — copy this text somewhere safe, or paste an old backup in and restore</label>
+        <textarea id="backup" spellcheck="false" style="min-height:96px;font-family:var(--mono);font-size:11.5px"></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-sm" id="copyBtn">Copy backup</button>
+        <button class="btn btn-sm" id="restoreBtn">Restore from text</button>
+        <button class="btn btn-sm" id="wipeBtn">Erase everything</button>
+        <span class="status-msg" id="toolsMsg" role="status"></span>
+      </div>
+    </div>
+  </details>
+
+  <footer>
+    <span>Everything stays in this browser — nothing is uploaded.</span>
+    <span>Targets follow the style you pick in Setup.</span>
+  </footer>
+</main>
+<script>
+"use strict";
+const KEY = "ninebar.v1";
+const STYLES = {
+  ristretto:{label:"Ristretto", time:[22,30], ratio:[1.4,1.9]},
+  classic:  {label:"Classic",   time:[25,32], ratio:[1.9,2.4]},
+  lungo:    {label:"Lungo",     time:[28,38], ratio:[2.5,3.2]}
+};
+const REST = { light:[10,28], medium:[7,21], dark:[4,14] };
+const TASTE_LABEL = {under:"Sour · thin", balanced:"Balanced", over:"Bitter · dry"};
+const $ = s => document.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2,9);
+const iso = d => d.toISOString().slice(0,10);
+const num = v => { const n = parseFloat(v); return Number.isFinite(n) ? n : null; };
+const r1 = n => (Math.round(n*10)/10).toFixed(1);
+const r2 = n => (Math.round(n*100)/100).toFixed(2);
+const secs = n => Number.isInteger(Math.round(n*10)/10) ? String(Math.round(n)) : r1(n);
+const daysSince = s => s ? Math.max(0, Math.round((Date.now() - new Date(s+"T12:00:00").getTime())/864e5)) : null;
+
+/* ---------- state ---------- */
+function seed(){
+  const today = new Date();
+  const back = n => iso(new Date(today.getTime() - n*864e5));
+  const at = n => new Date(today.getTime() - n*864e5 + 36e5).toISOString();
+  const b = {id:"seed-bean", name:"Guji Halo Berti", roaster:"Northbound Roasters",
+             roasted:back(11), level:"medium", pinned:null};
+  const s = (n,grind,dose,yld,time,taste,rating,note) =>
+    ({id:"seed-"+n, beanId:b.id, at:at(n), grind, dose, yield:yld, time, temp:93, taste, rating, note});
+  return {
+    sample:true,
+    settings:{grinder:"Niche Zero", stepSize:0.5, finer:"lower", style:"classic", theme:null},
+    activeBean:b.id,
+    beans:[b],
+    shots:[
+      s(3, 5.2, 18.0, 38.4, 17, "under", 2, "Gusher. Watery, tastes like tea."),
+      s(2, 4.6, 18.0, 37.5, 20, "under", 2, "Still runs thin, sharp finish."),
+      s(1, 4.1, 18.1, 36.9, 23, "under", 3, "Sweeter now. Front end still puckers."),
+      s(0, 3.9, 18.0, 36.4, 24, "under", 3, "Close. Cherry showing up, finish is short.")
+    ]
+  };
+}
+function load(){
+  try { const raw = localStorage.getItem(KEY); if(raw){ const p = JSON.parse(raw); if(p && p.beans) return p; } }
+  catch(e){ /* private mode or blocked storage — run from seed */ }
+  return seed();
+}
+function save(){
+  S.sample = false;
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){ /* nothing to do; state stays in memory */ }
+}
+let S = load();
+let draft = {taste:"", rating:0};
+
+/* ---------- helpers ---------- */
+const bean = id => S.beans.find(b => b.id === id) || null;
+const activeBean = () => bean(S.activeBean) || S.beans[0] || null;
+const shotsFor = id => S.shots.filter(s => s.beanId === id).sort((a,b) => new Date(a.at) - new Date(b.at));
+const lastShot = id => { const l = shotsFor(id); return l[l.length-1] || null; };
+const ratioOf = s => s.yield / s.dose;
+const flowOf = s => s.yield / s.time;
+const tasteColor = t => t === "under" ? "var(--under)" : t === "over" ? "var(--over)" : t === "balanced" ? "var(--dialed)" : "var(--ink-3)";
+
+/* ---------- the coach ---------- */
+function coachFor(shot, b){
+  const st = STYLES[S.settings.style];
+  const [tLo,tHi] = st.time, [rLo,rHi] = st.ratio;
+  const ratio = ratioOf(shot), flow = flowOf(shot);
+  const fast = shot.time < tLo, slow = shot.time > tHi;
+  const dev = fast ? tLo - shot.time : slow ? shot.time - tHi : 0;
+  const mag = d => d >= 10 ? 3 : d >= 5 ? 2 : d >= 2 ? 1 : 0.5;
+  const taste = shot.taste || "";
+  const out = {status:"dialed", chip:"", head:"", detail:"", reasons:[], also:[]};
+
+  const stepText = n => n === 0.5 ? "half a step" : n === 1 ? "one step" : n + " steps";
+  const moveTo = (dirFiner, steps) => {
+    const sign = (S.settings.finer === "lower" ? -1 : 1) * (dirFiner ? 1 : -1);
+    return r1(shot.grind + sign * steps * (S.settings.stepSize || 0.5));
+  };
+
+  if(slow && taste === "under"){
+    out.status = "mixed"; out.chip = "Check the puck";
+    out.head = "Hold the grind."; out.detail = "Slow <em>and</em> sour is the channeling signature, not a grind problem.";
+    out.reasons.push({t:`${shot.time}s is past the ${tLo}–${tHi}s window, yet it still tastes sour — water found a crack instead of soaking the bed.`, warn:true});
+    out.also.push("<b>Redistribute before tamping</b> — WDT stir, level, then tamp square.");
+    if(shot.temp) out.also.push(`<b>Raise the temp to ${r1(shot.temp+1)} °C</b> once the puck prep is clean.`);
+  } else if(fast && taste === "over"){
+    out.status = "mixed"; out.chip = "Check the puck";
+    out.head = "Hold the grind."; out.detail = "Fast <em>and</em> bitter usually means a jet is scorching through one spot.";
+    out.reasons.push({t:`${shot.time}s with a bitter finish points at an uneven bed, not a coarse grind.`, warn:true});
+    out.also.push("<b>Redistribute before tamping</b> — WDT stir, level, then tamp square.");
+  } else if(slow || (!fast && taste === "over")){
+    const steps = slow ? (taste === "over" ? Math.max(mag(dev),1) : mag(dev)) : 0.5;
+    out.status = "over"; out.chip = "Over-extracted";
+    out.head = `Grind coarser — ${stepText(steps)}.`;
+    out.detail = `<span class="num">${r1(shot.grind)} → ${moveTo(false, steps)}</span>`;
+    if(slow) out.reasons.push({t:`${shot.time}s is ${secs(dev)}s past the ${tLo}–${tHi}s window for a ${st.label.toLowerCase()} shot.`});
+    if(taste === "over") out.reasons.push({t:"Bitter and drying means the water pulled too much out of the bed."});
+    if(!slow && shot.temp) out.also.push(`<b>Or drop the temp to ${r1(shot.temp-1)} °C</b> and leave the grinder alone — same effect, finer control.`);
+  } else if(fast || (!slow && taste === "under")){
+    const steps = fast ? (taste === "under" ? Math.max(mag(dev),1) : mag(dev)) : 0.5;
+    out.status = "under"; out.chip = "Under-extracted";
+    out.head = `Grind finer — ${stepText(steps)}.`;
+    out.detail = `<span class="num">${r1(shot.grind)} → ${moveTo(true, steps)}</span>`;
+    if(fast) out.reasons.push({t:`${shot.time}s is ${secs(dev)}s short of the ${tLo}–${tHi}s window for a ${st.label.toLowerCase()} shot.`});
+    if(taste === "under") out.reasons.push({t:"Sour and thin means the shot came off the bed before the sugars did."});
+    if(!fast && shot.temp) out.also.push(`<b>Or raise the temp to ${r1(shot.temp+1)} °C</b> and leave the grinder alone — same effect, finer control.`);
+  } else {
+    out.status = "dialed"; out.chip = "In the window";
+    out.head = "Hold everything.";
+    out.detail = `<span class="num">${r1(shot.grind)}</span> is the number for this bag.`;
+    out.reasons.push({t:`${shot.time}s at 1:${r2(ratio)} sits inside the ${tLo}–${tHi}s window` + (taste ? " and tastes balanced." : ".")});
+    out.also.push("<b>Keep it as the reference recipe</b> so tomorrow starts here instead of at zero.");
+  }
+
+  if(ratio < rLo || ratio > rHi){
+    const target = shot.dose * (rLo + rHi) / 2;
+    out.also.push(`<b>Pull to ${r1(target)} g out</b> instead of ${r1(shot.yield)} g — that is 1:${r2((rLo+rHi)/2)}, the ${st.label.toLowerCase()} band.`);
+  }
+  if(flow > 2.2) out.reasons.push({t:`Flow hit ${r2(flow)} g/s. Anything past ~2.2 g/s is usually a channel, not a fast shot.`, warn:true});
+
+  const age = b ? daysSince(b.roasted) : null;
+  if(age !== null && age <= 4) out.reasons.push({t:`Only ${age} day${age===1?"":"s"} off roast — CO₂ is still pushing water through. Expect to keep chasing it for a few days.`, warn:true});
+  else if(age !== null && age >= 28) out.reasons.push({t:`${age} days off roast. Past its best; flat and papery is the bean, not your grind.`, warn:true});
+
+  const prior = shotsFor(shot.beanId).filter(s => s.id !== shot.id).pop();
+  if(prior && Math.abs(prior.dose - shot.dose) > 0.4)
+    out.reasons.push({t:`Dose moved ${r1(Math.abs(shot.dose - prior.dose))} g from last shot (${r1(prior.dose)} → ${r1(shot.dose)}). Change one thing at a time or the grind reading means nothing.`, warn:true});
+  return out;
+}
+
+/* ---------- render: coach ---------- */
+function renderCoach(){
+  const b = activeBean(), shot = b ? lastShot(b.id) : null;
+  const box = $("#coachBody"), panel = $("#coach"), basis = $("#coachBasis");
+  if(!shot){
+    panel.dataset.status = "";
+    basis.textContent = "";
+    box.innerHTML = `<p class="empty">Log a shot and the next move shows up here — how far to turn the grinder, in your grinder's own numbers.</p>`;
+    return;
+  }
+  const c = coachFor(shot, b);
+  panel.dataset.status = c.status;
+  basis.textContent = "from your last shot";
+  const chipClass = c.status === "mixed" ? "accent" : c.status;
+  box.innerHTML = `
+    <div class="verdict">
+      <span class="chip ${chipClass}">${c.chip}</span>
+      <span class="chip neutral">${r1(shot.dose)} → ${r1(shot.yield)} g · ${shot.time}s · 1:${r2(ratioOf(shot))}</span>
+    </div>
+    <p class="move">${c.head} ${c.detail}</p>
+    <ul class="because">${c.reasons.map(r => `<li class="${r.warn?"warn":""}">${r.t}</li>`).join("")}</ul>
+    ${c.also.length ? `<div class="also">${c.also.map(a => `<div>${a}</div>`).join("")}</div>` : ""}
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-sm" id="applyBtn">Load this into the form</button>
+      ${b.pinned === shot.id ? "" : `<button class="btn btn-sm" id="pinBtn">Keep as reference recipe</button>`}
+    </div>`;
+  const apply = $("#applyBtn");
+  if(apply) apply.onclick = () => {
+    const m = /(-?\d+(?:\.\d+)?)\s*→\s*(-?\d+(?:\.\d+)?)/.exec(c.detail);
+    fillForm(shot, m ? parseFloat(m[2]) : shot.grind);
+    $("#grind").focus();
+  };
+  const pin = $("#pinBtn");
+  if(pin) pin.onclick = () => { b.pinned = shot.id; save(); render(); };
+}
+
+/* ---------- render: trace ---------- */
+function renderTrace(){
+  const svg = $("#trace"), b = activeBean();
+  const data = b ? shotsFor(b.id) : [];
+  const st = STYLES[S.settings.style], [tLo,tHi] = st.time;
+  const W = 660, H = 250, L = 46, R = 18, T = 18, B = 34;
+  const x0 = L, x1 = W - R, y0 = T, y1 = H - B;
+  $("#traceHint").textContent = b ? `${b.name} · ${data.length} shot${data.length===1?"":"s"}` : "";
+  if(!data.length){
+    svg.innerHTML = `<desc id="traceDesc">No shots logged for this bean yet.</desc>
+      <text x="${W/2}" y="${H/2}" text-anchor="middle" fill="var(--ink-3)" font-family="var(--mono)" font-size="13">Log a shot to start the trace</text>`;
+    return;
+  }
+  const times = data.map(s => s.time);
+  const lo = Math.min(tLo, ...times) - 4, hi = Math.max(tHi, ...times) + 4;
+  const Y = t => y1 - (t - lo) / (hi - lo) * (y1 - y0);
+  const X = i => data.length === 1 ? (x0 + x1) / 2 : x0 + i * (x1 - x0) / (data.length - 1);
+
+  const step = (hi - lo) > 40 ? 10 : 5;
+  const ticks = [];
+  for(let t = Math.ceil(lo / step) * step; t <= hi; t += step) ticks.push(t);
+
+  const parts = [];
+  parts.push(`<desc id="traceDesc">Extraction time of the last ${data.length} shots against the ${tLo} to ${tHi} second target window.</desc>`);
+  parts.push(`<rect x="${x0}" y="${Y(tHi)}" width="${x1-x0}" height="${Y(tLo)-Y(tHi)}" fill="var(--band)"></rect>`);
+  parts.push(`<text x="${x1-4}" y="${Y(tHi)-6}" text-anchor="end" fill="var(--ink-3)" font-family="var(--mono)" font-size="10" letter-spacing="0.08em">TARGET ${tLo}–${tHi}s</text>`);
+  ticks.forEach(t => {
+    parts.push(`<line x1="${x0}" y1="${Y(t)}" x2="${x1}" y2="${Y(t)}" stroke="var(--rule)" stroke-width="1"></line>`);
+    parts.push(`<text x="${x0-9}" y="${Y(t)+4}" text-anchor="end" fill="var(--ink-3)" font-family="var(--mono)" font-size="11">${t}s</text>`);
+  });
+  parts.push(`<line x1="${x0}" y1="${y1}" x2="${x1}" y2="${y1}" stroke="var(--rule-2)" stroke-width="1"></line>`);
+  if(data.length > 1)
+    parts.push(`<polyline points="${data.map((s,i) => X(i)+","+Y(s.time)).join(" ")}" fill="none" stroke="var(--ink-3)" stroke-width="2" stroke-opacity="0.45" stroke-linejoin="round" stroke-linecap="round"></polyline>`);
+  const every = Math.ceil(data.length / 6);
+  data.forEach((s,i) => {
+    const last = i === data.length - 1;
+    if(last) parts.push(`<circle cx="${X(i)}" cy="${Y(s.time)}" r="10" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-opacity="0.55"></circle>`);
+    parts.push(`<circle cx="${X(i)}" cy="${Y(s.time)}" r="${last?6.5:5.5}" fill="${tasteColor(s.taste)}" stroke="var(--surface)" stroke-width="2"></circle>`);
+    if(last || i === 0 || i % every === 0){
+      const d = new Date(s.at);
+      parts.push(`<text x="${X(i)}" y="${y1+17}" text-anchor="middle" fill="var(--ink-3)" font-family="var(--mono)" font-size="10.5">${d.toLocaleDateString(undefined,{month:"short",day:"numeric"})}</text>`);
+    }
+    parts.push(`<text x="${X(i)}" y="${y1+29}" text-anchor="middle" fill="var(--ink-3)" font-family="var(--mono)" font-size="10" opacity="0.8">${r1(s.grind)}</text>`);
+  });
+  parts.push(`<text x="${x0}" y="${y0-4}" fill="var(--ink-3)" font-family="var(--mono)" font-size="10" letter-spacing="0.09em">SHOT TIME · GRIND SETTING BELOW</text>`);
+  parts.push(`<rect id="hitbox" x="${x0}" y="${y0}" width="${x1-x0}" height="${y1-y0}" fill="transparent" style="cursor:crosshair"></rect>`);
+  svg.innerHTML = parts.join("");
+
+  const tip = $("#tip"), hit = svg.querySelector("#hitbox");
+  const place = e => {
+    const rect = svg.getBoundingClientRect();
+    const vx = (e.clientX - rect.left) / rect.width * W;
+    let best = 0, bd = Infinity;
+    data.forEach((s,i) => { const d = Math.abs(X(i) - vx); if(d < bd){ bd = d; best = i; } });
+    const s = data[best], d = new Date(s.at);
+    tip.innerHTML = `${d.toLocaleDateString(undefined,{month:"short",day:"numeric"})} · grind ${r1(s.grind)}<br>`
+      + `${r1(s.dose)} → ${r1(s.yield)} g in ${s.time}s · 1:${r2(ratioOf(s))}<br>`
+      + `${s.taste ? TASTE_LABEL[s.taste] : "no taste noted"}${s.rating ? " · " + s.rating + "/5" : ""}`;
+    tip.style.left = (X(best) / W * rect.width) + "px";
+    tip.style.top = (Y(s.time) / H * rect.height) + "px";
+    tip.classList.add("on");
+  };
+  hit.addEventListener("pointermove", place);
+  hit.addEventListener("pointerdown", place);
+  hit.addEventListener("pointerleave", () => tip.classList.remove("on"));
+}
+
+/* ---------- render: history ---------- */
+function renderHistory(){
+  const body = $("#histBody");
+  const rows = S.shots.slice().sort((a,b) => new Date(b.at) - new Date(a.at));
+  $("#histHint").textContent = rows.length ? `${rows.length} shot${rows.length===1?"":"s"} across ${S.beans.length} bean${S.beans.length===1?"":"s"}` : "";
+  $("#histEmpty").hidden = rows.length > 0;
+  body.innerHTML = rows.map(s => {
+    const b = bean(s.beanId);
+    const pinned = b && b.pinned === s.id;
+    const d = new Date(s.at);
+    return `<tr class="${pinned?"pinned":""}">
+      <td class="num">${d.toLocaleDateString(undefined,{month:"short",day:"numeric"})}</td>
+      <td>${b ? b.name : "—"}</td>
+      <td class="num right">${r1(s.grind)}</td>
+      <td class="num right">${r1(s.dose)} → ${r1(s.yield)}</td>
+      <td class="num right">1:${r2(ratioOf(s))}</td>
+      <td class="num right">${s.time}s</td>
+      <td class="num right">${r2(flowOf(s))}</td>
+      <td><span class="chip ${s.taste === "balanced" ? "dialed" : (s.taste || "neutral")}">${s.taste ? TASTE_LABEL[s.taste] : "—"}</span></td>
+      <td class="num right">${s.rating ? s.rating + "/5" : "—"}</td>
+      <td class="right"><button class="icon-btn ${pinned?"on":""}" data-pin="${s.id}" title="${pinned?"Reference recipe":"Keep as reference recipe"}" aria-label="Keep as reference recipe">${starSvg(pinned)}</button></td>
+      <td class="right"><button class="icon-btn" data-del="${s.id}" title="Delete shot" aria-label="Delete shot"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 4h10M6.5 4V2.6h3V4M4.4 4l.6 9h6l.6-9"/></svg></button></td>
+    </tr>`;
+  }).join("");
+  body.querySelectorAll("[data-pin]").forEach(btn => btn.onclick = () => {
+    const s = S.shots.find(x => x.id === btn.dataset.pin), b = bean(s.beanId);
+    b.pinned = b.pinned === s.id ? null : s.id; save(); render();
+  });
+  body.querySelectorAll("[data-del]").forEach(btn => btn.onclick = () => {
+    const id = btn.dataset.del;
+    S.beans.forEach(b => { if(b.pinned === id) b.pinned = null; });
+    S.shots = S.shots.filter(x => x.id !== id); save(); render();
+  });
+}
+function starSvg(on){
+  return `<svg viewBox="0 0 20 20" fill="${on?"currentColor":"none"}" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M10 2.6l2.3 4.8 5.2.7-3.8 3.7.9 5.2-4.6-2.5-4.6 2.5.9-5.2L2.5 8.1l5.2-.7z"/></svg>`;
+}
+
+/* ---------- render: shelf ---------- */
+function restState(b){
+  const age = daysSince(b.roasted);
+  if(age === null) return {age:null, label:"no roast date", color:"var(--ink-3)", pct:0, lo:0, hi:0};
+  const [lo,hi] = REST[b.level] || REST.medium;
+  const label = age < lo ? "still degassing" : age <= hi ? "prime window" : "past its best";
+  const color = age < lo ? "var(--under)" : age <= hi ? "var(--dialed)" : "var(--over)";
+  const span = Math.max(hi + 10, age + 2);
+  return {age, label, color, pct: Math.min(100, age/span*100), lo: lo/span*100, hi: Math.min(100, hi/span*100)};
+}
+function renderShelf(){
+  const shelf = $("#shelf");
+  if(!S.beans.length){
+    shelf.innerHTML = `<p class="empty">No beans on the shelf. Add the bag you are pulling from below.</p>`;
+    return;
+  }
+  shelf.innerHTML = S.beans.map(b => {
+    const rs = restState(b), pin = b.pinned ? S.shots.find(s => s.id === b.pinned) : null;
+    const n = shotsFor(b.id).length;
+    return `<article class="bean ${b.id === S.activeBean ? "active" : ""}">
+      <div>
+        <h3>${b.name}</h3>
+        <p class="roaster">${b.roaster || "—"} · ${b.level} roast · ${n} shot${n===1?"":"s"}</p>
+      </div>
+      <div class="rest">
+        <div class="rest-bar" style="background:linear-gradient(90deg,var(--rule) 0 ${rs.lo}%,var(--band) ${rs.lo}% ${rs.hi}%,var(--rule) ${rs.hi}% 100%)">
+          ${rs.age === null ? "" : `<i style="left:${rs.pct}%;right:auto;width:3px;background:${rs.color};border-radius:2px"></i>`}
+        </div>
+        <div class="rest-note"><span>${rs.age === null ? "No roast date" : rs.age + " days off roast"}</span><span style="color:${rs.color}">${rs.label}</span></div>
+      </div>
+      ${pin ? `<div class="recipe">${r1(pin.grind)} · ${r1(pin.dose)} → ${r1(pin.yield)} g · ${pin.time}s</div>` : ""}
+      <div class="bean-actions">
+        ${b.id === S.activeBean ? "" : `<button class="btn btn-sm" data-use="${b.id}">Pull this</button>`}
+        ${pin ? `<button class="btn btn-sm" data-recipe="${pin.id}">Load recipe</button>` : ""}
+        <button class="btn btn-sm" data-drop="${b.id}" style="margin-left:auto">Remove</button>
+      </div>
+    </article>`;
+  }).join("");
+  shelf.querySelectorAll("[data-use]").forEach(btn => btn.onclick = () => { S.activeBean = btn.dataset.use; save(); render(); });
+  shelf.querySelectorAll("[data-recipe]").forEach(btn => btn.onclick = () => {
+    const s = S.shots.find(x => x.id === btn.dataset.recipe);
+    S.activeBean = s.beanId; fillForm(s, s.grind); save(); render();
+  });
+  shelf.querySelectorAll("[data-drop]").forEach(btn => btn.onclick = () => {
+    const id = btn.dataset.drop, b = bean(id), n = shotsFor(id).length;
+    if(n && !confirm(`Remove ${b.name} and its ${n} shot${n===1?"":"s"}?`)) return;
+    S.beans = S.beans.filter(x => x.id !== id);
+    S.shots = S.shots.filter(s => s.beanId !== id);
+    if(S.activeBean === id) S.activeBean = S.beans.length ? S.beans[0].id : null;
+    save(); render();
+  });
+}
+
+/* ---------- form ---------- */
+function fillForm(s, grind){
+  $("#grind").value = grind !== undefined ? grind : s.grind;
+  $("#dose").value = r1(s.dose);
+  $("#yield").value = r1(s.yield);
+  $("#time").value = s.time;
+  $("#temp").value = s.temp || "";
+  $("#note").value = "";
+  draft = {taste:"", rating:0};
+  syncSeg(); renderReadout();
+}
+function syncSeg(){
+  $("#tasteSeg").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.taste === draft.taste)));
+  $("#stars").querySelectorAll("button").forEach((b,i) => b.classList.toggle("on", i < draft.rating));
+  $("#styleSeg").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.style === S.settings.style)));
+}
+function renderReadout(){
+  const dose = num($("#dose").value), yld = num($("#yield").value), time = num($("#time").value);
+  const st = STYLES[S.settings.style], [tLo,tHi] = st.time;
+  const ratio = dose && yld ? yld/dose : null;
+  const flow = yld && time ? yld/time : null;
+  const inBand = time ? (time >= tLo && time <= tHi) : null;
+  const col = inBand === null ? "var(--ink)" : inBand ? "var(--dialed)" : time < tLo ? "var(--under)" : "var(--over)";
+  $("#liveReadout").innerHTML = `
+    <div><dt>Ratio</dt><dd>${ratio ? "1:" + r2(ratio) : "—"}</dd></div>
+    <div><dt>Flow</dt><dd>${flow ? r2(flow) + `<span style="font-size:11px;color:var(--ink-3)"> g/s</span>` : "—"}</dd></div>
+    <div><dt>Vs ${tLo}–${tHi}s</dt><dd style="color:${col}">${time ? time + "s" : "—"}</dd></div>`;
+}
+function logShot(){
+  const b = activeBean();
+  const msg = $("#saveMsg");
+  if(!b){ msg.style.color = "var(--over)"; msg.textContent = "Add a bean first."; return; }
+  const grind = num($("#grind").value), dose = num($("#dose").value), yld = num($("#yield").value), time = num($("#time").value);
+  if(grind === null || !dose || !yld || !time){
+    msg.style.color = "var(--over)";
+    msg.textContent = "Needs grind, dose, yield and time.";
+    return;
+  }
+  S.shots.push({id:uid(), beanId:b.id, at:new Date().toISOString(), grind, dose, yield:yld, time,
+                temp:num($("#temp").value), taste:draft.taste, rating:draft.rating, note:$("#note").value.trim()});
+  $("#note").value = "";
+  draft = {taste:"", rating:0};
+  save(); render();
+  msg.style.color = "var(--dialed)";
+  msg.textContent = "Logged.";
+  setTimeout(() => { msg.textContent = ""; }, 2600);
+}
+
+/* ---------- settings & backup ---------- */
+function renderSettings(){
+  $("#grinderName").textContent = S.settings.grinder || "grinder";
+  $("#grinderName2").value = S.settings.grinder || "";
+  $("#stepSize").value = S.settings.stepSize;
+  $("#stepDir").value = S.settings.finer;
+  $("#backup").value = JSON.stringify(S);
+}
+function renderBeanPick(){
+  const sel = $("#beanPick");
+  sel.innerHTML = S.beans.map(b => `<option value="${b.id}" ${b.id === S.activeBean ? "selected" : ""}>${b.name}</option>`).join("")
+    || `<option value="">No beans yet</option>`;
+}
+function renderNotice(){
+  const box = $("#sampleNotice");
+  box.innerHTML = S.sample
+    ? `<div class="notice"><b>Sample data.</b> One bag, four shots, mid dial-in — so you can see what the coach does. Your first entry replaces it.
+       <button class="btn btn-sm" id="clearSample">Start empty</button></div>` : "";
+  const btn = $("#clearSample");
+  if(btn) btn.onclick = () => { S = {sample:false, settings:S.settings, activeBean:null, beans:[], shots:[]}; save(); render(); };
+}
+function render(){
+  renderNotice(); renderBeanPick(); renderCoach(); renderTrace();
+  renderHistory(); renderShelf(); renderSettings(); syncSeg(); renderReadout();
+}
+
+/* ---------- wiring ---------- */
+$("#stars").innerHTML = [1,2,3,4,5].map(n => `<button type="button" data-star="${n}" aria-label="${n} out of 5">${starSvg(true)}</button>`).join("");
+$("#stars").querySelectorAll("button").forEach(b => b.onclick = () => {
+  const n = +b.dataset.star;
+  draft.rating = draft.rating === n ? 0 : n;
+  syncSeg();
+});
+$("#tasteSeg").querySelectorAll("button").forEach(b => b.onclick = () => {
+  draft.taste = draft.taste === b.dataset.taste ? "" : b.dataset.taste;
+  syncSeg();
+});
+$("#styleSeg").querySelectorAll("button").forEach(b => b.onclick = () => {
+  S.settings.style = b.dataset.style; save(); render();
+});
+["#dose","#yield","#time"].forEach(sel => $(sel).addEventListener("input", renderReadout));
+$("#logBtn").onclick = logShot;
+$("#repeatBtn").onclick = () => {
+  const b = activeBean(), s = b ? lastShot(b.id) : null;
+  if(s) fillForm(s, s.grind); else $("#saveMsg").textContent = "No earlier shot for this bean.";
+};
+$("#beanPick").onchange = e => { S.activeBean = e.target.value; save(); render(); };
+$("#beanForm").onsubmit = e => {
+  e.preventDefault();
+  const b = {id:uid(), name:$("#bName").value.trim(), roaster:$("#bRoaster").value.trim(),
+             roasted:$("#bDate").value || null, level:$("#bLevel").value, pinned:null};
+  if(!b.name) return;
+  S.beans.push(b); S.activeBean = b.id;
+  e.target.reset(); save(); render();
+};
+$("#grinderName2").oninput = e => { S.settings.grinder = e.target.value; $("#grinderName").textContent = e.target.value || "grinder"; save(); };
+$("#stepSize").oninput = e => { S.settings.stepSize = num(e.target.value) || 0.5; save(); renderCoach(); };
+$("#stepDir").onchange = e => { S.settings.finer = e.target.value; save(); renderCoach(); };
+$("#copyBtn").onclick = async () => {
+  const ta = $("#backup");
+  ta.select();
+  try { await navigator.clipboard.writeText(ta.value); toolsMsg("Copied to the clipboard."); }
+  catch(e){ toolsMsg("Selected — press Ctrl/Cmd+C to copy."); }
+};
+$("#restoreBtn").onclick = () => {
+  try {
+    const p = JSON.parse($("#backup").value);
+    if(!p || !Array.isArray(p.beans) || !Array.isArray(p.shots)) throw new Error("shape");
+    S = p; save(); render(); toolsMsg("Restored " + p.shots.length + " shots.");
+  } catch(e){ toolsMsg("That text is not a Nine Bar backup — paste the whole block."); }
+};
+$("#wipeBtn").onclick = () => {
+  if(!confirm("Erase every bean and shot stored in this browser?")) return;
+  S = {sample:false, settings:S.settings, activeBean:null, beans:[], shots:[]};
+  save(); render(); toolsMsg("Erased.");
+};
+function toolsMsg(t){ const m = $("#toolsMsg"); m.textContent = t; setTimeout(() => { m.textContent = ""; }, 3200); }
+$("#themeBtn").onclick = () => {
+  const order = [null, "light", "dark"];
+  const next = order[(order.indexOf(S.settings.theme || null) + 1) % 3];
+  S.settings.theme = next;
+  applyTheme(); save();
+};
+function applyTheme(){
+  const t = S.settings.theme;
+  if(t) document.documentElement.setAttribute("data-theme", t);
+  else document.documentElement.removeAttribute("data-theme");
+  $("#themeBtn").textContent = t ? (t === "dark" ? "Dark" : "Light") : "Auto";
+}
+window.addEventListener("resize", renderTrace);
+
+/* ---------- go ---------- */
+applyTheme();
+const seedShot = activeBean() ? lastShot(activeBean().id) : null;
+if(seedShot) fillForm(seedShot, seedShot.grind);
+render();
+</script>
+</body>
+</html>
