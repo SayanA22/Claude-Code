@@ -1,0 +1,1188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Net Thirty</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --paper:#eff3ee; --card:#fbfcfa; --sunk:#e6ebe4; --rule:#d4ddd2; --rule-soft:#e2e8e0;
+  --ink:#141a15; --ink-2:#4c574d; --ink-3:#78847a;
+  --accent:#23456b; --accent-2:#3a6796; --accent-soft:#dce6f0;
+  --good:#186c4c; --good-soft:#dbece3;
+  --warn:#8a5f10; --warn-soft:#f1e7d2;
+  --bad:#a02e2a; --bad-soft:#f2dedb;
+  --ghost:#c2cdc1;
+  --shadow:0 1px 1px rgba(20,26,21,.05), 0 10px 26px -20px rgba(20,26,21,.55);
+  --r:3px;
+  --sans:"IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --slab:"Zilla Slab", Georgia, "Times New Roman", serif;
+  --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --paper:#101410; --card:#181d18; --sunk:#1e241e; --rule:#2d342c; --rule-soft:#242b24;
+    --ink:#e9efe7; --ink-2:#a4afa3; --ink-3:#78837a;
+    --accent:#82aede; --accent-2:#a2c5ea; --accent-soft:#1b2a39;
+    --good:#4cbd8c; --good-soft:#152720;
+    --warn:#d8a53d; --warn-soft:#2a2213;
+    --bad:#e97a72; --bad-soft:#2d1917;
+    --ghost:#3b453b;
+    --shadow:0 1px 1px rgba(0,0,0,.4), 0 10px 26px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --paper:#101410; --card:#181d18; --sunk:#1e241e; --rule:#2d342c; --rule-soft:#242b24;
+  --ink:#e9efe7; --ink-2:#a4afa3; --ink-3:#78837a;
+  --accent:#82aede; --accent-2:#a2c5ea; --accent-soft:#1b2a39;
+  --good:#4cbd8c; --good-soft:#152720;
+  --warn:#d8a53d; --warn-soft:#2a2213;
+  --bad:#e97a72; --bad-soft:#2d1917;
+  --ghost:#3b453b;
+  --shadow:0 1px 1px rgba(0,0,0,.4), 0 10px 26px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--sans); font-size:15px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.page{max-width:1080px; margin:0 auto; padding:0 20px 72px}
+h1,h2,h3{font-family:var(--slab); font-weight:600; text-wrap:balance; margin:0}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:2px}
+.num{font-family:var(--mono); font-variant-numeric:tabular-nums}
+.lbl{font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3); font-weight:600}
+
+/* ---------- masthead ---------- */
+.mast{
+  border-bottom:1px solid var(--rule); background:var(--card);
+  position:sticky; top:0; z-index:20;
+}
+.mast-in{max-width:1080px; margin:0 auto; padding:12px 20px; display:flex; flex-wrap:wrap; gap:16px; align-items:center}
+.wordmark{display:flex; align-items:baseline; gap:9px; margin-right:auto}
+.wordmark b{font-family:var(--slab); font-size:21px; font-weight:700; letter-spacing:-.01em}
+.wordmark span{font-size:11.5px; color:var(--ink-3); letter-spacing:.02em}
+.views{display:flex; gap:2px; background:var(--sunk); padding:2px; border-radius:var(--r)}
+.views button{
+  font:inherit; font-size:13px; font-weight:500; border:0; background:none; color:var(--ink-2);
+  padding:5px 11px; border-radius:2px; cursor:pointer;
+}
+.views button[aria-current="true"]{background:var(--card); color:var(--ink); box-shadow:var(--shadow)}
+.mast select, .mast input{
+  font:inherit; font-size:13px; padding:5px 7px; border:1px solid var(--rule);
+  background:var(--card); color:var(--ink); border-radius:var(--r);
+}
+.floor-set{display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-2)}
+.floor-set input{width:64px; font-family:var(--mono)}
+
+/* ---------- sample banner ---------- */
+.sample{
+  display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+  margin:16px 0 0; padding:9px 13px; border:1px dashed var(--rule);
+  background:var(--sunk); border-radius:var(--r); font-size:13px; color:var(--ink-2);
+}
+.sample b{color:var(--ink); font-weight:600}
+.linkish{font:inherit; font-size:13px; border:0; background:none; color:var(--accent); cursor:pointer; padding:0; text-decoration:underline; text-underline-offset:2px}
+
+/* ---------- headline block ---------- */
+.headline{padding:34px 0 26px; border-bottom:1px solid var(--rule)}
+.headline .lbl{display:block; margin-bottom:10px}
+.verdict{font-family:var(--slab); font-size:clamp(25px,3.6vw,37px); line-height:1.16; font-weight:600; letter-spacing:-.015em; max-width:22ch}
+.verdict em{font-style:normal; color:var(--bad)}
+.verdict.ok em{color:var(--good)}
+.verdict-sub{margin-top:12px; color:var(--ink-2); max-width:62ch; font-size:15px}
+
+.strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(158px,1fr)); gap:0; margin-top:26px; border-top:1px solid var(--rule-soft)}
+.stat{padding:15px 18px 15px 0; border-right:1px solid var(--rule-soft)}
+.stat:last-child{border-right:0}
+.stat .v{font-family:var(--mono); font-size:23px; font-weight:500; letter-spacing:-.02em; display:block; margin:5px 0 3px}
+.stat .n{font-size:12.5px; color:var(--ink-3); line-height:1.35}
+.v.bad{color:var(--bad)} .v.good{color:var(--good)} .v.warn{color:var(--warn)}
+
+/* ---------- sections ---------- */
+section{padding:30px 0; border-bottom:1px solid var(--rule)}
+section:last-of-type{border-bottom:0}
+.sec-head{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:4px}
+.sec-head h2{font-size:19px}
+.sec-note{font-size:13px; color:var(--ink-3); max-width:60ch}
+
+/* ---------- charts ---------- */
+.chart{margin-top:20px; position:relative}
+.chart svg{display:block; width:100%; height:auto; overflow:visible}
+.tip{
+  position:absolute; pointer-events:none; opacity:0; transform:translate(-50%,-100%);
+  background:var(--card); border:1px solid var(--rule); box-shadow:var(--shadow);
+  border-radius:var(--r); padding:8px 10px; font-size:12.5px; min-width:150px; z-index:5;
+  transition:opacity .09s linear;
+}
+.tip b{display:block; font-family:var(--slab); font-size:13.5px; margin-bottom:4px}
+.tip .row{display:flex; justify-content:space-between; gap:14px; color:var(--ink-2)}
+.tip .row span:last-child{font-family:var(--mono); color:var(--ink)}
+.legend{display:flex; flex-wrap:wrap; gap:16px; margin-top:14px; font-size:12.5px; color:var(--ink-2)}
+.legend i{display:inline-block; width:11px; height:11px; border-radius:2px; margin-right:6px; vertical-align:-1px}
+
+/* ---------- client cards ---------- */
+.clients{display:flex; flex-direction:column; gap:0; margin-top:22px}
+.cc{padding:20px 0; border-top:1px solid var(--rule-soft); display:grid; grid-template-columns:minmax(0,1fr) 260px; gap:26px}
+.cc:first-child{border-top:0}
+@media (max-width:760px){ .cc{grid-template-columns:1fr; gap:16px} }
+.cc-name{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+.cc-name h3{font-size:17px}
+.pill{
+  font-size:11px; font-weight:600; letter-spacing:.05em; text-transform:uppercase;
+  padding:2px 7px; border-radius:2px; white-space:nowrap;
+}
+.pill.bad{background:var(--bad-soft); color:var(--bad)}
+.pill.warn{background:var(--warn-soft); color:var(--warn)}
+.pill.good{background:var(--good-soft); color:var(--good)}
+.pill.flat{background:var(--sunk); color:var(--ink-2)}
+.move{margin-top:9px; font-size:14.5px; line-height:1.5; max-width:56ch}
+.move b{font-weight:600}
+.because{margin-top:7px; font-size:13px; color:var(--ink-2); max-width:58ch}
+.flags{margin-top:10px; display:flex; flex-direction:column; gap:5px}
+.flag{font-size:12.5px; color:var(--ink-2); display:flex; gap:8px; align-items:baseline}
+.flag i{width:5px; height:5px; border-radius:50%; flex:none; transform:translateY(-2px)}
+
+.rates{display:flex; gap:22px; align-items:flex-end}
+.rate-b .k{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); font-weight:600}
+.rate-b .v{font-family:var(--mono); font-size:20px; display:block; margin-top:2px}
+.rate-b .v.sm{font-size:15px; color:var(--ink-2)}
+.leak{margin-top:14px}
+.leak-bar{display:flex; height:9px; gap:2px; margin:6px 0}
+.leak-bar span{border-radius:1px}
+.leak-key{font-size:12px; color:var(--ink-3)}
+.paylag{margin-top:12px; font-size:12.5px; color:var(--ink-2)}
+.paylag .track{height:5px; background:var(--sunk); border-radius:3px; margin:5px 0 4px; position:relative; overflow:hidden}
+.paylag .track b{position:absolute; inset:0 auto 0 0; border-radius:3px}
+.paylag .mark{position:absolute; top:-3px; width:2px; height:11px; background:var(--ink-3)}
+
+/* ---------- tables & forms ---------- */
+.tablewrap{overflow-x:auto; margin-top:16px; border:1px solid var(--rule); border-radius:var(--r); background:var(--card)}
+table{border-collapse:collapse; width:100%; font-size:13.5px; min-width:640px}
+th{
+  text-align:left; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3);
+  font-weight:600; padding:9px 12px; border-bottom:1px solid var(--rule); background:var(--sunk); white-space:nowrap;
+}
+td{padding:8px 12px; border-bottom:1px solid var(--rule-soft); vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.n, th.n{text-align:right; font-family:var(--mono); font-variant-numeric:tabular-nums}
+tbody tr:hover{background:var(--sunk)}
+.mini{
+  font:inherit; font-size:12px; padding:3px 8px; border:1px solid var(--rule); background:var(--card);
+  color:var(--ink-2); border-radius:2px; cursor:pointer;
+}
+.mini:hover{border-color:var(--accent); color:var(--accent)}
+.mini.danger:hover{border-color:var(--bad); color:var(--bad)}
+
+form.entry{
+  display:grid; gap:12px 14px; background:var(--card); border:1px solid var(--rule);
+  border-radius:var(--r); padding:16px; margin-top:18px;
+  grid-template-columns:repeat(auto-fit,minmax(132px,1fr));
+}
+form.entry .f{display:flex; flex-direction:column; gap:4px; min-width:0}
+form.entry label{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); font-weight:600}
+form.entry input, form.entry select{
+  font:inherit; font-size:13.5px; padding:6px 8px; border:1px solid var(--rule);
+  background:var(--paper); color:var(--ink); border-radius:2px; width:100%;
+}
+form.entry input[type="number"]{font-family:var(--mono)}
+form.entry .wide{grid-column:span 2}
+@media (max-width:620px){ form.entry .wide{grid-column:span 1} }
+.check{flex-direction:row !important; align-items:center; gap:8px !important; padding-top:16px}
+.check input{width:auto !important}
+.check label{text-transform:none; letter-spacing:0; font-size:13px; color:var(--ink-2); font-weight:400}
+.btn{
+  font:inherit; font-size:13.5px; font-weight:500; padding:7px 15px; border:1px solid var(--accent);
+  background:var(--accent); color:var(--card); border-radius:2px; cursor:pointer; align-self:end;
+}
+:root[data-theme="dark"] .btn, :root:not([data-theme="light"]) .btn{color:var(--paper)}
+@media (prefers-color-scheme: light){ :root:not([data-theme="dark"]) .btn{color:#fff} }
+.btn:hover{background:var(--accent-2); border-color:var(--accent-2)}
+.btn.ghost{background:none; color:var(--accent); border-color:var(--rule)}
+.btn.ghost:hover{border-color:var(--accent); background:var(--accent-soft)}
+
+.empty{padding:26px; text-align:center; color:var(--ink-3); font-size:13.5px}
+.panel{background:var(--card); border:1px solid var(--rule); border-radius:var(--r); padding:16px; margin-top:18px}
+.panel h3{font-size:15px; margin-bottom:4px}
+.panel p{margin:0 0 12px; font-size:13px; color:var(--ink-3); max-width:62ch}
+textarea{
+  font-family:var(--mono); font-size:12px; width:100%; min-height:110px; padding:9px;
+  border:1px solid var(--rule); background:var(--paper); color:var(--ink-2); border-radius:2px; resize:vertical;
+}
+.proj{margin-top:10px; padding-left:14px; border-left:2px solid var(--rule)}
+.proj-row{display:flex; gap:10px; align-items:baseline; flex-wrap:wrap; font-size:13px; padding:4px 0; color:var(--ink-2)}
+.proj-row b{color:var(--ink); font-weight:500}
+.foot{padding-top:28px; font-size:12.5px; color:var(--ink-3); max-width:66ch; line-height:1.6}
+.hide{display:none !important}
+@media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important} }
+</style>
+</head>
+<body>
+<header class="mast">
+  <div class="mast-in">
+    <div class="wordmark">
+      <b>Net Thirty</b>
+      <span>what your clients actually pay you</span>
+    </div>
+    <nav class="views" id="views" aria-label="Views">
+      <button data-view="read" aria-current="true">Read</button>
+      <button data-view="time">Time</button>
+      <button data-view="money">Invoices</button>
+      <button data-view="book">Clients</button>
+    </nav>
+    <label class="floor-set">
+      Floor rate
+      <input type="number" id="floorRate" min="0" step="5" aria-label="Your floor hourly rate">
+      /h
+    </label>
+    <select id="windowSel" aria-label="Reporting window">
+      <option value="30">Last 30 days</option>
+      <option value="90">Last 90 days</option>
+      <option value="180">Last 180 days</option>
+      <option value="3650">All time</option>
+    </select>
+  </div>
+</header>
+
+<div class="page">
+  <div class="sample hide" id="sampleBanner">
+    <span><b>Sample book.</b> Five clients, one quarter, made up. Log anything of your own and it clears.</span>
+    <button class="linkish" id="clearSample">Clear it and start empty</button>
+  </div>
+
+  <!-- ============ READ ============ -->
+  <main id="view-read">
+    <div class="headline">
+      <span class="lbl">The read</span>
+      <p class="verdict" id="bigVerdict"></p>
+      <p class="verdict-sub" id="bigSub"></p>
+      <div class="strip" id="strip"></div>
+    </div>
+
+    <section>
+      <div class="sec-head">
+        <h2>What each client really pays</h2>
+      </div>
+      <p class="sec-note">Solid bar is what you cleared per hour of your life spent on them &mdash; every hour, billable or
+        not. The hollow bar behind it is the rate on the contract.</p>
+      <div class="chart" id="rateChart"><div class="tip" id="rateTip" role="status"></div></div>
+      <div class="legend" id="rateLegend"></div>
+    </section>
+
+    <section>
+      <div class="sec-head"><h2>Client by client</h2></div>
+      <p class="sec-note">Ordered worst first. The move is the one thing to do about each before the next invoice goes out.</p>
+      <div class="clients" id="clientCards"></div>
+    </section>
+
+    <section>
+      <div class="sec-head"><h2>Money you are owed</h2></div>
+      <p class="sec-note">Everything invoiced and not yet in the bank, aged from its due date.</p>
+      <div class="chart" id="agingChart"><div class="tip" id="agingTip" role="status"></div></div>
+      <div class="legend" id="agingLegend"></div>
+      <div class="tablewrap" id="owedTable"></div>
+    </section>
+  </main>
+
+  <!-- ============ TIME ============ -->
+  <main id="view-time" class="hide">
+    <section>
+      <div class="sec-head"><h2>Log time</h2></div>
+      <p class="sec-note">Log the unbillable hours too &mdash; the status calls, the fourth round of revisions, the
+        proposal you wrote for free. Those are the hours that decide your real rate.</p>
+      <form class="entry" id="timeForm">
+        <div class="f"><label for="t-date">Date</label><input type="date" id="t-date" required></div>
+        <div class="f wide"><label for="t-proj">Client &amp; project</label><select id="t-proj" required></select></div>
+        <div class="f"><label for="t-hours">Hours</label><input type="number" id="t-hours" step="0.25" min="0.25" required placeholder="2.5"></div>
+        <div class="f"><label for="t-kind">Kind</label>
+          <select id="t-kind">
+            <option value="work">Scoped work</option>
+            <option value="revision">Revisions</option>
+            <option value="comms">Calls &amp; email</option>
+            <option value="admin">Admin &amp; proposals</option>
+          </select>
+        </div>
+        <div class="f wide"><label for="t-note">Note</label><input type="text" id="t-note" placeholder="Second round on the booking flow"></div>
+        <div class="f check"><input type="checkbox" id="t-bill" checked><label for="t-bill">Billable</label></div>
+        <button class="btn" type="submit">Log it</button>
+      </form>
+      <div class="tablewrap" id="timeTable"></div>
+    </section>
+  </main>
+
+  <!-- ============ INVOICES ============ -->
+  <main id="view-money" class="hide">
+    <section>
+      <div class="sec-head"><h2>Invoices</h2></div>
+      <p class="sec-note">Issue date and paid date are what the payment-lag read is built from. Leave paid blank until
+        the money lands.</p>
+      <form class="entry" id="invForm">
+        <div class="f wide"><label for="i-client">Client</label><select id="i-client" required></select></div>
+        <div class="f"><label for="i-num">Number</label><input type="text" id="i-num" placeholder="0142"></div>
+        <div class="f"><label for="i-amt">Amount</label><input type="number" id="i-amt" step="0.01" min="0" required placeholder="2400"></div>
+        <div class="f"><label for="i-issued">Issued</label><input type="date" id="i-issued" required></div>
+        <div class="f"><label for="i-due">Due</label><input type="date" id="i-due"></div>
+        <div class="f"><label for="i-paid">Paid</label><input type="date" id="i-paid"></div>
+        <button class="btn" type="submit">Add invoice</button>
+      </form>
+      <div class="tablewrap" id="invTable"></div>
+    </section>
+  </main>
+
+  <!-- ============ CLIENTS ============ -->
+  <main id="view-book" class="hide">
+    <section>
+      <div class="sec-head"><h2>Clients &amp; projects</h2></div>
+      <p class="sec-note">A project is either hourly or a fixed fee. A monthly retainer is a fixed fee with the hours
+        you promised &mdash; that is how the overrun becomes visible.</p>
+      <form class="entry" id="clientForm">
+        <div class="f wide"><label for="c-name">Client name</label><input type="text" id="c-name" required placeholder="Harlow &amp; Vance"></div>
+        <div class="f"><label for="c-terms">Terms (net days)</label><input type="number" id="c-terms" min="0" step="1" value="30"></div>
+        <button class="btn" type="submit">Add client</button>
+      </form>
+      <div id="bookList"></div>
+
+      <form class="entry" id="projForm">
+        <div class="f wide"><label for="p-client">Client</label><select id="p-client" required></select></div>
+        <div class="f wide"><label for="p-name">Project</label><input type="text" id="p-name" required placeholder="Brand + booking flow"></div>
+        <div class="f"><label for="p-type">Basis</label>
+          <select id="p-type"><option value="hourly">Hourly</option><option value="fixed">Fixed fee</option></select>
+        </div>
+        <div class="f"><label for="p-rate">Rate / fee</label><input type="number" id="p-rate" step="1" min="0" required placeholder="110"></div>
+        <div class="f"><label for="p-quoted">Hours quoted</label><input type="number" id="p-quoted" step="0.5" min="0" placeholder="fixed fee only"></div>
+        <button class="btn" type="submit">Add project</button>
+      </form>
+    </section>
+
+    <section>
+      <div class="sec-head"><h2>Settings</h2></div>
+      <form class="entry" id="setForm">
+        <div class="f"><label for="s-cur">Currency</label><input type="text" id="s-cur" maxlength="3"></div>
+        <div class="f"><label for="s-floor">Floor rate</label><input type="number" id="s-floor" min="0" step="5"></div>
+        <div class="f"><label for="s-terms">Default terms</label><input type="number" id="s-terms" min="0" step="1"></div>
+        <div class="f"><label for="s-cap">Billable hours / week</label><input type="number" id="s-cap" min="0" step="1"></div>
+        <button class="btn" type="submit">Save</button>
+      </form>
+      <p class="sec-note" style="margin-top:10px">Your floor rate is the number below which the work is not worth taking
+        &mdash; overheads, unpaid time and time off already priced in. Everything on the Read is measured against it.</p>
+
+      <div class="panel">
+        <h3>Backup</h3>
+        <p>Everything lives in this browser and nowhere else. Copy this out to keep it; paste it back to restore.</p>
+        <textarea id="backup" spellcheck="false" aria-label="Backup data"></textarea>
+        <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap">
+          <button class="btn ghost" id="dumpBtn" type="button">Fill with my data</button>
+          <button class="btn ghost" id="restoreBtn" type="button">Restore from the box</button>
+          <button class="btn ghost" id="resetBtn" type="button">Reset to the sample book</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <p class="foot">Net Thirty does not send anything anywhere. It reads the hours and invoices you put in and tells you
+    which clients are worth keeping, at what price, and who to chase.</p>
+</div>
+<script>
+"use strict";
+
+/* ---------------- small helpers ---------------- */
+const $ = s => document.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2, 10);
+const sum = (a, f) => a.reduce((t, x) => t + f(x), 0);
+const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+const TODAY = new Date(); TODAY.setHours(12, 0, 0, 0);
+function iso(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function ago(n) { const d = new Date(TODAY); d.setDate(d.getDate() - n); return iso(d); }
+function plus(dateStr, n) { const d = parseD(dateStr); d.setDate(d.getDate() + n); return iso(d); }
+function parseD(s) { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d, 12); }
+function daysSince(s) { return Math.round((TODAY - parseD(s)) / 864e5); }
+
+function money(n, dp) {
+  const c = state.settings.cur || '$';
+  const v = Math.abs(n).toLocaleString(undefined, { minimumFractionDigits: dp || 0, maximumFractionDigits: dp || 0 });
+  return (n < 0 ? '-' : '') + c + v;
+}
+const rateTxt = n => money(Math.round(n)) + '/h';
+const hrs = n => (Math.round(n * 10) / 10).toLocaleString(undefined, { maximumFractionDigits: 1 }) + ' h';
+const KINDS = { work: 'Scoped work', revision: 'Revisions', comms: 'Calls & email', admin: 'Admin & proposals' };
+
+/* ---------------- state ---------------- */
+const KEY = 'net-thirty.v1';
+let state = null;
+
+function blank() {
+  return {
+    v: 1, sample: false,
+    settings: { cur: '$', floor: 95, terms: 30, cap: 26, window: 90 },
+    clients: [], projects: [], entries: [], invoices: []
+  };
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* private mode */ } }
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) { const s = JSON.parse(raw); if (s && s.settings && Array.isArray(s.clients)) return s; }
+  } catch (e) { /* ignore */ }
+  return sampleBook();
+}
+
+/* ---------------- the sample book ----------------
+   One quarter of a plausible solo practice: a good client, an agency that
+   eats hours in status calls, a fixed fee that ran long, a retainer that
+   quietly doubled in scope, and a small one below rate.               */
+const BOOK = [
+  {
+    name: 'Odile Studio', terms: 14, lag: 11,
+    projects: [{
+      name: 'Retail site, phase 2', type: 'hourly', rate: 135, weeks: [0, 12],
+      pattern: [[2, 5.5, 'work', 1], [4, 4.5, 'work', 1], [5, 0.75, 'comms', 0]]
+    }]
+  },
+  {
+    name: 'Harlow & Vance', terms: 30, lag: 34, skipMonths: 1,
+    projects: [{
+      name: 'Agency overflow, Q3', type: 'hourly', rate: 110, weeks: [0, 12],
+      pattern: [[1, 3.5, 'work', 1], [3, 4, 'work', 1], [0, 1.25, 'comms', 0], [2, 1, 'comms', 0], [4, 0.75, 'admin', 0]]
+    }]
+  },
+  {
+    name: 'Portage Dental Group', terms: 30, lag: 47,
+    projects: [{
+      name: 'Brand + booking flow', type: 'fixed', fee: 6000, quotedHours: 55, weeks: [0, 10],
+      pattern: [[1, 3, 'work', 1], [3, 3.5, 'work', 1], [5, 1.5, 'revision', 1], [2, 0.75, 'comms', 0]],
+      invoices: [{ amt: 3000, issued: 76, paid: 29 }, { amt: 3000, issued: 62, paid: null }]
+    }]
+  },
+  {
+    name: 'Bellwether Foods', terms: 30, lag: 58,
+    projects: [
+      { name: 'Retainer, month 1', type: 'fixed', fee: 3200, quotedHours: 20, weeks: [8, 11], pattern: RET(), invoices: [{ amt: 3200, issued: 96, paid: null }] },
+      { name: 'Retainer, month 2', type: 'fixed', fee: 3200, quotedHours: 20, weeks: [4, 7], pattern: RET(), invoices: [{ amt: 3200, issued: 66, paid: 8 }] },
+      { name: 'Retainer, month 3', type: 'fixed', fee: 3200, quotedHours: 20, weeks: [0, 3], pattern: RET(), invoices: [{ amt: 3200, issued: 36, paid: null }, { amt: 3200, issued: 6, paid: null }] }
+    ]
+  },
+  {
+    name: 'Meridian Rowing Club', terms: 30, lag: 9,
+    projects: [{
+      name: 'Season site refresh', type: 'hourly', rate: 75, weeks: [0, 11], everyN: 3,
+      pattern: [[3, 2.5, 'work', 1], [3, 0.5, 'comms', 0]]
+    }]
+  }
+];
+function RET() { return [[1, 3.5, 'work', 1], [3, 3, 'work', 1], [5, 1, 'revision', 1], [2, 1, 'comms', 0]]; }
+
+const NOTES = {
+  work: ['Build', 'Layout pass', 'Template work', 'Copy into build', 'Responsive pass', 'Handoff prep'],
+  revision: ['Round two', 'Round three', 'Colour changes, again', 'Reworked the hero'],
+  comms: ['Status call', 'Slack back-and-forth', 'Kickoff call', 'Feedback call'],
+  admin: ['Scoping the next phase', 'Invoicing and chasing', 'Wrote up an estimate']
+};
+
+function sampleBook() {
+  const s = blank(); s.sample = true;
+  BOOK.forEach((c, ci) => {
+    const client = { id: uid(), name: c.name, terms: c.terms };
+    s.clients.push(client);
+    c.projects.forEach((p, pi) => {
+      const proj = {
+        id: uid(), clientId: client.id, name: p.name, type: p.type,
+        rate: p.rate || 0, fee: p.fee || 0, quotedHours: p.quotedHours || 0
+      };
+      s.projects.push(proj);
+      for (let w = p.weeks[0]; w <= p.weeks[1]; w++) {
+        if (p.everyN && (w % p.everyN)) continue;
+        p.pattern.forEach(([off, h, kind, bill], k) => {
+          const jitter = [0, .25, -.25, .5, -.5][(w * 3 + k + ci + pi) % 5];
+          const hours = Math.max(.25, Math.round((h + jitter) * 4) / 4);
+          const pool = NOTES[kind];
+          s.entries.push({
+            id: uid(), projectId: proj.id, date: ago(w * 7 + off),
+            hours, kind, billable: !!bill, note: pool[(w + k) % pool.length]
+          });
+        });
+      }
+      (p.invoices || []).forEach(inv => {
+        s.invoices.push({
+          id: uid(), clientId: client.id, num: '', amount: inv.amt,
+          issued: ago(inv.issued), due: plus(ago(inv.issued), c.terms),
+          paid: inv.paid === null ? null : ago(inv.paid)
+        });
+      });
+    });
+    autoInvoice(s, client, c);
+  });
+  s.invoices.sort((a, b) => a.issued < b.issued ? 1 : -1);
+  s.invoices.forEach((inv, i) => { inv.num = String(148 - i).padStart(4, '0'); });
+  return s;
+}
+
+/* Hourly work bills monthly, issued on the 3rd of the following month. */
+function autoInvoice(s, client, spec) {
+  const projs = s.projects.filter(p => p.clientId === client.id && p.type === 'hourly');
+  const months = {};
+  projs.forEach(p => s.entries.filter(e => e.projectId === p.id && e.billable).forEach(e => {
+    const m = e.date.slice(0, 7);
+    months[m] = (months[m] || 0) + e.hours * p.rate;
+  }));
+  const keys = Object.keys(months).sort();
+  keys.forEach((m, i) => {
+    if (spec.skipMonths && i === keys.length - 1 - spec.skipMonths) return;   // the one they forgot to raise
+    const [y, mm] = m.split('-').map(Number);
+    const issued = iso(new Date(y, mm, 3, 12));
+    if (issued > iso(TODAY)) return;
+    const paidOn = plus(issued, spec.lag);
+    s.invoices.push({
+      id: uid(), clientId: client.id, num: '', amount: Math.round(months[m]),
+      issued, due: plus(issued, client.terms), paid: paidOn <= iso(TODAY) ? paidOn : null
+    });
+  });
+}
+
+/* ---------------- the arithmetic ----------------
+   earned  = hourly: billable hours x rate
+             fixed : the fee recognised across the hours the job actually took
+   trueRate= earned / EVERY hour logged, billable or not                     */
+
+function projectsOf(id) { return state.projects.filter(p => p.clientId === id); }
+function entriesOf(pid) { return state.entries.filter(e => e.projectId === pid); }
+function clientOf(id) { return state.clients.find(c => c.id === id); }
+function projOf(id) { return state.projects.find(p => p.id === id); }
+
+function earningEvents(client) {
+  const out = [];
+  projectsOf(client.id).forEach(p => {
+    const all = entriesOf(p.id);
+    const total = sum(all, e => e.hours);
+    all.forEach(e => {
+      const amt = p.type === 'hourly'
+        ? (e.billable ? e.hours * p.rate : 0)
+        : (total ? p.fee * (e.hours / total) : 0);
+      if (amt > 0) out.push({ date: e.date, amt });
+    });
+  });
+  return out.sort((a, b) => a.date < b.date ? -1 : 1);
+}
+
+/* FIFO: invoices raised so far consume the oldest earnings first. What is
+   left is work that has never appeared on an invoice. */
+function neverInvoiced(client) {
+  const invoiced = sum(state.invoices.filter(i => i.clientId === client.id), i => i.amount);
+  let remaining = invoiced, amount = 0, oldest = null;
+  earningEvents(client).forEach(ev => {
+    if (remaining >= ev.amt) { remaining -= ev.amt; return; }
+    amount += ev.amt - remaining; remaining = 0;
+    if (!oldest) oldest = ev.date;
+  });
+  return { amount, oldest, ageDays: oldest ? daysSince(oldest) : 0 };
+}
+
+function metricsFor(client, windowDays) {
+  const from = ago(windowDays);
+  let hoursAll = 0, hoursBill = 0, earned = 0, paperNum = 0;
+  let quoted = 0, actualFixed = 0, fixedFee = 0, hasFixed = false;
+  const leak = { revision: 0, comms: 0, admin: 0, work: 0 };
+
+  projectsOf(client.id).forEach(p => {
+    const all = entriesOf(p.id);
+    const win = all.filter(e => e.date >= from);
+    const wAll = sum(win, e => e.hours);
+    const wBill = sum(win.filter(e => e.billable), e => e.hours);
+    const tAll = sum(all, e => e.hours);
+    hoursAll += wAll; hoursBill += wBill;
+    win.forEach(e => { if (!e.billable) leak[e.kind] += e.hours; });
+    if (p.type === 'hourly') {
+      earned += wBill * p.rate;
+      paperNum += p.rate * wAll;
+    } else {
+      earned += tAll ? p.fee * (wAll / tAll) : 0;
+      paperNum += (p.quotedHours ? p.fee / p.quotedHours : 0) * wAll;
+      if (tAll > 0) { hasFixed = true; quoted += p.quotedHours; actualFixed += tAll; fixedFee += p.fee; }
+    }
+  });
+
+  const invs = state.invoices.filter(i => i.clientId === client.id);
+  const paid = invs.filter(i => i.paid && daysSince(i.issued) <= 365);
+  const paidTotal = sum(paid, i => i.amount);
+  const avgLag = paidTotal ? sum(paid, i => i.amount * (daysSince(i.issued) - daysSince(i.paid))) / paidTotal : null;
+  const open = invs.filter(i => !i.paid);
+  const overdue = open.filter(i => daysSince(i.due) > 0);
+
+  const floor = state.settings.floor || 0;
+  const trueRate = hoursAll ? earned / hoursAll : 0;
+  const paperRate = hoursAll ? paperNum / hoursAll : 0;
+  const unbilledHours = hoursAll - hoursBill;
+
+  return {
+    client, hoursAll, hoursBill, unbilledHours, leak, earned, trueRate, paperRate,
+    billedRate: hoursBill ? earned / hoursBill : 0,
+    raiseTo: hoursBill ? floor * (hoursAll / hoursBill) : 0,
+    hasFixed, quoted, actualFixed, fixedFee,
+    fixedRate: actualFixed ? fixedFee / actualFixed : 0,
+    requote: floor * actualFixed,
+    outstanding: sum(open, i => i.amount),
+    overdueTotal: sum(overdue, i => i.amount),
+    oldestOverdue: overdue.length ? Math.max(...overdue.map(i => daysSince(i.due))) : 0,
+    avgLag, lagVsTerms: avgLag === null ? null : avgLag - client.terms,
+    never: neverInvoiced(client),
+    drag: trueRate < floor ? (floor - trueRate) * hoursAll : 0
+  };
+}
+
+function readBook(windowDays) {
+  const rows = state.clients.map(c => metricsFor(c, windowDays)).filter(m => m.hoursAll > 0 || m.outstanding > 0);
+  const earnedTotal = sum(rows, m => m.earned);
+  const hoursTotal = sum(rows, m => m.hoursAll);
+  const year = 365 / windowDays;
+  rows.forEach(m => { m.share = earnedTotal ? m.earned / earnedTotal : 0; m.dragYear = m.drag * year; });
+  const worst = rows.filter(m => m.drag > 0).sort((a, b) => b.drag - a.drag)[0] || null;
+  const late = rows.filter(m => m.oldestOverdue > 0).sort((a, b) => b.oldestOverdue - a.oldestOverdue)[0] || null;
+  const top = rows.slice().sort((a, b) => b.earned - a.earned)[0] || null;
+  return {
+    rows, earnedTotal, hoursTotal, year,
+    blended: hoursTotal ? earnedTotal / hoursTotal : 0,
+    billableWeek: sum(rows, m => m.hoursBill) / (windowDays / 7),
+    unbilledHours: sum(rows, m => m.unbilledHours),
+    outstanding: sum(rows, m => m.outstanding),
+    overdueTotal: sum(rows, m => m.overdueTotal),
+    neverTotal: sum(rows, m => m.never.ageDays > 21 ? m.never.amount : 0),
+    dragYear: sum(rows, m => m.dragYear),
+    perWeek: hoursTotal / (windowDays / 7),
+    cap: state.settings.cap || 0,
+    concentration: top ? top.share : 0, top, worst, late
+  };
+}
+
+/* ---------------- what to do about it ---------------- */
+function verdictFor(m) {
+  const floor = state.settings.floor || 0;
+  const c = m.client, flags = [];
+  let sev = 'flat', tag = 'On terms', move = 'Nothing to fix. Keep it as it is.', because = '';
+
+  if (m.never.amount > Math.max(150, m.paperRate * 1.5) && m.never.ageDays > 21) {
+    flags.push(['warn', money(m.never.amount) + ' of finished work has never been invoiced &mdash; the oldest of it is '
+      + m.never.ageDays + ' days old.']);
+  }
+  if (m.lagVsTerms !== null && m.lagVsTerms >= 10) {
+    flags.push(['warn', 'Pays in ' + Math.round(m.avgLag) + ' days against net ' + c.terms
+      + '. That is ' + Math.round(m.lagVsTerms) + ' days of your money in their account.']);
+  }
+  if (m.share > 0.4) {
+    flags.push(['warn', Math.round(m.share * 100) + '% of the period&rsquo;s billings come from this one client.']);
+  }
+  if (m.hasFixed && m.actualFixed > m.quoted * 1.1) {
+    flags.push([m.fixedRate < floor ? 'bad' : 'warn', 'Fixed scope ran ' + hrs(m.actualFixed - m.quoted) + ' past the '
+      + hrs(m.quoted) + ' quoted.']);
+  }
+
+  if (m.oldestOverdue >= 45) {
+    sev = 'bad'; tag = 'Stop work';
+    move = '<b>Stop work and put it in writing.</b> ' + money(m.overdueTotal) + ' is ' + m.oldestOverdue
+      + ' days past due on net ' + c.terms + ' terms.';
+    because = 'Past 45 days a late payer is a credit decision, not an admin problem. Nothing new goes out of the door '
+      + 'until the oldest invoice clears, and the next job goes 50% up front.';
+  } else if (m.hasFixed && m.actualFixed > m.quoted * 1.1 && m.fixedRate < floor) {
+    sev = 'bad'; tag = 'Underquoted';
+    move = '<b>Requote at ' + money(Math.round(m.requote / 50) * 50) + '.</b> The fee was ' + money(m.fixedFee)
+      + ' for ' + hrs(m.quoted) + '; the work has taken ' + hrs(m.actualFixed) + '.';
+    because = 'That fee is paying ' + rateTxt(m.fixedRate) + ' against a floor of ' + rateTxt(floor)
+      + '. Either the next scope of this shape is priced at your real hours, or revisions get capped in the contract.';
+  } else if (m.paperRate > 0 && m.paperRate < floor * 0.98) {
+    sev = 'bad'; tag = 'Under-priced';
+    move = '<b>Raise the rate to ' + rateTxt(Math.round(m.raiseTo / 5) * 5) + ' or let this one go.</b>';
+    because = 'The contract rate is ' + rateTxt(m.paperRate) + ' &mdash; under your floor before a single unbilled '
+      + 'hour. It clears ' + rateTxt(m.trueRate) + ' and is ' + Math.round(m.share * 100)
+      + '% of the period&rsquo;s billings, so this is a cheap conversation to have.';
+  } else if (m.trueRate < floor * 0.92 && m.hoursBill > 0) {
+    sev = 'bad'; tag = 'Below floor';
+    move = '<b>Quote ' + rateTxt(Math.round(m.raiseTo / 5) * 5) + ' next time</b>, or bill the '
+      + hrs(m.unbilledHours) + ' you are currently absorbing.';
+    because = 'The contract says ' + rateTxt(m.paperRate) + '. After ' + hrs(m.unbilledHours) + ' of unbilled time it '
+      + 'clears ' + rateTxt(m.trueRate) + '. ' + rateTxt(Math.round(m.raiseTo / 5) * 5)
+      + ' is your floor grossed up for the hours this client does not pay for.';
+  } else if (m.trueRate < floor) {
+    sev = 'warn'; tag = 'At the line';
+    move = '<b>Watch it.</b> This clears ' + rateTxt(m.trueRate) + ' against a floor of ' + rateTxt(floor) + '.';
+    because = 'Close enough that one more round of free revisions puts it underwater.';
+  } else if (m.lagVsTerms !== null && m.lagVsTerms >= 14) {
+    sev = 'warn'; tag = 'Slow payer';
+    move = '<b>Move them to half up front</b>, or net ' + Math.max(7, Math.round(c.terms / 2)) + '.';
+    because = 'The rate is fine. The wait is not: ' + Math.round(m.avgLag) + ' days on average against net ' + c.terms + '.';
+  } else if (m.trueRate > floor * 1.15) {
+    sev = 'good'; tag = 'Best economics';
+    move = '<b>Ask for more of this work.</b> It clears ' + rateTxt(m.trueRate) + ', '
+      + Math.round((m.trueRate / floor - 1) * 100) + '% over your floor.';
+    because = 'Only ' + hrs(m.unbilledHours) + ' of the period went unbilled here'
+      + (m.avgLag !== null ? ', and they pay in ' + Math.round(m.avgLag) + ' days' : '') + '.';
+  } else {
+    because = 'Clears ' + rateTxt(m.trueRate) + ' against a floor of ' + rateTxt(floor) + '.';
+  }
+  return { sev, tag, move, because, flags };
+}
+
+/* ---------------- the Read ---------------- */
+let book = null;
+
+function renderRead() {
+  const W = state.settings.window, floor = state.settings.floor || 0;
+  book = readBook(W);
+  const b = book;
+
+  if (!b.rows.length) {
+    $('#bigVerdict').textContent = 'Nothing logged yet.';
+    $('#bigSub').textContent = 'Add a client and a project under Clients, then log a few hours. The read needs about two weeks of time and one invoice before it says anything useful.';
+    $('#strip').innerHTML = ''; $('#rateChart').innerHTML = '<div class="tip" id="rateTip"></div>';
+    $('#clientCards').innerHTML = ''; $('#agingChart').innerHTML = '<div class="tip" id="agingTip"></div>';
+    $('#rateLegend').innerHTML = ''; $('#agingLegend').innerHTML = ''; $('#owedTable').innerHTML = '';
+    return;
+  }
+
+  /* headline */
+  const v = $('#bigVerdict'), sub = $('#bigSub');
+  v.classList.remove('ok');
+  if (b.late && b.late.oldestOverdue >= 45) {
+    v.innerHTML = esc(b.late.client.name) + ' is sitting on <em>' + money(b.late.overdueTotal) + '</em>, '
+      + b.late.oldestOverdue + ' days past due.';
+    sub.innerHTML = 'That is the first thing to deal with today. Across the book, ' + money(b.outstanding)
+      + ' is invoiced and unpaid, ' + money(b.overdueTotal) + ' of it already late.';
+  } else if (b.worst) {
+    v.innerHTML = esc(b.worst.client.name) + ' costs you <em>' + money(Math.round(b.worst.dragYear / 100) * 100)
+      + ' a year</em> against your floor.';
+    sub.innerHTML = 'Every hour on that work clears ' + rateTxt(b.worst.trueRate) + ' where your floor is '
+      + rateTxt(floor) + '. Across every client below floor the gap is '
+      + money(Math.round(b.dragYear / 100) * 100) + ' a year.';
+  } else {
+    v.classList.add('ok');
+    v.innerHTML = 'Every client clears your floor. The book is <em>healthy</em>.';
+    sub.innerHTML = 'Blended, your time is worth ' + rateTxt(b.blended) + ' against a floor of ' + rateTxt(floor) + '.';
+  }
+
+  const floorGap = floor ? (b.blended / floor - 1) : 0;
+  $('#strip').innerHTML = [
+    stat(rateTxt(b.blended), b.blended < floor ? 'bad' : 'good',
+      'Blended, every hour logged. ' + (b.blended < floor ? Math.round(-floorGap * 100) + '% under' : Math.round(floorGap * 100) + '% over') + ' your floor.'),
+    stat(hrs(b.unbilledHours), b.unbilledHours > b.hoursTotal * 0.15 ? 'warn' : '',
+      'Logged and not billable. Worth ' + money(b.unbilledHours * floor) + ' at your floor.'),
+    stat(money(b.outstanding), b.overdueTotal > 0 ? 'bad' : '',
+      money(b.overdueTotal) + ' of it is past due.'),
+    stat(money(b.neverTotal), b.neverTotal > 0 ? 'warn' : '',
+      'Finished over three weeks ago and still not on an invoice.'),
+    stat(Math.round(b.billableWeek * 10) / 10 + ' h', b.cap && b.billableWeek < b.cap * 0.85 ? 'warn' : '',
+      'Billable per week' + (state.settings.cap ? ', against the ' + state.settings.cap + ' h you aim for' : '')
+      + '. ' + (Math.round((b.perWeek - b.billableWeek) * 10) / 10) + ' h more went unbilled.')
+  ].join('');
+
+  drawRateChart(b, floor);
+  drawCards(b);
+  drawAging();
+}
+function stat(val, cls, note) {
+  return '<div class="stat"><span class="v ' + cls + '">' + val + '</span><span class="n">' + note + '</span></div>';
+}
+
+/* ---- chart 1: what each client really pays ---- */
+function drawRateChart(b, floor) {
+  const rows = b.rows.filter(m => m.hoursAll > 0).sort((a, b2) => a.trueRate - b2.trueRate);
+  if (!rows.length) { $('#rateChart').innerHTML = '<div class="tip" id="rateTip"></div>'; return; }
+  const W = 720, L = 176, R = 74, rowH = 44, top = 30;
+  const H = top + rows.length * rowH + 6;
+  const x1 = W - R;
+  const max = Math.max(floor, ...rows.map(m => Math.max(m.paperRate, m.trueRate))) * 1.12 || 1;
+  const X = v => L + (v / max) * (x1 - L);
+
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Effective hourly rate by client against the floor rate">';
+  s += '<line x1="' + L + '" y1="' + (top - 12) + '" x2="' + L + '" y2="' + (H - 6) + '" stroke="var(--rule)" stroke-width="1"/>';
+  const fx = X(floor);
+  s += '<line x1="' + fx + '" y1="' + (top - 14) + '" x2="' + fx + '" y2="' + (H - 6) + '" stroke="var(--ink-3)" stroke-width="1"/>';
+  s += '<text x="' + (fx + 6) + '" y="' + (top - 18) + '" fill="var(--ink-3)" font-size="11.5" style="font-family:var(--mono)" letter-spacing=".04em">FLOOR ' + rateTxt(floor) + '</text>';
+
+  rows.forEach((m, i) => {
+    const y = top + i * rowH, mid = y + 15;
+    const below = m.trueRate < floor;
+    const name = m.client.name.length > 22 ? m.client.name.slice(0, 21) + '…' : m.client.name;
+    s += '<text x="' + (L - 14) + '" y="' + (mid - 1) + '" text-anchor="end" fill="var(--ink)" font-size="13.5" font-weight="500">' + esc(name) + '</text>';
+    s += '<text x="' + (L - 14) + '" y="' + (mid + 14) + '" text-anchor="end" fill="var(--ink-3)" font-size="11.5" style="font-family:var(--mono)">' + hrs(m.hoursAll) + '</text>';
+    const gw = Math.max(2, X(m.paperRate) - L), tw = Math.max(2, X(m.trueRate) - L);
+    s += '<rect x="' + L + '" y="' + (mid - 9) + '" width="' + gw + '" height="18" rx="2" fill="none" stroke="var(--ghost)" stroke-width="1"/>';
+    s += '<rect x="' + L + '" y="' + (mid - 9) + '" width="' + tw + '" height="18" rx="2" fill="' + (below ? 'var(--bad)' : 'var(--accent)') + '"/>';
+    s += '<text x="' + (L + Math.max(gw, tw) + 9) + '" y="' + (mid + 5) + '" fill="var(--ink-2)" font-size="12.5" style="font-family:var(--mono)">' + rateTxt(m.trueRate) + '</text>';
+    s += '<rect class="hit" data-i="' + i + '" x="0" y="' + y + '" width="' + W + '" height="' + rowH + '" fill="transparent"/>';
+  });
+  s += '</svg><div class="tip" id="rateTip" role="status"></div>';
+  const host = $('#rateChart'); host.innerHTML = s;
+
+  const tip = $('#rateTip');
+  host.querySelectorAll('.hit').forEach(hit => {
+    hit.addEventListener('mousemove', e => {
+      const m = rows[+hit.dataset.i], r = host.getBoundingClientRect();
+      tip.innerHTML = '<b>' + esc(m.client.name) + '</b>'
+        + tipRow('Cleared per hour', rateTxt(m.trueRate))
+        + tipRow('On the contract', rateTxt(m.paperRate))
+        + tipRow('Hours logged', hrs(m.hoursAll))
+        + tipRow('Of those, unbilled', hrs(m.unbilledHours))
+        + tipRow('Billed in period', money(m.earned));
+      tip.style.opacity = '1';
+      tip.style.left = clamp(e.clientX - r.left, 90, r.width - 90) + 'px';
+      tip.style.top = (e.clientY - r.top - 12) + 'px';
+    });
+    hit.addEventListener('mouseleave', () => { tip.style.opacity = '0'; });
+  });
+
+  $('#rateLegend').innerHTML =
+    '<span><i style="background:var(--accent)"></i>Clears your floor</span>'
+    + '<span><i style="background:var(--bad)"></i>Below your floor</span>'
+    + '<span><i style="border:1px solid var(--ghost); background:none"></i>Rate on the contract</span>';
+}
+function tipRow(k, v) { return '<div class="row"><span>' + k + '</span><span>' + v + '</span></div>'; }
+
+/* ---- client cards ---- */
+function drawCards(b) {
+  const order = { bad: 0, warn: 1, flat: 2, good: 3 };
+  const rows = b.rows.slice().sort((a, c) => {
+    const va = verdictFor(a), vc = verdictFor(c);
+    if (order[va.sev] !== order[vc.sev]) return order[va.sev] - order[vc.sev];
+    return a.trueRate - c.trueRate;
+  });
+  $('#clientCards').innerHTML = rows.map(m => {
+    const v = verdictFor(m);
+    const billW = m.hoursAll ? (m.hoursBill / m.hoursAll) * 100 : 0;
+    const kinds = Object.keys(m.leak).filter(k => k !== 'work' && m.leak[k] > 0.1)
+      .sort((a, c) => m.leak[c] - m.leak[a])
+      .map(k => hrs(m.leak[k]) + ' ' + KINDS[k].toLowerCase());
+    const breakdown = kinds.length > 1 ? ' (' + kinds.join(', ') + ')' : '';
+    let lag = '';
+    if (m.avgLag !== null) {
+      const scale = Math.max(m.client.terms * 2, m.avgLag * 1.15, 30);
+      const cls = m.lagVsTerms <= 2 ? 'good' : m.lagVsTerms <= 14 ? 'warn' : 'bad';
+      lag = '<div class="paylag"><span class="lbl">Pays in</span>'
+        + '<div class="track"><b style="width:' + (m.avgLag / scale * 100) + '%; background:var(--' + cls + ')"></b>'
+        + '<span class="mark" style="left:' + (m.client.terms / scale * 100) + '%"></span></div>'
+        + Math.round(m.avgLag) + ' days &middot; terms are net ' + m.client.terms + '</div>';
+    }
+    return '<article class="cc">'
+      + '<div><div class="cc-name"><h3>' + esc(m.client.name) + '</h3>'
+      + '<span class="pill ' + v.sev + '">' + v.tag + '</span>'
+      + (m.outstanding > 0 ? '<span class="pill flat">' + money(m.outstanding) + ' open</span>' : '')
+      + '</div>'
+      + '<p class="move">' + v.move + '</p>'
+      + (v.because ? '<p class="because">' + v.because + '</p>' : '')
+      + (v.flags.length ? '<div class="flags">' + v.flags.map(f =>
+        '<div class="flag"><i style="background:var(--' + f[0] + ')"></i><span>' + f[1] + '</span></div>').join('') + '</div>' : '')
+      + '</div>'
+      + '<div>'
+      + '<div class="rates"><div class="rate-b"><span class="k">Clears</span><span class="v" style="color:var(--'
+      + (m.trueRate < (state.settings.floor || 0) ? 'bad' : 'ink') + ')">' + rateTxt(m.trueRate) + '</span></div>'
+      + '<div class="rate-b"><span class="k">On paper</span><span class="v sm">' + rateTxt(m.paperRate) + '</span></div></div>'
+      + '<div class="leak"><span class="lbl">Where the hours went</span>'
+      + '<div class="leak-bar"><span style="width:' + billW + '%; background:var(--accent)"></span>'
+      + '<span style="width:' + (100 - billW) + '%; background:var(--bad)"></span></div>'
+      + '<div class="leak-key">' + hrs(m.hoursBill) + ' billed &middot; ' + hrs(m.unbilledHours) + ' absorbed'
+      + breakdown + '</div></div>'
+      + lag + '</div></article>';
+  }).join('');
+}
+
+/* ---- chart 2: receivables, aged from the due date ---- */
+const BUCKETS = [
+  { k: 'current', label: 'Not due yet', op: .45, tone: 'var(--ink-3)' },
+  { k: 'd30', label: '1 to 30 days late', op: .38, tone: 'var(--bad)' },
+  { k: 'd60', label: '31 to 60 days late', op: .68, tone: 'var(--bad)' },
+  { k: 'd60p', label: 'Over 60 days late', op: 1, tone: 'var(--bad)' }
+];
+function agedOpen() {
+  const out = { current: [], d30: [], d60: [], d60p: [] };
+  state.invoices.filter(i => !i.paid).forEach(i => {
+    const d = daysSince(i.due);
+    out[d <= 0 ? 'current' : d <= 30 ? 'd30' : d <= 60 ? 'd60' : 'd60p'].push(i);
+  });
+  return out;
+}
+function drawAging() {
+  const aged = agedOpen();
+  const totals = BUCKETS.map(b => sum(aged[b.k], i => i.amount));
+  const total = totals.reduce((a, c) => a + c, 0);
+  const host = $('#agingChart');
+  if (!total) {
+    host.innerHTML = '<p class="empty" style="border:1px solid var(--rule); border-radius:3px; background:var(--card)">Nothing outstanding. Every invoice you have raised has been paid.</p>';
+    $('#agingLegend').innerHTML = ''; $('#owedTable').innerHTML = ''; return;
+  }
+  const W = 720, H = 74, y = 10, h = 30, gap = 2;
+  let x = 0, s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Outstanding invoices aged from their due date">';
+  const live = BUCKETS.map((b, i) => ({ b, v: totals[i] })).filter(o => o.v > 0);
+  live.forEach((o, i) => {
+    const w = (o.v / total) * (W - gap * (live.length - 1));
+    s += '<rect data-b="' + o.b.k + '" x="' + x + '" y="' + y + '" width="' + w + '" height="' + h
+      + '" rx="2" fill="' + o.b.tone + '" fill-opacity="' + o.b.op + '"/>';
+    if (w > 70) {
+      s += '<text x="' + (x + 10) + '" y="' + (y + h + 20) + '" fill="var(--ink)" font-size="13" style="font-family:var(--mono)">' + money(o.v) + '</text>';
+    }
+    x += w + gap;
+  });
+  s += '</svg><div class="tip" id="agingTip" role="status"></div>';
+  host.innerHTML = s;
+  const tip = $('#agingTip');
+  host.querySelectorAll('rect').forEach(r => {
+    r.addEventListener('mousemove', e => {
+      const k = r.dataset.b, b = BUCKETS.find(x2 => x2.k === k), box = host.getBoundingClientRect();
+      tip.innerHTML = '<b>' + b.label + '</b>' + aged[k].sort((a, c) => a.due < c.due ? -1 : 1)
+        .map(i => tipRow(clientOf(i.clientId).name + ' #' + i.num, money(i.amount))).join('');
+      tip.style.opacity = '1';
+      tip.style.left = clamp(e.clientX - box.left, 100, box.width - 100) + 'px';
+      tip.style.top = (e.clientY - box.top - 12) + 'px';
+    });
+    r.addEventListener('mouseleave', () => { tip.style.opacity = '0'; });
+  });
+  $('#agingLegend').innerHTML = live.map(o =>
+    '<span><i style="background:' + o.b.tone + '; opacity:' + o.b.op + '"></i>' + o.b.label + ' &mdash; ' + money(o.v) + '</span>').join('');
+
+  const open = state.invoices.filter(i => !i.paid).sort((a, c) => daysSince(c.due) - daysSince(a.due));
+  $('#owedTable').innerHTML = '<table><thead><tr><th>Client</th><th>Invoice</th><th class="n">Amount</th>'
+    + '<th>Issued</th><th>Due</th><th>Status</th><th></th></tr></thead><tbody>'
+    + open.map(i => {
+      const d = daysSince(i.due);
+      const pill = d <= 0 ? '<span class="pill flat">due in ' + (-d) + ' d</span>'
+        : d > 45 ? '<span class="pill bad">' + d + ' d late</span>'
+          : '<span class="pill warn">' + d + ' d late</span>';
+      return '<tr><td>' + esc(clientOf(i.clientId).name) + '</td><td class="num">#' + esc(i.num) + '</td>'
+        + '<td class="n">' + money(i.amount) + '</td><td class="num">' + i.issued + '</td><td class="num">' + i.due + '</td>'
+        + '<td>' + pill + '</td><td><button class="mini" data-paid="' + i.id + '">Mark paid</button></td></tr>';
+    }).join('') + '</tbody></table>';
+}
+
+/* ---------------- the working views ---------------- */
+function renderTime() {
+  const list = state.entries.slice().sort((a, b) => a.date < b.date ? 1 : -1).slice(0, 200);
+  $('#timeTable').innerHTML = !list.length
+    ? '<p class="empty">No hours logged yet.</p>'
+    : '<table><thead><tr><th>Date</th><th>Client</th><th>Project</th><th class="n">Hours</th><th>Kind</th>'
+    + '<th>Billable</th><th>Note</th><th></th></tr></thead><tbody>'
+    + list.map(e => {
+      const p = projOf(e.projectId); if (!p) return '';
+      return '<tr><td class="num">' + e.date + '</td><td>' + esc(clientOf(p.clientId).name) + '</td>'
+        + '<td>' + esc(p.name) + '</td><td class="n">' + e.hours.toFixed(2) + '</td><td>' + KINDS[e.kind] + '</td>'
+        + '<td>' + (e.billable ? '<span class="pill good">yes</span>' : '<span class="pill bad">absorbed</span>') + '</td>'
+        + '<td>' + esc(e.note || '') + '</td>'
+        + '<td><button class="mini danger" data-del-entry="' + e.id + '">Delete</button></td></tr>';
+    }).join('') + '</tbody></table>';
+}
+
+function renderMoney() {
+  const list = state.invoices.slice().sort((a, b) => a.issued < b.issued ? 1 : -1);
+  $('#invTable').innerHTML = !list.length
+    ? '<p class="empty">No invoices yet.</p>'
+    : '<table><thead><tr><th>Invoice</th><th>Client</th><th class="n">Amount</th><th>Issued</th><th>Due</th>'
+    + '<th>Paid</th><th>Took</th><th></th></tr></thead><tbody>'
+    + list.map(i => {
+      const c = clientOf(i.clientId); if (!c) return '';
+      const took = i.paid ? (daysSince(i.issued) - daysSince(i.paid)) : null;
+      const late = took !== null && took > c.terms;
+      return '<tr><td class="num">#' + esc(i.num) + '</td><td>' + esc(c.name) + '</td>'
+        + '<td class="n">' + money(i.amount) + '</td><td class="num">' + i.issued + '</td><td class="num">' + i.due + '</td>'
+        + '<td class="num">' + (i.paid || '<span class="pill ' + (daysSince(i.due) > 0 ? 'bad">late' : 'flat">open') + '</span>') + '</td>'
+        + '<td class="n">' + (took === null ? '—' : '<span style="color:var(--' + (late ? 'bad' : 'good') + ')">' + took + ' d</span>') + '</td>'
+        + '<td>' + (i.paid ? '' : '<button class="mini" data-paid="' + i.id + '">Mark paid</button> ')
+        + '<button class="mini danger" data-del-inv="' + i.id + '">Delete</button></td></tr>';
+    }).join('') + '</tbody></table>';
+}
+
+function renderBook() {
+  $('#bookList').innerHTML = !state.clients.length
+    ? '<p class="empty">No clients yet.</p>'
+    : state.clients.map(c => {
+      const ps = projectsOf(c.id);
+      return '<div class="panel"><div class="cc-name"><h3>' + esc(c.name) + '</h3>'
+        + '<span class="pill flat">net ' + c.terms + '</span>'
+        + '<button class="mini danger" data-del-client="' + c.id + '" style="margin-left:auto">Delete client</button></div>'
+        + '<div class="proj">' + (ps.length ? ps.map(p => {
+          const h = sum(entriesOf(p.id), e => e.hours);
+          const basis = p.type === 'hourly' ? rateTxt(p.rate)
+            : money(p.fee) + ' for ' + hrs(p.quotedHours) + ' quoted';
+          const over = p.type === 'fixed' && p.quotedHours && h > p.quotedHours
+            ? ' <span class="pill bad">' + hrs(h - p.quotedHours) + ' over</span>' : '';
+          return '<div class="proj-row"><b>' + esc(p.name) + '</b><span>' + basis + '</span>'
+            + '<span>' + hrs(h) + ' logged</span>' + over
+            + '<button class="mini danger" data-del-proj="' + p.id + '" style="margin-left:auto">Remove</button></div>';
+        }).join('') : '<div class="proj-row">No projects yet.</div>') + '</div></div>';
+    }).join('');
+}
+
+function fillSelects() {
+  const projOpts = state.projects.map(p =>
+    '<option value="' + p.id + '">' + esc(clientOf(p.clientId).name) + ' &mdash; ' + esc(p.name) + '</option>').join('');
+  const clientOpts = state.clients.map(c => '<option value="' + c.id + '">' + esc(c.name) + '</option>').join('');
+  const keep = (sel, html) => { const el = $(sel), v = el.value; el.innerHTML = html; if (v) el.value = v; };
+  keep('#t-proj', projOpts); keep('#i-client', clientOpts); keep('#p-client', clientOpts);
+}
+
+function renderAll() {
+  $('#sampleBanner').classList.toggle('hide', !state.sample);
+  $('#floorRate').value = state.settings.floor;
+  $('#windowSel').value = String(state.settings.window);
+  fillSelects(); renderRead(); renderTime(); renderMoney(); renderBook();
+}
+
+/* ---------------- events ---------------- */
+function mutate(fn) {
+  if (state.sample) {           // the sample book is not yours; the first real entry clears it
+    const keep = state.settings;
+    state = blank();
+    state.settings = keep;
+  }
+  fn(); save(); renderAll();
+}
+
+$('#views').addEventListener('click', e => {
+  const b = e.target.closest('button[data-view]'); if (!b) return;
+  ['read', 'time', 'money', 'book'].forEach(v => $('#view-' + v).classList.toggle('hide', v !== b.dataset.view));
+  $('#views').querySelectorAll('button').forEach(x => x.setAttribute('aria-current', String(x === b)));
+  window.scrollTo({ top: 0, behavior: 'auto' });
+});
+
+$('#floorRate').addEventListener('change', e => {
+  state.settings.floor = Math.max(0, +e.target.value || 0);
+  if (!state.sample) save();
+  $('#s-floor').value = state.settings.floor;
+  renderRead();
+});
+$('#windowSel').addEventListener('change', e => {
+  state.settings.window = +e.target.value;
+  if (!state.sample) save();
+  renderRead();
+});
+$('#clearSample').addEventListener('click', () => {
+  const keep = state.settings;
+  state = blank(); state.settings = keep;
+  save(); renderAll();
+});
+
+$('#timeForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const pid = $('#t-proj').value; if (!pid) { alert('Add a client and a project first, over on Clients.'); return; }
+  const row = {
+    id: uid(), projectId: pid, date: $('#t-date').value, hours: +$('#t-hours').value,
+    kind: $('#t-kind').value, billable: $('#t-bill').checked, note: $('#t-note').value.trim()
+  };
+  if (!row.date || !(row.hours > 0)) return;
+  mutate(() => state.entries.push(row));
+  $('#t-hours').value = ''; $('#t-note').value = '';
+});
+
+$('#invForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const cid = $('#i-client').value; if (!cid) { alert('Add a client first, over on Clients.'); return; }
+  const c = clientOf(cid), issued = $('#i-issued').value;
+  const row = {
+    id: uid(), clientId: cid, num: $('#i-num').value.trim() || String(state.invoices.length + 1).padStart(4, '0'),
+    amount: +$('#i-amt').value, issued,
+    due: $('#i-due').value || plus(issued, c ? c.terms : state.settings.terms),
+    paid: $('#i-paid').value || null
+  };
+  if (!row.issued || !(row.amount > 0)) return;
+  mutate(() => state.invoices.push(row));
+  $('#i-amt').value = ''; $('#i-num').value = ''; $('#i-due').value = ''; $('#i-paid').value = '';
+});
+
+$('#clientForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const name = $('#c-name').value.trim(); if (!name) return;
+  mutate(() => state.clients.push({ id: uid(), name, terms: +$('#c-terms').value || 30 }));
+  $('#c-name').value = '';
+});
+
+$('#p-type').addEventListener('change', e => {
+  const fixed = e.target.value === 'fixed';
+  $('#p-quoted').disabled = !fixed;
+  $('#p-quoted').placeholder = fixed ? '55' : 'fixed fee only';
+  $('#p-rate').placeholder = fixed ? '6000' : '110';
+});
+
+$('#projForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const cid = $('#p-client').value, name = $('#p-name').value.trim();
+  if (!cid || !name) { alert('Add a client first, then give the project a name.'); return; }
+  const type = $('#p-type').value, n = +$('#p-rate').value || 0;
+  mutate(() => state.projects.push({
+    id: uid(), clientId: cid, name, type,
+    rate: type === 'hourly' ? n : 0, fee: type === 'fixed' ? n : 0,
+    quotedHours: type === 'fixed' ? (+$('#p-quoted').value || 0) : 0
+  }));
+  $('#p-name').value = ''; $('#p-rate').value = ''; $('#p-quoted').value = '';
+});
+
+$('#setForm').addEventListener('submit', e => {
+  e.preventDefault();
+  state.settings.cur = $('#s-cur').value.trim() || '$';
+  state.settings.floor = Math.max(0, +$('#s-floor').value || 0);
+  state.settings.terms = Math.max(0, +$('#s-terms').value || 30);
+  state.settings.cap = Math.max(0, +$('#s-cap').value || 0);
+  if (!state.sample) save();
+  renderAll();
+});
+
+document.addEventListener('click', e => {
+  const t = e.target;
+  if (t.dataset.paid) {
+    mutate(() => { const i = state.invoices.find(x => x.id === t.dataset.paid); if (i) i.paid = iso(TODAY); });
+  } else if (t.dataset.delEntry) {
+    mutate(() => { state.entries = state.entries.filter(x => x.id !== t.dataset.delEntry); });
+  } else if (t.dataset.delInv) {
+    mutate(() => { state.invoices = state.invoices.filter(x => x.id !== t.dataset.delInv); });
+  } else if (t.dataset.delProj) {
+    if (!confirm('Remove this project and every hour logged against it?')) return;
+    mutate(() => {
+      state.projects = state.projects.filter(x => x.id !== t.dataset.delProj);
+      state.entries = state.entries.filter(x => x.projectId !== t.dataset.delProj);
+    });
+  } else if (t.dataset.delClient) {
+    if (!confirm('Delete this client, its projects, hours and invoices?')) return;
+    mutate(() => {
+      const pids = projectsOf(t.dataset.delClient).map(p => p.id);
+      state.clients = state.clients.filter(x => x.id !== t.dataset.delClient);
+      state.projects = state.projects.filter(x => x.clientId !== t.dataset.delClient);
+      state.entries = state.entries.filter(x => !pids.includes(x.projectId));
+      state.invoices = state.invoices.filter(x => x.clientId !== t.dataset.delClient);
+    });
+  }
+});
+
+$('#dumpBtn').addEventListener('click', () => { $('#backup').value = JSON.stringify(state); });
+$('#restoreBtn').addEventListener('click', () => {
+  try {
+    const s = JSON.parse($('#backup').value);
+    if (!s || !s.settings || !Array.isArray(s.clients)) throw new Error('shape');
+    state = s; state.sample = false; save(); renderAll();
+    alert('Restored ' + state.clients.length + ' clients, ' + state.entries.length + ' time entries and ' + state.invoices.length + ' invoices.');
+  } catch (err) {
+    alert('That is not a Net Thirty backup. Paste the whole line you copied out, including the braces at each end.');
+  }
+});
+$('#resetBtn').addEventListener('click', () => {
+  if (!confirm('Throw away what is in this browser and go back to the sample book?')) return;
+  try { localStorage.removeItem(KEY); } catch (err) { /* ignore */ }
+  state = sampleBook(); renderAll();
+});
+
+/* ---------------- go ---------------- */
+state = load();
+$('#t-date').value = iso(TODAY);
+$('#i-issued').value = iso(TODAY);
+$('#s-cur').value = state.settings.cur;
+$('#s-floor').value = state.settings.floor;
+$('#s-terms').value = state.settings.terms;
+$('#s-cap').value = state.settings.cap;
+$('#p-quoted').disabled = true;
+renderAll();
+</script>
+</body>
+</html>
