@@ -1,0 +1,1695 @@
+<title>Aisle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  /* --------------------------------------------------------------- tokens */
+  :root {
+    color-scheme: light;
+    --ground: #f1f3f0;
+    --surface: #ffffff;
+    --sunken: #e8ebe6;
+    --ink: #141a17;
+    --ink-soft: #59635d;
+    --ink-faint: #8b958f;
+    --rule: #d5dad3;
+    --rule-firm: #b9c0b7;
+    --best: #0d6b3f;
+    --best-wash: #e2efe8;
+    --flag: #a2501c;
+    --flag-wash: #f6e9df;
+    --on-best: #ffffff;
+    --shadow: 0 1px 2px rgba(20, 26, 23, .06), 0 8px 24px -18px rgba(20, 26, 23, .35);
+
+    --step-0: 0.9375rem;
+    --step-1: 1.0625rem;
+    --step-2: 1.375rem;
+    --step-3: 2rem;
+    --step-4: 3.25rem;
+
+    --sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --cond: "Barlow Condensed", "IBM Plex Sans Condensed", ui-sans-serif, system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --ground: #101410;
+      --surface: #191e1a;
+      --sunken: #212821;
+      --ink: #e6ece7;
+      --ink-soft: #9aa49b;
+      --ink-faint: #6c766d;
+      --rule: #2a312b;
+      --rule-firm: #3c453d;
+      --best: #57c78a;
+      --best-wash: #16271d;
+      --flag: #dd975f;
+      --flag-wash: #2a2018;
+      --on-best: #0c1a12;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -18px rgba(0, 0, 0, .9);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ground: #101410;
+    --surface: #191e1a;
+    --sunken: #212821;
+    --ink: #e6ece7;
+    --ink-soft: #9aa49b;
+    --ink-faint: #6c766d;
+    --rule: #2a312b;
+    --rule-firm: #3c453d;
+    --best: #57c78a;
+    --best-wash: #16271d;
+    --flag: #dd975f;
+    --flag-wash: #2a2018;
+    --on-best: #0c1a12;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -18px rgba(0, 0, 0, .9);
+  }
+
+  /* ---------------------------------------------------------------- frame */
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: var(--step-0);
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .wrap {
+    max-width: 44rem;
+    margin: 0 auto;
+    padding: 1.75rem 1.125rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--best);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* --------------------------------------------------------------- header */
+  header { display: flex; flex-direction: column; gap: .35rem; }
+
+  h1 {
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: var(--step-3);
+    letter-spacing: .01em;
+    line-height: 1;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .sub {
+    color: var(--ink-soft);
+    max-width: 34rem;
+    margin: 0;
+  }
+
+  /* ------------------------------------------------------------ composer */
+  .composer {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: .875rem;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    box-shadow: var(--shadow);
+  }
+
+  .field { display: flex; gap: .5rem; }
+
+  input[type="text"] {
+    flex: 1;
+    min-width: 0;
+    font: inherit;
+    font-size: var(--step-1);
+    color: var(--ink);
+    background: var(--ground);
+    border: 1px solid var(--rule-firm);
+    border-radius: 7px;
+    padding: .6rem .7rem;
+  }
+  input[type="text"]::placeholder { color: var(--ink-faint); }
+
+  button {
+    font: inherit;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--sunken);
+    border: 1px solid var(--rule-firm);
+    border-radius: 7px;
+    padding: .6rem .85rem;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--ink-faint); }
+
+  button.primary {
+    background: var(--best);
+    border-color: var(--best);
+    color: var(--on-best);
+  }
+
+  .hint {
+    font-size: .8125rem;
+    color: var(--ink-faint);
+    margin: 0;
+  }
+  .hint code {
+    font-family: var(--mono);
+    font-size: .96em;
+    color: var(--ink-soft);
+    background: var(--sunken);
+    padding: .05em .3em;
+    border-radius: 3px;
+  }
+
+  /* --------------------------------------------------------------- inputs */
+  .rowline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  .rowline label {
+    font-size: .8125rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+
+  input.compact {
+    flex: 0 1 8rem;
+    font-size: var(--step-0);
+    padding: .4rem .55rem;
+  }
+
+  .seg {
+    display: inline-flex;
+    border: 1px solid var(--rule-firm);
+    border-radius: 7px;
+    overflow: hidden;
+  }
+  .seg button {
+    border: 0;
+    border-radius: 0;
+    background: var(--surface);
+    padding: .4rem .6rem;
+    font-size: .8125rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+  .seg button + button { border-left: 1px solid var(--rule); }
+  .seg button[aria-pressed="true"] { background: var(--sunken); color: var(--ink); }
+
+  /* -------------------------------------------------------------- verdict */
+  /* The shelf-edge label: what the shop should have printed but didn't. */
+  .verdict {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 5px solid var(--best);
+    border-radius: 10px;
+    padding: 1rem 1.125rem 1.125rem;
+    display: flex;
+    flex-direction: column;
+    gap: .1rem;
+    box-shadow: var(--shadow);
+  }
+
+  .eyebrow {
+    font-family: var(--sans);
+    font-size: .6875rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--best);
+  }
+
+  .verdict-name {
+    font-family: var(--cond);
+    font-weight: 600;
+    font-size: var(--step-2);
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+
+  .verdict-figure {
+    display: flex;
+    align-items: baseline;
+    gap: .4rem;
+    flex-wrap: wrap;
+    margin-top: .15rem;
+  }
+
+  .verdict-price {
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: var(--step-4);
+    line-height: .95;
+    letter-spacing: -.01em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .verdict-per {
+    font-family: var(--cond);
+    font-weight: 500;
+    font-size: var(--step-2);
+    color: var(--ink-soft);
+  }
+
+  .verdict-note { color: var(--ink-soft); margin-top: .35rem; }
+  .verdict-note strong { color: var(--ink); font-weight: 600; }
+
+  .verdict.empty { border-left-color: var(--rule-firm); }
+  .verdict.empty .eyebrow { color: var(--ink-faint); }
+
+  /* ---------------------------------------------------------------- table */
+  .list { display: flex; flex-direction: column; gap: .375rem; }
+
+  .list-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0 .125rem .125rem;
+  }
+  .list-head h2 {
+    font-family: var(--sans);
+    font-size: .6875rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0;
+  }
+
+  .opt {
+    display: grid;
+    grid-template-columns: 1.5rem 1fr auto 1.75rem;
+    align-items: center;
+    column-gap: .625rem;
+    row-gap: .2rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid transparent;
+    border-radius: 8px;
+    padding: .625rem .5rem .625rem .625rem;
+  }
+  .opt.best { border-left-color: var(--best); }
+  .opt.dud { opacity: .72; }
+
+  .rank {
+    font-family: var(--mono);
+    font-size: .75rem;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+  .opt.best .rank { color: var(--best); font-weight: 500; }
+
+  .opt-name {
+    font-weight: 500;
+    overflow-wrap: anywhere;
+  }
+
+  .opt-meta {
+    grid-column: 2;
+    font-size: .8125rem;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .opt-figures {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: .1rem;
+  }
+
+  .opt-unit {
+    font-family: var(--mono);
+    font-size: .9375rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .opt.best .opt-unit { color: var(--best); font-weight: 500; }
+
+  .opt-delta {
+    font-size: .75rem;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .remove {
+    grid-column: 4;
+    grid-row: 1 / span 2;
+    background: none;
+    border: 0;
+    padding: .25rem;
+    line-height: 1;
+    font-size: 1.125rem;
+    color: var(--ink-faint);
+    cursor: pointer;
+  }
+  .remove:hover { color: var(--flag); }
+
+  .tag {
+    display: inline-block;
+    font-size: .6875rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: .1rem .35rem;
+    border-radius: 3px;
+    background: var(--flag-wash);
+    color: var(--flag);
+    margin-left: .35rem;
+    vertical-align: .05em;
+  }
+
+  /* ---------------------------------------------------------------- notes */
+  .notes { display: flex; flex-direction: column; gap: .5rem; }
+
+  .note {
+    display: flex;
+    gap: .55rem;
+    align-items: flex-start;
+    font-size: .875rem;
+    background: var(--flag-wash);
+    color: var(--flag);
+    border-radius: 8px;
+    padding: .6rem .7rem;
+  }
+  .note.quiet { background: var(--sunken); color: var(--ink-soft); }
+  .note b { font-weight: 600; }
+  .note-mark {
+    font-family: var(--cond);
+    font-weight: 700;
+    line-height: 1.35;
+    flex: none;
+  }
+
+  /* -------------------------------------------------------------- presets */
+  .presets { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+  .presets span { font-size: .8125rem; color: var(--ink-faint); }
+  .chip {
+    font-size: .8125rem;
+    font-weight: 500;
+    padding: .3rem .6rem;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--rule-firm);
+    color: var(--ink-soft);
+  }
+  .chip:hover { color: var(--ink); }
+
+  /* --------------------------------------------------------------- footer */
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 1.125rem;
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+  }
+  footer h2 {
+    font-family: var(--sans);
+    font-size: .6875rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0;
+  }
+  footer p { margin: 0; font-size: .875rem; color: var(--ink-soft); max-width: 40rem; }
+  footer code {
+    font-family: var(--mono);
+    font-size: .92em;
+    color: var(--ink);
+  }
+
+  .sr {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 26rem) {
+    :root { --step-4: 2.75rem; }
+    .opt { grid-template-columns: 1.25rem 1fr auto 1.5rem; column-gap: .45rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Which one is actually cheaper?</h1>
+    <p class="sub">
+      Type what the shelf says. Sizes, multibuys and the amount you actually
+      need are all worked through, so you get one answer instead of arithmetic.
+    </p>
+  </header>
+
+  <section class="composer">
+    <div class="field">
+      <label class="sr" for="entry">Add an option from the shelf</label>
+      <input id="entry" type="text" autocomplete="off" autocapitalize="off"
+             spellcheck="false" placeholder="Tide 100 fl oz $12.99">
+      <button id="add" class="primary" type="button">Add</button>
+    </div>
+    <p class="hint">
+      Anything readable works: <code>1.2 kg 8.49</code> ·
+      <code>12 x 330 ml $9.60</code> · <code>3 for $10, 16 oz</code> ·
+      <code>buy 2 get 1 free $4.50 400g</code>
+    </p>
+    <div class="rowline">
+      <label for="need">I only need</label>
+      <input id="need" class="compact" type="text" autocomplete="off"
+             spellcheck="false" placeholder="e.g. 500 g">
+      <div class="seg" role="group" aria-label="Measurement system">
+        <button type="button" data-sys="auto" aria-pressed="true">Auto</button>
+        <button type="button" data-sys="us" aria-pressed="false">US</button>
+        <button type="button" data-sys="imperial" aria-pressed="false">UK</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="verdict" aria-live="polite"></section>
+
+  <section class="list">
+    <div class="list-head">
+      <h2 id="list-title">On the shelf</h2>
+      <button id="clear" class="chip" type="button">Clear all</button>
+    </div>
+    <div id="options"></div>
+  </section>
+
+  <section id="notes" class="notes"></section>
+
+  <div class="presets">
+    <span>Try:</span>
+    <button class="chip" type="button" data-preset="laundry">Laundry</button>
+    <button class="chip" type="button" data-preset="pasta">Pasta</button>
+    <button class="chip" type="button" data-preset="loo">Toilet roll</button>
+    <button class="chip" type="button" data-preset="coffee">Coffee</button>
+  </div>
+
+  <footer>
+    <h2>What it works out</h2>
+    <p>
+      <b>Offers change the price with quantity.</b> "3 for $10" is only the
+      cheapest at multiples of three, and if that is the only price shown you
+      cannot buy one at a third of it. The answer says how many you must take.
+    </p>
+    <p>
+      <b>You pay for packs, not for grams.</b> Ask for the amount you need and
+      the ranking switches to the cheapest way to actually get it — which is
+      often not the lowest price per unit.
+    </p>
+    <p>
+      <b>A US fluid ounce is 29.57 ml; an imperial one is 28.41 ml</b>, and the
+      pints differ by 20%. The currency picks the right table, or set it above.
+    </p>
+  </footer>
+</div>
+
+<script type="module">
+(() => {
+/* ===== src/units.js ===== */
+/**
+ * Unit tables and conversions.
+ *
+ * Everything reduces to a base unit per dimension:
+ *   mass   -> gram
+ *   volume -> millilitre
+ *   count  -> item
+ *   length -> metre
+ *
+ * The volume table is deliberately locale-dependent. A US fluid ounce is
+ * 29.5735 ml, an imperial one is 28.4131 ml, and a US pint is 473 ml against
+ * an imperial 568 ml. Comparing a US-labelled bottle against a UK-labelled one
+ * with a single table silently produces a ~4% (pints: 20%) error, which is
+ * larger than most of the price gaps people are trying to resolve.
+ */
+
+const MASS = {
+  mcg: 1e-6, ug: 1e-6,
+  mg: 0.001,
+  g: 1, gram: 1, grams: 1, gm: 1, gms: 1,
+  kg: 1000, kilo: 1000, kilos: 1000, kilogram: 1000, kilograms: 1000,
+  oz: 28.349523125, ounce: 28.349523125, ounces: 28.349523125,
+  lb: 453.59237, lbs: 453.59237, pound: 453.59237, pounds: 453.59237, '#': 453.59237,
+  st: 6350.29318, stone: 6350.29318,
+};
+
+const VOLUME_SHARED = {
+  ml: 1, millilitre: 1, milliliter: 1, millilitres: 1, milliliters: 1, cc: 1,
+  cl: 10, centilitre: 10, centiliter: 10,
+  dl: 100, decilitre: 100, deciliter: 100,
+  l: 1000, lt: 1000, ltr: 1000, litre: 1000, liter: 1000, litres: 1000, liters: 1000,
+};
+
+/** US customary liquid measure. */
+const VOLUME_US = {
+  ...VOLUME_SHARED,
+  tsp: 4.92892159375, teaspoon: 4.92892159375, teaspoons: 4.92892159375,
+  tbsp: 14.78676478125, tablespoon: 14.78676478125, tablespoons: 14.78676478125,
+  floz: 29.5735295625, 'fl oz': 29.5735295625, 'fluid ounce': 29.5735295625,
+  'fluid ounces': 29.5735295625, 'fl. oz': 29.5735295625,
+  cup: 236.5882365, cups: 236.5882365,
+  pt: 473.176473, pint: 473.176473, pints: 473.176473,
+  qt: 946.352946, quart: 946.352946, quarts: 946.352946,
+  gal: 3785.411784, gallon: 3785.411784, gallons: 3785.411784,
+};
+
+/** Imperial liquid measure (UK, and still used in IE/CA on some labels). */
+const VOLUME_IMPERIAL = {
+  ...VOLUME_SHARED,
+  tsp: 5.919388, teaspoon: 5.919388, teaspoons: 5.919388,
+  tbsp: 17.758164, tablespoon: 17.758164, tablespoons: 17.758164,
+  floz: 28.4130625, 'fl oz': 28.4130625, 'fluid ounce': 28.4130625,
+  'fluid ounces': 28.4130625, 'fl. oz': 28.4130625,
+  cup: 284.130625, cups: 284.130625,
+  pt: 568.26125, pint: 568.26125, pints: 568.26125,
+  qt: 1136.5225, quart: 1136.5225, quarts: 1136.5225,
+  gal: 4546.09, gallon: 4546.09, gallons: 4546.09,
+};
+
+const LENGTH = {
+  mm: 0.001, millimetre: 0.001, millimeter: 0.001,
+  cm: 0.01, centimetre: 0.01, centimeter: 0.01,
+  m: 1, metre: 1, meter: 1, metres: 1, meters: 1,
+  km: 1000, kilometre: 1000, kilometer: 1000,
+  in: 0.0254, inch: 0.0254, inches: 0.0254, '"': 0.0254,
+  ft: 0.3048, foot: 0.3048, feet: 0.3048, "'": 0.3048,
+  yd: 0.9144, yard: 0.9144, yards: 0.9144,
+  mi: 1609.344, mile: 1609.344, miles: 1609.344,
+};
+
+/**
+ * Countable units. The multiplier is always 1 -- the value here is the
+ * canonical noun, so the answer can read "per roll" or "per load" instead of
+ * the useless "per item".
+ */
+const COUNT = {
+  ct: 'item', count: 'item', pc: 'item', pcs: 'item', piece: 'item',
+  pieces: 'item', ea: 'item', each: 'item', item: 'item', items: 'item',
+  unit: 'item', units: 'item', pack: 'pack', packs: 'pack', pk: 'pack',
+  roll: 'roll', rolls: 'roll',
+  sheet: 'sheet', sheets: 'sheet', ply: 'sheet',
+  load: 'load', loads: 'load',
+  wash: 'wash', washes: 'wash',
+  tablet: 'tablet', tablets: 'tablet', tab: 'tablet', tabs: 'tablet',
+  capsule: 'capsule', capsules: 'capsule', caps: 'capsule',
+  pod: 'pod', pods: 'pod',
+  serving: 'serving', servings: 'serving',
+  bag: 'bag', bags: 'bag',
+  can: 'can', cans: 'can',
+  bottle: 'bottle', bottles: 'bottle',
+  slice: 'slice', slices: 'slice',
+  egg: 'egg', eggs: 'egg',
+  diaper: 'diaper', diapers: 'diaper', nappy: 'nappy', nappies: 'nappy',
+  wipe: 'wipe', wipes: 'wipe',
+  bar: 'bar', bars: 'bar',
+  dose: 'dose', doses: 'dose',
+  meal: 'meal', meals: 'meal',
+  sqft: 'sq ft', 'sq ft': 'sq ft', 'square foot': 'sq ft', 'square feet': 'sq ft',
+};
+
+/** Aliases normalised before lookup: "fl.oz.", "OZ", "Litres" all collapse. */
+function normaliseUnitToken(raw) {
+  return String(raw)
+    .toLowerCase()
+    .replace(/\./g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Resolve a unit token into { dim, factor, label }.
+ * `system` is 'us' or 'imperial' and only affects volume.
+ * Returns null when the token is not a unit we know.
+ */
+function resolveUnit(raw, system = 'us') {
+  const t = normaliseUnitToken(raw);
+  if (!t) return null;
+
+  const volume = system === 'imperial' ? VOLUME_IMPERIAL : VOLUME_US;
+
+  // "oz" is ambiguous: mass by default, but "fl oz" is volume. The parser
+  // hands us the already-joined token, so an explicit "fl" wins here.
+  if (Object.prototype.hasOwnProperty.call(volume, t)) {
+    return { dim: 'volume', factor: volume[t], label: t, base: 'ml' };
+  }
+  if (Object.prototype.hasOwnProperty.call(MASS, t)) {
+    return { dim: 'mass', factor: MASS[t], label: t, base: 'g' };
+  }
+  if (Object.prototype.hasOwnProperty.call(LENGTH, t)) {
+    return { dim: 'length', factor: LENGTH[t], label: t, base: 'm' };
+  }
+  if (Object.prototype.hasOwnProperty.call(COUNT, t)) {
+    return { dim: 'count', factor: 1, label: COUNT[t], base: COUNT[t] };
+  }
+  return null;
+}
+
+/** Every token any unit table knows, longest first (so "fl oz" beats "oz"). */
+function allUnitTokens() {
+  const seen = new Set([
+    ...Object.keys(MASS),
+    ...Object.keys(VOLUME_US),
+    ...Object.keys(VOLUME_IMPERIAL),
+    ...Object.keys(LENGTH),
+    ...Object.keys(COUNT),
+  ]);
+  return [...seen].sort((a, b) => b.length - a.length);
+}
+
+/**
+ * Pick a human display basis for a dimension, given the typical magnitude.
+ * Nobody wants "$0.0042 per gram" -- they want "$0.42 per 100 g".
+ */
+function displayBasis(dim, baseQty, countLabel = 'item') {
+  if (dim === 'mass') {
+    if (baseQty >= 2000) return { per: 1000, label: 'kg' };
+    return { per: 100, label: '100 g' };
+  }
+  if (dim === 'volume') {
+    if (baseQty >= 2000) return { per: 1000, label: 'L' };
+    return { per: 100, label: '100 ml' };
+  }
+  if (dim === 'length') return { per: 1, label: 'm' };
+
+  // Counts keep their own noun -- "per sheet" beats "per item" -- and scale to
+  // a hundred once the pack sizes are big enough that the per-one price would
+  // be a string of leading zeros.
+  if (baseQty >= 500) return { per: 100, label: `100 ${plural(countLabel)}` };
+  return { per: 1, label: countLabel };
+}
+
+/** Enough pluralisation for a unit noun. */
+function plural(word) {
+  if (/s$/.test(word)) return word;
+  if (/[^aeiou]y$/.test(word)) return word.slice(0, -1) + 'ies';
+  if (/(ch|sh|x|z)$/.test(word)) return word + 'es';
+  return word + 's';
+}
+
+/* ===== src/parse.js ===== */
+/**
+ * Parser for the way people actually write down a price in a shop.
+ *
+ * The input is one line of free text. There is no field order to rely on --
+ * shelf labels, receipts and typed notes put the price first, last or in the
+ * middle, and the offer is usually a separate scrap of text stuck alongside.
+ * So we extract by pattern, blanking each match as we consume it, and whatever
+ * survives is the product name.
+ */
+
+
+const CURRENCIES = {
+  '$': 'USD', '£': 'GBP', '€': 'EUR', '¥': 'JPY', '₹': 'INR',
+  '₩': 'KRW', 'R$': 'BRL', 'C$': 'CAD', 'A$': 'AUD', 'kr': 'SEK',
+};
+
+const NUM = String.raw`\d+(?:\.\d+)?`;
+const CUR = String.raw`[$£€¥₹₩]`;
+
+/** Longest-first alternation of every unit token, escaped for regex use. */
+const UNIT_ALT = allUnitTokens()
+  .map((u) => u.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  .join('|');
+
+/** Blank out a matched span so later patterns cannot re-consume it. */
+function blank(str, start, end) {
+  return str.slice(0, start) + ' '.repeat(end - start) + str.slice(end);
+}
+
+function toNumber(raw) {
+  // "1,299.99" -> 1299.99 ; a comma is a thousands separator only when it is
+  // followed by exactly three digits and more digits do not follow.
+  return parseFloat(String(raw).replace(/,(?=\d{3}\b)/g, '').replace(/,/g, '.'));
+}
+
+/** Detect the currency, which also decides US vs imperial fluid measure. */
+function detectCurrency(text) {
+  for (const sym of ['R$', 'C$', 'A$']) {
+    if (text.includes(sym)) return { symbol: sym, code: CURRENCIES[sym] };
+  }
+  const m = text.match(new RegExp(CUR));
+  if (m) return { symbol: m[0], code: CURRENCIES[m[0]] };
+  return null;
+}
+
+/**
+ * Imperial measure follows the currency, because that is the only signal a
+ * shelf label gives you. A "pint" priced in £ is 568 ml; the same word priced
+ * in $ is 473 ml.
+ */
+function systemForCurrency(code) {
+  return code === 'GBP' ? 'imperial' : 'us';
+}
+
+/* ------------------------------------------------------------------ offers */
+
+/**
+ * Offers are returned as a small tagged union. Each one knows how to price an
+ * arbitrary number of packs, which is what makes "cost to cover what I need"
+ * computable later in compare.js.
+ */
+function parseOffer(work) {
+  let text = work;
+  const found = [];
+
+  const take = (re, build) => {
+    const m = text.match(re);
+    if (!m) return;
+    const built = build(m);
+    if (!built) return;
+    found.push(built);
+    text = blank(text, m.index, m.index + m[0].length);
+  };
+
+  // "buy 2 get 1 free" / "bogo" / "b1g1" / "buy one get one free"
+  take(/\bbuy\s*(\d+)\s*get\s*(\d+)\s*free\b/, (m) => ({
+    kind: 'buy_n_get_m_free', buy: +m[1], free: +m[2],
+  }));
+  take(/\b(?:bogof?|b1g1f?|buy\s*one\s*get\s*one\s*free)\b/, () => ({
+    kind: 'buy_n_get_m_free', buy: 1, free: 1,
+  }));
+
+  // "buy 2 get 1 half price" / "buy 1 get 1 50% off" / "second half price"
+  take(new RegExp(String.raw`\bbuy\s*(\d+)\s*get\s*(\d+)?\s*(?:at\s*)?(?:half[- ]price|50%\s*off)\b`), (m) => ({
+    kind: 'buy_n_get_m_pct', buy: +m[1], discounted: m[2] ? +m[2] : 1, pct: 50,
+  }));
+  take(new RegExp(String.raw`\bbuy\s*(\d+)\s*get\s*(\d+)?\s*(?:at\s*)?(${NUM})%\s*off\b`), (m) => ({
+    kind: 'buy_n_get_m_pct', buy: +m[1], discounted: m[2] ? +m[2] : 1, pct: toNumber(m[3]),
+  }));
+  take(/\b(?:2nd|second)\s*(?:one\s*)?half[- ]price\b/, () => ({
+    kind: 'buy_n_get_m_pct', buy: 1, discounted: 1, pct: 50,
+  }));
+
+  // "3 for $10" / "3/$10" / "2 for 7" -- the lookbehind keeps "$1.20/750ml"
+  // from being read as "20 for 750".
+  take(new RegExp(String.raw`(?<![\d.])(\d+)\s*(?:for|@)\s*(${CUR})?\s*(${NUM})\b`), (m) => {
+    const n = +m[1];
+    if (n < 2 || n > 100) return null;
+    return { kind: 'n_for', n, price: toNumber(m[3]) };
+  });
+  take(new RegExp(String.raw`(?<![\d.])(\d+)\s*\/\s*(${CUR})\s*(${NUM})`), (m) => {
+    const n = +m[1];
+    if (n < 2 || n > 100) return null;
+    return { kind: 'n_for', n, price: toNumber(m[3]) };
+  });
+
+  // "20% off" / "save 20%"
+  take(new RegExp(String.raw`\b(?:save\s*)?(${NUM})\s*%\s*(?:off\b|\s*$)`), (m) => ({
+    kind: 'pct_off', pct: toNumber(m[1]),
+  }));
+
+  // "$2 off" / "save $2"
+  take(new RegExp(String.raw`(?:\bsave\s+)?${CUR}\s*(${NUM})\s*off\b`), (m) => ({
+    kind: 'amount_off', amount: toNumber(m[1]),
+  }));
+  take(new RegExp(String.raw`\bsave\s*${CUR}\s*(${NUM})`), (m) => ({
+    kind: 'amount_off', amount: toNumber(m[1]),
+  }));
+
+  return { offers: found, text };
+}
+
+/* ------------------------------------------------------------------- price */
+
+function parsePrice(work) {
+  let text = work;
+  let price = null;
+  let perUnitToken = null;
+
+  const take = (re, handle) => {
+    if (price !== null) return;
+    const m = text.match(re);
+    if (!m) return;
+    const ok = handle(m);
+    if (ok === false) return;
+    text = blank(text, m.index, m.index + m[0].length);
+  };
+
+  // "$3 per kg" / "£1.20 / 100g" -- the price is already a unit price, so the
+  // quantity it refers to becomes the pack size.
+  take(new RegExp(String.raw`${CUR}\s*(${NUM})\s*(?:\/|\bper\b|\bea\b)\s*(${NUM})?\s*(${UNIT_ALT})\b`, 'i'), (m) => {
+    price = toNumber(m[1]);
+    perUnitToken = { qty: m[2] ? toNumber(m[2]) : 1, unit: m[3] };
+  });
+
+  // "$12.99" / "£1.20" / "12.99 USD" / "99p"
+  take(new RegExp(String.raw`${CUR}\s*(${NUM})`), (m) => { price = toNumber(m[1]); });
+  take(new RegExp(String.raw`\b(${NUM})\s*(?:usd|gbp|eur|dollars?|euros?|pounds?)\b`, 'i'), (m) => { price = toNumber(m[1]); });
+  take(new RegExp(String.raw`\b(\d+)\s*p\b`), (m) => { price = toNumber(m[1]) / 100; });
+  take(new RegExp(String.raw`\b(\d+)\s*(?:c|cents?)\b`), (m) => { price = toNumber(m[1]) / 100; });
+
+  return { price, perUnitToken, text };
+}
+
+/* -------------------------------------------------------------------- size */
+
+function parseSize(work, system) {
+  let text = work;
+  let size = null;
+
+  const take = (re, handle) => {
+    if (size !== null) return;
+    const m = text.match(re);
+    if (!m) return;
+    if (handle(m) === false) return;
+    text = blank(text, m.index, m.index + m[0].length);
+  };
+
+  // Multipacks where both numbers matter: "12 x 330 ml", "24 pack of 500ml",
+  // "12 rolls x 264 sheets". Total = outer * inner.
+  take(new RegExp(String.raw`\b(${NUM})\s*(?:${UNIT_ALT})?\s*(?:x|×|\*)\s*(${NUM})\s*(${UNIT_ALT})\b`, 'i'), (m) => {
+    const u = resolveUnit(m[3], system);
+    if (!u) return false;
+    size = { value: toNumber(m[1]) * toNumber(m[2]), unit: u, packs: toNumber(m[1]), each: toNumber(m[2]) };
+  });
+  take(new RegExp(String.raw`\b(${NUM})\s*(?:pack|pk|ct|count)\s*(?:of\s*)?(${NUM})\s*(${UNIT_ALT})\b`, 'i'), (m) => {
+    const u = resolveUnit(m[3], system);
+    if (!u) return false;
+    size = { value: toNumber(m[1]) * toNumber(m[2]), unit: u, packs: toNumber(m[1]), each: toNumber(m[2]) };
+  });
+
+  // Plain "500 g", "1.2kg", "100 fl oz", "12 rolls".
+  take(new RegExp(String.raw`\b(${NUM})\s*(${UNIT_ALT})(?![a-z])`, 'i'), (m) => {
+    const u = resolveUnit(m[2], system);
+    if (!u) return false;
+    size = { value: toNumber(m[1]), unit: u };
+  });
+
+  return { size, text };
+}
+
+/* ------------------------------------------------------------------- entry */
+
+/**
+ * Parse one line into a comparable option.
+ *
+ * Returns { name, price, size, offers, system, currency, problems }.
+ * `problems` lists what is missing rather than throwing, because a half-parsed
+ * line should still show up in the UI with a useful complaint attached.
+ */
+function parseLine(line, opts = {}) {
+  const raw = String(line).trim();
+  const currency = detectCurrency(raw);
+  const system = opts.system || systemForCurrency(currency?.code);
+
+  // Lowercase for matching, but keep the original to recover the name casing.
+  let work = raw
+    .toLowerCase()
+    .replace(/(\d),(?=\d{3}(?!\d))/g, '$1')   // 1,299.00 -> 1299.00
+    .replace(/(\d),(\d{1,2})(?!\d)/g, '$1.$2') // European 1,50 -> 1.50
+    .replace(/[,;]/g, ' ')                     // any comma left just separates
+    .replace(/\s+/g, ' ');
+  // "fl. oz." and "fl oz" must survive as one token.
+  work = work.replace(/fl\.?\s*oz\.?/g, 'floz');
+
+  const offerPass = parseOffer(work);
+  const pricePass = parsePrice(offerPass.text);
+  const sizePass = parseSize(pricePass.text, system);
+
+  let size = sizePass.size;
+  let price = pricePass.price;
+
+  // "$3 per kg" with no separate size: the per-clause is the size.
+  if (!size && pricePass.perUnitToken) {
+    const u = resolveUnit(pricePass.perUnitToken.unit, system);
+    if (u) size = { value: pricePass.perUnitToken.qty, unit: u };
+  }
+
+  // A bare trailing number with no currency mark is a price: "1.2 kg 8.49".
+  let leftover = sizePass.text;
+  if (price === null) {
+    const m = leftover.match(new RegExp(String.raw`(?<![\d.])(${NUM})(?![\d.])`));
+    if (m) {
+      price = toNumber(m[1]);
+      leftover = blank(leftover, m.index, m.index + m[0].length);
+    }
+  }
+
+  // An offer of the form "3 for $10" with no other price *is* the price -- but
+  // only in threes. Flag that, because a shelf offering three for ten dollars
+  // very often will not sell you one for $3.33, and a comparison that quietly
+  // assumes it will is wrong in the shopper's favour.
+  const nFor = offerPass.offers.find((o) => o.kind === 'n_for');
+  let priceFromOffer = false;
+  if (price === null && nFor) {
+    price = nFor.price / nFor.n;
+    priceFromOffer = true;
+  }
+
+  // No unit anywhere means we are comparing whole items: "eggs $4.99" is one
+  // pack, and a count comparison is still a valid comparison.
+  if (!size) size = { value: 1, unit: resolveUnit('item', system), implied: true };
+
+  const name = leftover
+    // Only the words that belong to price grammar. Stripping articles as well
+    // would erase "A" and "B", which is what people label options with.
+    .replace(/\b(?:for|each|ea|per|of|off|save|buy|get|free|only|now|was)\b/g, ' ')
+    .replace(/[^a-z0-9 %&+'-]/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const problems = [];
+  if (price === null) problems.push('no price found');
+  if (size.implied) problems.push('no size found — treating as 1 item');
+
+  return {
+    raw,
+    name: name || null,
+    price,
+    size,
+    offers: offerPass.offers,
+    priceFromOffer,
+    system,
+    currency: currency || { symbol: '$', code: 'USD' },
+    problems,
+  };
+}
+
+/**
+ * Parse a standalone quantity like "500g", "2 L" or "12 rolls" -- what someone
+ * answers when asked how much they actually need. A bare number means items.
+ */
+function parseQuantity(text, system = 'us') {
+  const m = String(text ?? '').trim().match(/^(\d+(?:\.\d+)?)\s*(.*)$/);
+  if (!m) return null;
+  const value = parseFloat(m[1]);
+  if (!(value > 0)) return null;
+  const token = m[2] ? m[2].replace(/fl\.?\s*oz\.?/i, 'floz') : 'item';
+  const unit = resolveUnit(token, system);
+  return unit ? { value, unit } : null;
+}
+
+/** Parse a block of text, one option per non-empty line. */
+function parseLines(text, opts = {}) {
+  return String(text)
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((l) => parseLine(l, opts));
+}
+
+const _internal = { toNumber, blank, normaliseUnitToken };
+
+/* ===== src/compare.js ===== */
+/**
+ * Turning parsed options into an answer.
+ *
+ * Three things separate this from dividing price by size:
+ *
+ *  1. Offers change the price as a function of how many packs you buy, so the
+ *     unit price is a curve, not a number. "3 for $10" is only the best price
+ *     at multiples of three.
+ *  2. What you pay is the cost to cover the amount you need, in whole packs.
+ *     A 2 kg bag at a lower price per kilo still costs more than a 500 g bag
+ *     when 500 g is all you want.
+ *  3. Quantity you will not use before it spoils is not a saving. The cheapest
+ *     price per gram and the cheapest shop are routinely different answers.
+ */
+
+
+const round = (n, dp = 4) => Math.round(n * 10 ** dp) / 10 ** dp;
+
+/** Total base-unit quantity in one pack (grams, ml, items, metres). */
+/**
+ * The bucket an option can be compared inside. Counts are keyed by their noun,
+ * so rolls, sheets and loads stay in separate comparisons.
+ */
+function keyOf(option) {
+  const u = option.size.unit;
+  return u.dim === 'count' ? `count:${u.base}` : u.dim;
+}
+
+/** How to name this option's dimension to a human: "mass", "volume", "rolls". */
+function dimLabel(option) {
+  const u = option.size.unit;
+  return u.dim === 'count' ? plural(u.base) : u.dim;
+}
+
+function packQuantity(option) {
+  return option.size.value * option.size.unit.factor;
+}
+
+/**
+ * Split offers into the per-pack discounts (which just lower the sticker
+ * price) and the one group offer (which prices packs in batches).
+ */
+function offerModel(option) {
+  let unit = option.price;
+  let group = null;
+
+  for (const o of option.offers) {
+    if (o.kind === 'pct_off') unit = unit * (1 - o.pct / 100);
+    else if (o.kind === 'amount_off') unit = Math.max(0, unit - o.amount);
+  }
+
+  for (const o of option.offers) {
+    if (o.kind === 'n_for') {
+      group = { size: o.n, cost: o.price, label: `${o.n} for ${o.price}` };
+    } else if (o.kind === 'buy_n_get_m_free') {
+      group = {
+        size: o.buy + o.free,
+        cost: o.buy * unit,
+        label: `buy ${o.buy} get ${o.free} free`,
+      };
+    } else if (o.kind === 'buy_n_get_m_pct') {
+      group = {
+        size: o.buy + o.discounted,
+        cost: o.buy * unit + o.discounted * unit * (1 - o.pct / 100),
+        label: `buy ${o.buy} get ${o.discounted} at ${o.pct}% off`,
+      };
+    }
+  }
+
+  // When the only price we were given is the multibuy price, packs cannot be
+  // bought individually at that rate -- baskets round up to whole groups.
+  if (group && option.priceFromOffer) group.strict = true;
+
+  return { unit, group };
+}
+
+/** What k packs actually cost at the till. */
+function costForPacks(option, k) {
+  if (k <= 0) return 0;
+  const { unit, group } = offerModel(option);
+  if (!group || group.size <= 1) return k * unit;
+  if (group.strict) return Math.ceil(k / group.size) * group.cost;
+  const groups = Math.floor(k / group.size);
+  const rest = k - groups * group.size;
+  return groups * group.cost + rest * unit;
+}
+
+/**
+ * Cheapest per-unit price reachable, and the number of packs you have to buy
+ * to reach it. Buying more never gets cheaper than one full group, so a single
+ * group is the whole search space.
+ */
+function bestUnitPrice(option) {
+  const { group } = offerModel(option);
+  const qty = packQuantity(option);
+  const limit = group ? group.size : 1;
+  const from = group && group.strict ? group.size : 1;
+  let best = Infinity;
+  let bestK = from;
+  for (let k = from; k <= limit; k++) {
+    const p = costForPacks(option, k) / (k * qty);
+    if (p < best - 1e-12) { best = p; bestK = k; }
+  }
+  return { perBaseUnit: best, packs: bestK };
+}
+
+/**
+ * Cheapest way to end up with at least `need` base units.
+ *
+ * Scanning one group past the minimum matters: with "buy 2 get 1 free",
+ * three packs cost the same as two, so the honest answer is three.
+ */
+function costToCover(option, need) {
+  const qty = packQuantity(option);
+  const { group } = offerModel(option);
+  const span = group ? group.size : 1;
+  const kMin = Math.max(1, Math.ceil(need / qty - 1e-9));
+
+  let best = { packs: kMin, cost: costForPacks(option, kMin) };
+  for (let k = kMin + 1; k <= kMin + span; k++) {
+    const c = costForPacks(option, k);
+    if (c < best.cost - 1e-9) best = { packs: k, cost: c };
+  }
+
+  // Free extras: more packs for the same money as the chosen basket.
+  let bonus = 0;
+  for (let k = best.packs + 1; k <= best.packs + span; k++) {
+    if (costForPacks(option, k) <= best.cost + 1e-9) bonus = k - best.packs;
+  }
+
+  const bought = (best.packs + bonus) * qty;
+  return {
+    packs: best.packs,
+    bonusPacks: bonus,
+    cost: best.cost,
+    quantity: bought,
+    leftover: Math.max(0, bought - need),
+    // What you pay per unit you actually use -- the number that decides it.
+    effectivePerBaseUnit: best.cost / need,
+  };
+}
+
+/**
+ * Compare a list of parsed options.
+ *
+ * `need` is optional and given as { value, unit } in the same dimension as the
+ * options; when present the ranking switches from cheapest-per-unit to
+ * cheapest-way-to-get-what-you-need, which is a different order surprisingly
+ * often.
+ */
+function compare(options, opts = {}) {
+  const usable = options.filter((o) => o.price !== null && o.price > 0);
+  const skipped = options.filter((o) => o.price === null || !(o.price > 0));
+
+  if (usable.length === 0) {
+    return { ranked: [], skipped, mismatch: null, need: null, verdict: null };
+  }
+
+  // Mass against volume is not a comparison anyone can make without a density,
+  // so say so rather than inventing one. Countable things need the same care
+  // one level down: twelve rolls and five hundred sheets are both counts, and
+  // ranking them against each other is meaningless.
+  const groups = new Map();
+  for (const o of usable) {
+    const k = keyOf(o);
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(o);
+  }
+
+  let mainKey = [...groups.entries()].sort((a, b) => b[1].length - a[1].length)[0][0];
+  // A bare "12 ct" carries no noun, so let it join a named count group rather
+  // than splitting the comparison in two.
+  if (mainKey === 'count:item' && groups.size > 1) {
+    const named = [...groups.entries()]
+      .filter(([k]) => k.startsWith('count:') && k !== 'count:item')
+      .sort((a, b) => b[1].length - a[1].length)[0];
+    if (named) mainKey = named[0];
+  }
+
+  const inMain = (o) => keyOf(o) === mainKey
+    || (mainKey.startsWith('count:') && keyOf(o) === 'count:item');
+
+  const mainDim = mainKey.startsWith('count:') ? 'count' : mainKey;
+  const countLabel = mainKey.startsWith('count:') ? mainKey.slice(6) : 'item';
+  const comparable = usable.filter(inMain);
+  const others = usable.filter((o) => !inMain(o));
+  const mainLabel = mainDim === 'count' ? plural(countLabel) : mainDim;
+  const mismatch = others.length
+    ? { mainDim, mainKey, countLabel, mainLabel, others }
+    : null;
+
+  const need = opts.need && opts.need.value > 0
+    ? opts.need.value * (opts.need.unit?.factor ?? 1)
+    : null;
+
+  // One shared display basis, or the columns do not line up.
+  const largest = Math.max(...comparable.map(packQuantity));
+  const basis = displayBasis(mainDim, largest, countLabel);
+
+  const rows = comparable.map((o) => {
+    const qty = packQuantity(o);
+    const best = bestUnitPrice(o);
+    // For a strict multibuy this is the cost of a whole group, which is
+    // exactly what one pack would set you back.
+    const single = costForPacks(o, 1) / qty;
+    const cover = need ? costToCover(o, need) : null;
+    const { group } = offerModel(o);
+    return {
+      option: o,
+      packQuantity: qty,
+      unitPrice: round(best.perBaseUnit * basis.per, 4),
+      unitPriceRaw: best.perBaseUnit,
+      packsForBestPrice: best.packs,
+      singlePrice: round(single * basis.per, 4),
+      singlePriceRaw: single,
+      dealOnly: best.packs > 1,
+      dealLabel: group ? group.label : null,
+      cover: cover && {
+        ...cover,
+        effective: round(cover.effectivePerBaseUnit * basis.per, 4),
+      },
+    };
+  });
+
+  const key = need
+    ? (r) => [r.cover.cost, r.unitPriceRaw]
+    : (r) => [r.unitPriceRaw, r.option.price];
+  rows.sort((a, b) => {
+    const ka = key(a); const kb = key(b);
+    return ka[0] - kb[0] || ka[1] - kb[1];
+  });
+
+  const winner = rows[0];
+  const runnerUp = rows[1] || null;
+  rows.forEach((r, i) => {
+    r.rank = i + 1;
+    r.isBest = i === 0;
+    if (need) {
+      r.extraCost = round(r.cover.cost - winner.cover.cost, 2);
+      r.pctWorse = winner.cover.cost > 0
+        ? round(((r.cover.cost - winner.cover.cost) / winner.cover.cost) * 100, 1) : 0;
+    } else {
+      r.extraCost = null;
+      r.pctWorse = winner.unitPriceRaw > 0
+        ? round(((r.unitPriceRaw - winner.unitPriceRaw) / winner.unitPriceRaw) * 100, 1) : 0;
+    }
+  });
+
+  // The saving is worth stating as a percentage of the loser, which is how
+  // people hear it: "you save 18%", not "it is 22% more expensive".
+  let savingPct = 0;
+  if (runnerUp) {
+    savingPct = need
+      ? round((1 - winner.cover.cost / runnerUp.cover.cost) * 100, 1)
+      : round((1 - winner.unitPriceRaw / runnerUp.unitPriceRaw) * 100, 1);
+  }
+
+  // Does the ranking only hold because of a multibuy? Worth flagging, because
+  // it is a real condition on the answer, not a footnote.
+  let dealCaveat = null;
+  if (winner.dealOnly) {
+    const singleSorted = [...rows].sort((a, b) => a.singlePriceRaw - b.singlePriceRaw);
+    if (singleSorted[0] !== winner) {
+      dealCaveat = {
+        packs: winner.packsForBestPrice,
+        deal: winner.dealLabel,
+        betterIfOne: singleSorted[0],
+      };
+    }
+  }
+
+  return {
+    ranked: rows, skipped, mismatch, basis, mainDim, countLabel,
+    need: need ? { base: need, unit: opts.need.unit } : null,
+    winner, runnerUp, savingPct, dealCaveat,
+    currency: winner.option.currency,
+  };
+}
+
+/** Money, in the currency the input was written in. */
+function money(amount, currency) {
+  const sym = currency?.symbol || '$';
+  const abs = Math.abs(amount);
+  const dp = abs > 0 && abs < 0.1 ? 3 : 2;
+  return `${amount < 0 ? '-' : ''}${sym}${abs.toFixed(dp)}`;
+}
+
+/** A single sentence that answers the question the shopper actually asked. */
+function verdict(result) {
+  if (!result.winner) return 'Nothing to compare yet.';
+  const { winner, runnerUp, savingPct, basis, currency, need } = result;
+  const name = winner.option.name || winner.option.raw;
+  const price = money(winner.unitPrice, currency);
+
+  if (!runnerUp) return `${name} — ${price} per ${basis.label}.`;
+
+  if (need) {
+    const cost = money(winner.cover.cost, currency);
+    const saved = money(runnerUp.cover.cost - winner.cover.cost, currency);
+    return `${name} — ${cost} for what you need, ${saved} less than the next best (${savingPct}%).`;
+  }
+  return `${name} — ${price} per ${basis.label}, ${savingPct}% cheaper than the next best.`;
+}
+
+/* ===== web/app.js ===== */
+/**
+ * The page. Everything expensive already happened in src/ -- this reads the
+ * inputs, runs the comparison on every keystroke, and draws the answer.
+ */
+
+
+
+const STORE_KEY = 'aisle.v1';
+
+const PRESETS = {
+  laundry: {
+    need: '',
+    lines: [
+      'Tide Original 100 fl oz $12.99',
+      'Tide HE 150 fl oz $17.99',
+      'Persil 2 for $18, 100 fl oz',
+      'Store brand 128 fl oz $8.49',
+    ],
+  },
+  pasta: {
+    need: '500 g',
+    lines: [
+      'Barilla 500 g $2.19',
+      'Bulk sack 5 kg $15.00',
+      'Store brand 3 for $5, 500 g',
+    ],
+  },
+  loo: {
+    need: '',
+    lines: [
+      'Charmin 12 rolls x 264 sheets $24.99',
+      'Scott 8 rolls x 1000 sheets $19.49',
+      'Store brand 24 rolls x 200 sheets $17.99',
+    ],
+  },
+  coffee: {
+    need: '',
+    lines: [
+      'Lavazza 250 g £4.50',
+      'Illy 3 for £15, 250 g',
+      'Own brand 1 kg £12.99',
+      'Instant 200 g £5.20, 20% off',
+    ],
+  },
+};
+
+/* ------------------------------------------------------------------- state */
+
+const state = {
+  lines: [],
+  need: '',
+  system: 'auto',
+  seeded: false,
+};
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return false;
+    const saved = JSON.parse(raw);
+    if (!Array.isArray(saved.lines)) return false;
+    state.lines = saved.lines.filter((l) => typeof l === 'string');
+    state.need = typeof saved.need === 'string' ? saved.need : '';
+    state.system = ['auto', 'us', 'imperial'].includes(saved.system) ? saved.system : 'auto';
+    return state.lines.length > 0;
+  } catch {
+    return false; // private window, blocked storage -- the page still works
+  }
+}
+
+function save() {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify({
+      lines: state.lines, need: state.need, system: state.system,
+    }));
+  } catch { /* nothing to do, and nothing worth telling the user */ }
+}
+
+/* ------------------------------------------------------------------- utils */
+
+const el = (tag, className, text) => {
+  const n = document.createElement(tag);
+  if (className) n.className = className;
+  if (text != null) n.textContent = text;
+  return n;
+};
+
+const trimNum = (n) => (Number.isInteger(n) ? String(n) : String(Math.round(n * 100) / 100));
+
+const titleCase = (s) => s.replace(/\b[a-z]/g, (c) => c.toUpperCase());
+
+const label = (option) => (option.name ? titleCase(option.name) : option.raw);
+
+/* ----------------------------------------------------------------- compute */
+
+function run() {
+  const parseOpts = state.system === 'auto' ? {} : { system: state.system };
+  const options = state.lines.map((l) => parseLine(l, parseOpts));
+  if (options.length === 0) return { options, result: null, needError: null };
+
+  const first = compare(options);
+  if (!first.winner) return { options, result: first, needError: null };
+
+  const system = state.system === 'auto' ? options[0].system : state.system;
+  const need = state.need.trim() ? parseQuantity(state.need, system) : null;
+
+  let needError = null;
+  if (state.need.trim() && !need) {
+    needError = `Could not read "${state.need}". Try 500 g, 2 L or 12 rolls.`;
+  } else if (need && !needFits(need, first)) {
+    const want = need.unit.dim === 'count' ? `${need.unit.base}s` : need.unit.dim;
+    const have = first.mainDim === 'count' ? `${first.countLabel}s` : first.mainDim;
+    needError = `You asked for ${want} but these are sold by ${have}. Ranking by price per ${first.basis.label} instead.`;
+  }
+
+  const usable = need && !needError ? { need } : {};
+  return { options, result: compare(options, usable), needError };
+}
+
+/** A need only applies if it measures the same kind of thing as the shelf. */
+function needFits(need, result) {
+  if (need.unit.dim !== result.mainDim) return false;
+  if (need.unit.dim !== 'count') return true;
+  return need.unit.base === 'item' || need.unit.base === result.countLabel;
+}
+
+/* ------------------------------------------------------------------ render */
+
+const dom = {
+  entry: document.getElementById('entry'),
+  add: document.getElementById('add'),
+  need: document.getElementById('need'),
+  verdict: document.getElementById('verdict'),
+  options: document.getElementById('options'),
+  notes: document.getElementById('notes'),
+  clear: document.getElementById('clear'),
+  listTitle: document.getElementById('list-title'),
+};
+
+function renderVerdict(result, needError) {
+  dom.verdict.replaceChildren();
+
+  if (!result || !result.winner) {
+    const box = el('div', 'verdict empty');
+    box.append(
+      el('div', 'eyebrow', 'Nothing to compare'),
+      el('div', 'verdict-name', state.lines.length
+        ? 'None of those had a price in them.'
+        : 'Add two things from the shelf.'),
+    );
+    dom.verdict.append(box);
+    return;
+  }
+
+  const { winner, runnerUp, savingPct, basis, currency, need } = result;
+  const box = el('div', 'verdict');
+
+  box.append(el('div', 'eyebrow', runnerUp ? 'Best value' : 'Only option'));
+  box.append(el('div', 'verdict-name', label(winner.option)));
+
+  const fig = el('div', 'verdict-figure');
+  if (need) {
+    fig.append(el('div', 'verdict-price', money(winner.cover.cost, currency)));
+    const packs = winner.cover.packs + winner.cover.bonusPacks;
+    fig.append(el('div', 'verdict-per', `for ${packs} × ${trimNum(winner.option.size.value)} ${winner.option.size.unit.label}`));
+  } else {
+    fig.append(el('div', 'verdict-price', money(winner.unitPrice, currency)));
+    fig.append(el('div', 'verdict-per', `per ${basis.label}`));
+  }
+  box.append(fig);
+
+  const note = el('p', 'verdict-note');
+  if (runnerUp) {
+    const gap = need
+      ? runnerUp.cover.cost - winner.cover.cost
+      : (runnerUp.unitPrice - winner.unitPrice);
+    const amount = el('strong', null, money(gap, currency));
+    note.append(
+      document.createTextNode(need ? 'Saves ' : 'Saves '),
+      amount,
+      document.createTextNode(need
+        ? ` against ${label(runnerUp.option)} — ${savingPct}% less.`
+        : ` per ${basis.label} against ${label(runnerUp.option)} — ${savingPct}% less.`),
+    );
+  } else {
+    note.textContent = `Add another to compare it against.`;
+  }
+  box.append(note);
+
+  if (need && winner.cover.leftover > 0) {
+    const spare = el('p', 'verdict-note');
+    spare.textContent = `Leaves ${trimNum(winner.cover.leftover)} ${winner.option.size.unit.base} spare.`;
+    box.append(spare);
+  }
+
+  dom.verdict.append(box);
+}
+
+function renderOptions(parsed, result) {
+  dom.options.replaceChildren();
+
+  parsed.forEach((option, index) => {
+    const row = result && result.ranked.find((r) => r.option === option);
+    const node = el('div', 'opt');
+    if (row && row.isBest) node.classList.add('best');
+    if (!row) node.classList.add('dud');
+
+    node.append(el('div', 'rank', row ? `${row.rank}` : '—'));
+
+    const name = el('div', 'opt-name');
+    name.append(document.createTextNode(label(option)));
+    if (row && row.dealOnly) name.append(el('span', 'tag', `buy ${row.packsForBestPrice}`));
+    node.append(name);
+
+    const meta = el('div', 'opt-meta');
+    if (option.price === null) {
+      meta.textContent = 'no price found';
+    } else if (!row) {
+      meta.textContent = `sold by ${dimLabel(option)} — not compared`;
+    } else {
+      const size = option.size.implied
+        ? 'each'
+        : `${trimNum(option.size.value)} ${option.size.unit.label}`;
+      meta.textContent = `${size} · ${money(option.price, option.currency)}`;
+    }
+    node.append(meta);
+
+    const figures = el('div', 'opt-figures');
+    if (row) {
+      const cur = result.currency;
+      if (result.need) {
+        figures.append(el('div', 'opt-unit', money(row.cover.cost, cur)));
+        const bits = [`${row.cover.packs + row.cover.bonusPacks} pack${row.cover.packs + row.cover.bonusPacks === 1 ? '' : 's'}`];
+        if (row.cover.leftover > 0) bits.push(`${trimNum(row.cover.leftover)} spare`);
+        figures.append(el('div', 'opt-delta', bits.join(' · ')));
+      } else {
+        figures.append(el('div', 'opt-unit', `${money(row.unitPrice, cur)}`));
+        figures.append(el('div', 'opt-delta', row.isBest
+          ? `per ${result.basis.label}`
+          : `+${row.pctWorse}%`));
+      }
+    }
+    node.append(figures);
+
+    const remove = el('button', 'remove', '×');
+    remove.type = 'button';
+    remove.setAttribute('aria-label', `Remove ${label(option)}`);
+    remove.addEventListener('click', () => {
+      state.lines.splice(index, 1);
+      save();
+      draw();
+    });
+    node.append(remove);
+
+    dom.options.append(node);
+  });
+
+  dom.listTitle.textContent = parsed.length
+    ? `On the shelf · ${parsed.length}`
+    : 'On the shelf';
+  dom.clear.hidden = parsed.length === 0;
+}
+
+function renderNotes(result, needError) {
+  dom.notes.replaceChildren();
+  const add = (mark, text, quiet) => {
+    const n = el('div', quiet ? 'note quiet' : 'note');
+    n.append(el('span', 'note-mark', mark), el('span', null, text));
+    dom.notes.append(n);
+  };
+
+  if (needError) add('!', needError);
+  if (!result) return;
+
+  if (result.dealCaveat) {
+    const d = result.dealCaveat;
+    add('!', `That price needs ${d.packs} of them (${d.deal}). Buying one, ${label(d.betterIfOne.option)} is cheaper.`);
+  }
+
+  if (result.mismatch) {
+    const names = result.mismatch.others
+      .map((o) => `${label(o)} (${dimLabel(o)})`).join(', ');
+    add('≠', `Not sold by ${result.mismatch.mainLabel}, so left out: ${names}`, true);
+  }
+
+  for (const s of result.skipped) {
+    add('?', `“${s.raw}” — ${s.problems.join('; ') || 'could not read that'}`, true);
+  }
+}
+
+function draw() {
+  const { options, result, needError } = run();
+  renderVerdict(result, needError);
+  renderOptions(options, result && result.winner ? result : null);
+  renderNotes(result && result.winner ? result : null, needError);
+}
+
+/* ------------------------------------------------------------------ events */
+
+function addEntry() {
+  const text = dom.entry.value.trim();
+  if (!text) return;
+  // A paste of several shelf labels at once should add all of them.
+  const parts = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  state.lines.push(...parts);
+  dom.entry.value = '';
+  state.seeded = false;
+  save();
+  draw();
+  dom.entry.focus();
+}
+
+dom.add.addEventListener('click', addEntry);
+dom.entry.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); addEntry(); }
+});
+
+dom.need.addEventListener('input', () => {
+  state.need = dom.need.value;
+  save();
+  draw();
+});
+
+dom.clear.addEventListener('click', () => {
+  state.lines = [];
+  state.need = '';
+  dom.need.value = '';
+  save();
+  draw();
+  dom.entry.focus();
+});
+
+for (const btn of document.querySelectorAll('.seg button')) {
+  btn.addEventListener('click', () => {
+    state.system = btn.dataset.sys;
+    for (const other of document.querySelectorAll('.seg button')) {
+      other.setAttribute('aria-pressed', String(other === btn));
+    }
+    save();
+    draw();
+  });
+}
+
+for (const btn of document.querySelectorAll('[data-preset]')) {
+  btn.addEventListener('click', () => {
+    const preset = PRESETS[btn.dataset.preset];
+    state.lines = [...preset.lines];
+    state.need = preset.need;
+    dom.need.value = preset.need;
+    save();
+    draw();
+  });
+}
+
+/* -------------------------------------------------------------------- boot */
+
+// Open on a worked example rather than an empty box, so the first look shows
+// what the page does. Anything the visitor saved wins over it.
+if (!load()) {
+  state.lines = [...PRESETS.laundry.lines];
+  state.need = PRESETS.laundry.need;
+  state.seeded = true;
+}
+
+dom.need.value = state.need;
+for (const btn of document.querySelectorAll('.seg button')) {
+  btn.setAttribute('aria-pressed', String(btn.dataset.sys === state.system));
+}
+draw();
+})();
+</script>
