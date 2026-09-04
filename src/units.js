@@ -121,7 +121,8 @@ export function resolveUnit(raw, system = 'us') {
   // "oz" is ambiguous: mass by default, but "fl oz" is volume. The parser
   // hands us the already-joined token, so an explicit "fl" wins here.
   if (Object.prototype.hasOwnProperty.call(volume, t)) {
-    return { dim: 'volume', factor: volume[t], label: t, base: 'ml' };
+    // "floz" is how the parser joins the token; "fl oz" is how it is read.
+    return { dim: 'volume', factor: volume[t], label: t === 'floz' ? 'fl oz' : t, base: 'ml' };
   }
   if (Object.prototype.hasOwnProperty.call(MASS, t)) {
     return { dim: 'mass', factor: MASS[t], label: t, base: 'g' };

@@ -13,7 +13,7 @@ const PRESETS = {
     need: '',
     lines: [
       'Tide Original 100 fl oz $12.99',
-      'Tide HE 150 fl oz $17.99',
+      'Tide HE Turbo 150 fl oz $17.99',
       'Persil 2 for $18, 100 fl oz',
       'Store brand 128 fl oz $8.49',
     ],
@@ -88,9 +88,20 @@ const el = (tag, className, text) => {
 
 const trimNum = (n) => (Number.isInteger(n) ? String(n) : String(Math.round(n * 100) / 100));
 
-const titleCase = (s) => s.replace(/\b[a-z]/g, (c) => c.toUpperCase());
-
-const label = (option) => (option.name ? titleCase(option.name) : option.raw);
+/**
+ * The parser lowercases to match, which would turn "Tide HE" into "Tide He".
+ * Recover each word's capitalisation from the line as it was typed.
+ */
+function label(option) {
+  if (!option.name) return option.raw;
+  const words = option.name.split(' ').map((w) => {
+    const safe = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const m = option.raw.match(new RegExp(`(?:^|[^a-z0-9])(${safe})(?![a-z0-9])`, 'i'));
+    return m ? m[1] : w;
+  });
+  const joined = words.join(' ');
+  return joined.charAt(0).toUpperCase() + joined.slice(1);
+}
 
 /* ----------------------------------------------------------------- compute */
 
@@ -200,8 +211,21 @@ function renderVerdict(result, needError) {
 function renderOptions(parsed, result) {
   dom.options.replaceChildren();
 
-  parsed.forEach((option, index) => {
-    const row = result && result.ranked.find((r) => r.option === option);
+  const entries = parsed.map((option, index) => ({
+    option,
+    index,
+    row: result ? result.ranked.find((r) => r.option === option) : null,
+  }));
+  // Best first. Anything that could not be ranked sits below, in the order it
+  // was typed, so removing it is still easy to find.
+  entries.sort((a, b) => {
+    if (a.row && b.row) return a.row.rank - b.row.rank;
+    if (a.row) return -1;
+    if (b.row) return 1;
+    return a.index - b.index;
+  });
+
+  entries.forEach(({ option, index, row }) => {
     const node = el('div', 'opt');
     if (row && row.isBest) node.classList.add('best');
     if (!row) node.classList.add('dud');
@@ -289,11 +313,17 @@ function renderNotes(result, needError) {
   }
 }
 
+/** An empty notes block would still take its share of the page gap. */
+function settleNotes() {
+  dom.notes.hidden = dom.notes.childElementCount === 0;
+}
+
 function draw() {
   const { options, result, needError } = run();
   renderVerdict(result, needError);
   renderOptions(options, result && result.winner ? result : null);
   renderNotes(result && result.winner ? result : null, needError);
+  settleNotes();
 }
 
 /* ------------------------------------------------------------------ events */
