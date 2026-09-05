@@ -1,0 +1,1024 @@
+<title>Itemize</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+  :root {
+    color-scheme: light;
+    --paper:   #F2F4F3;
+    --sheet:   #FFFFFF;
+    --sheet-2: #F7F9F8;
+    --ink:     #121B1D;
+    --ink-2:   #56696B;
+    --ink-3:   #849798;
+    --rule:    #DCE3E1;
+    --rule-2:  #C3CFCC;
+    --err:     #A81F27;
+    --err-bg:  #FBEDED;
+    --price:   #91600A;
+    --price-bg:#FCF3E3;
+    --right:   #0B6257;
+    --right-bg:#E7F3F0;
+    --credit:  #0B6257;
+    --shadow:  0 1px 2px rgba(18,27,29,.06), 0 8px 24px -12px rgba(18,27,29,.18);
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, Segoe UI, sans-serif;
+    --serif: "IBM Plex Serif", Georgia, serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper:   #0C1213;
+      --sheet:   #141C1E;
+      --sheet-2: #182224;
+      --ink:     #E7EEEC;
+      --ink-2:   #9AACAC;
+      --ink-3:   #718384;
+      --rule:    #263234;
+      --rule-2:  #354547;
+      --err:     #F0787E;
+      --err-bg:  #2A1618;
+      --price:   #E3AC4E;
+      --price-bg:#291F10;
+      --right:   #5BD3BF;
+      --right-bg:#0E2622;
+      --credit:  #5BD3BF;
+      --shadow:  0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper:   #0C1213;
+    --sheet:   #141C1E;
+    --sheet-2: #182224;
+    --ink:     #E7EEEC;
+    --ink-2:   #9AACAC;
+    --ink-3:   #718384;
+    --rule:    #263234;
+    --rule-2:  #354547;
+    --err:     #F0787E;
+    --err-bg:  #2A1618;
+    --price:   #E3AC4E;
+    --price-bg:#291F10;
+    --right:   #5BD3BF;
+    --right-bg:#0E2622;
+    --credit:  #5BD3BF;
+    --shadow:  0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1220px; margin: 0 auto; padding: 0 20px 72px; }
+  h1,h2,h3 { font-family: var(--serif); font-weight: 600; text-wrap: balance; margin: 0; }
+  a { color: inherit; }
+  button { font: inherit; }
+  .tnum { font-variant-numeric: tabular-nums; }
+
+  /* ---------- masthead ---------- */
+  header.top {
+    border-bottom: 1px solid var(--rule);
+    background: var(--sheet);
+  }
+  .top-inner {
+    max-width: 1220px; margin: 0 auto; padding: 18px 20px 16px;
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 18px;
+  }
+  .mark {
+    font-family: var(--serif); font-size: 25px; font-weight: 600;
+    letter-spacing: -.015em; display: flex; align-items: baseline; gap: 9px;
+  }
+  .mark .word { position: relative; padding-bottom: 3px; }
+  .mark .word::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+    background: var(--err); transform: rotate(-.6deg); transform-origin: left;
+  }
+  .tagline { color: var(--ink-2); font-size: 13.5px; max-width: 54ch; }
+  .legal-chip {
+    margin-left: auto; font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--ink-2);
+    border: 1px solid var(--rule-2); border-radius: 2px; padding: 4px 8px; white-space: nowrap;
+  }
+
+  /* ---------- control bar ---------- */
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end;
+    padding: 16px 0 18px;
+  }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--ink-2);
+  }
+  select, .btn, input[type="text"], input[type="number"] {
+    font-family: var(--mono); font-size: 13px; color: var(--ink);
+    background: var(--sheet); border: 1px solid var(--rule-2); border-radius: 2px;
+    padding: 7px 9px; height: 34px;
+  }
+  select { min-width: 210px; }
+  .btn { cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+  .btn:hover { border-color: var(--ink-2); }
+  .btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .btn.primary:hover { opacity: .88; }
+  .spacer { flex: 1 1 24px; }
+  :focus-visible { outline: 2px solid var(--err); outline-offset: 2px; }
+
+  /* ---------- layout ---------- */
+  .grid { display: grid; grid-template-columns: minmax(0,1.55fr) minmax(340px,1fr); gap: 22px; align-items: start; }
+  @media (max-width: 940px) { .grid { grid-template-columns: 1fr; } }
+
+  /* ---------- the bill sheet ---------- */
+  .sheet {
+    background: var(--sheet); border: 1px solid var(--rule);
+    box-shadow: var(--shadow); border-radius: 3px; overflow: hidden;
+  }
+  .sheet-head { padding: 18px 20px 14px; border-bottom: 2px solid var(--ink); }
+  .facility { font-family: var(--serif); font-size: 17px; }
+  .sheet-meta {
+    margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px 26px;
+    font-family: var(--mono); font-size: 11.5px; color: var(--ink-2);
+  }
+  .sheet-meta b { color: var(--ink); font-weight: 500; }
+  .scroller { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12.5px; }
+  thead th {
+    text-align: left; font-weight: 500; font-size: 10px; letter-spacing: .09em;
+    text-transform: uppercase; color: var(--ink-2);
+    padding: 10px 8px; border-bottom: 1px solid var(--rule); white-space: nowrap;
+  }
+  tbody td { padding: 9px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  tbody tr:hover { background: var(--sheet-2); }
+  td.flagcell { width: 34px; padding-left: 12px; }
+  td.desc { width: 100%; min-width: 220px; line-height: 1.35; }
+  td.desc .sub { color: var(--ink-3); font-size: 11px; }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+  tr.flagged td.flagcell { box-shadow: inset 3px 0 0 var(--err); }
+  tr.flagged.price td.flagcell { box-shadow: inset 3px 0 0 var(--price); }
+  tr.lit { background: var(--price-bg); }
+  .fnum {
+    display: inline-block; min-width: 17px; text-align: center;
+    font-size: 10px; font-weight: 600; padding: 1px 3px; border-radius: 2px;
+    background: var(--err-bg); color: var(--err); border: 1px solid currentColor;
+  }
+  tr.flagged.price .fnum { background: var(--price-bg); color: var(--price); }
+  input.cellinput {
+    font-family: var(--mono); font-size: 12.5px; color: var(--ink);
+    background: transparent; border: 1px solid transparent; border-radius: 2px;
+    text-align: right; padding: 1px 3px; width: 82px; height: auto;
+    -moz-appearance: textfield; appearance: textfield;
+  }
+  input.cellinput::-webkit-outer-spin-button,
+  input.cellinput::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  input.cellinput.units { width: 44px; }
+  input.cellinput:hover { border-color: var(--rule-2); }
+  input.cellinput:focus { border-color: var(--ink-2); background: var(--sheet-2); }
+  .del {
+    background: none; border: 0; color: var(--ink-3); cursor: pointer;
+    font-family: var(--mono); font-size: 13px; padding: 0 4px; line-height: 1;
+  }
+  .del:hover { color: var(--err); }
+  tfoot td {
+    padding: 12px 8px; font-family: var(--mono); font-size: 13px;
+    border-top: 2px solid var(--ink); font-weight: 600;
+  }
+  .sheet-foot {
+    padding: 12px 20px 16px; font-family: var(--mono); font-size: 11px;
+    color: var(--ink-3); border-top: 1px solid var(--rule); background: var(--sheet-2);
+  }
+
+  /* ---------- audit panel ---------- */
+  .panel { position: sticky; top: 16px; display: flex; flex-direction: column; gap: 16px; }
+  @media (max-width: 940px) { .panel { position: static; } }
+  .card { background: var(--sheet); border: 1px solid var(--rule); border-radius: 3px; box-shadow: var(--shadow); }
+  .verdict { padding: 18px 20px 16px; }
+  .verdict .kicker {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .09em;
+    text-transform: uppercase; color: var(--ink-2);
+  }
+  .verdict .big {
+    font-family: var(--serif); font-size: 42px; line-height: 1.05; letter-spacing: -.02em;
+    margin: 6px 0 2px; color: var(--credit);
+  }
+  .verdict .of { font-family: var(--mono); font-size: 12px; color: var(--ink-2); }
+  .meter { display: flex; height: 7px; margin: 14px 0 9px; border-radius: 1px; overflow: hidden; background: var(--rule); }
+  .meter i { display: block; height: 100%; }
+  .meter .m-err { background: var(--err); }
+  .meter .m-price { background: var(--price); }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-family: var(--mono); font-size: 10.5px; color: var(--ink-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .dot { width: 8px; height: 8px; border-radius: 1px; display: inline-block; }
+
+  .findings { border-top: 1px solid var(--rule); }
+  .finding { border-bottom: 1px solid var(--rule); }
+  .finding:last-child { border-bottom: 0; }
+  .f-head {
+    width: 100%; background: none; border: 0; text-align: left; cursor: pointer;
+    display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 12px 20px;
+    color: var(--ink);
+  }
+  .f-head:hover { background: var(--sheet-2); }
+  .f-title { font-size: 14px; font-weight: 600; line-height: 1.3; }
+  .f-amt { font-family: var(--mono); font-size: 13px; font-weight: 600; text-align: right; }
+  .f-tags { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .tag {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .05em; text-transform: uppercase;
+    padding: 2px 6px; border-radius: 2px; border: 1px solid transparent;
+  }
+  .tag.err   { background: var(--err-bg);   color: var(--err); }
+  .tag.price { background: var(--price-bg); color: var(--price); }
+  .tag.right { background: var(--right-bg); color: var(--right); }
+  .tag.line  { background: none; color: var(--ink-2); border-color: var(--rule-2); }
+  .f-body { padding: 0 20px 16px; display: none; }
+  .finding.open .f-body { display: block; }
+  .f-body p { margin: 0 0 10px; font-size: 13.5px; color: var(--ink-2); line-height: 1.55; }
+  .f-body p.say { color: var(--ink); border-left: 2px solid var(--rule-2); padding-left: 11px; font-style: italic; }
+  .basis {
+    font-family: var(--mono); font-size: 10.5px; color: var(--ink-3);
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  .chev { color: var(--ink-3); font-family: var(--mono); }
+
+  .actions { padding: 14px 20px; display: flex; flex-wrap: wrap; gap: 8px; border-top: 1px solid var(--rule); }
+
+  /* ---------- output ---------- */
+  .output { margin-top: 22px; }
+  .out-head {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+    padding: 14px 20px; border-bottom: 1px solid var(--rule);
+  }
+  .out-head h2 { font-size: 17px; }
+  .out-head .btn { margin-left: auto; }
+  pre.letter {
+    margin: 0; padding: 22px 24px; font-family: var(--mono); font-size: 12.5px;
+    line-height: 1.65; white-space: pre-wrap; word-wrap: break-word; color: var(--ink);
+    max-height: 520px; overflow: auto;
+  }
+  .tabs { display: flex; gap: 2px; }
+  .tab {
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase;
+    background: none; border: 1px solid transparent; border-radius: 2px; padding: 5px 10px;
+    color: var(--ink-2); cursor: pointer;
+  }
+  .tab[aria-selected="true"] { color: var(--ink); border-color: var(--rule-2); background: var(--sheet-2); }
+
+  /* ---------- paste dialog ---------- */
+  dialog {
+    border: 1px solid var(--rule-2); border-radius: 3px; background: var(--sheet); color: var(--ink);
+    padding: 0; width: min(660px, 92vw); box-shadow: var(--shadow);
+  }
+  dialog::backdrop { background: rgba(10,16,17,.5); }
+  .dlg-body { padding: 20px 22px 18px; }
+  .dlg-body h2 { font-size: 18px; margin-bottom: 6px; }
+  .dlg-body p { font-size: 13.5px; color: var(--ink-2); margin: 0 0 14px; }
+  textarea {
+    width: 100%; min-height: 190px; font-family: var(--mono); font-size: 12.5px;
+    background: var(--sheet-2); color: var(--ink); border: 1px solid var(--rule-2);
+    border-radius: 2px; padding: 12px; line-height: 1.5; resize: vertical;
+  }
+  .dlg-foot { display: flex; gap: 8px; justify-content: flex-end; padding: 0 22px 20px; }
+
+  /* ---------- explainer ---------- */
+  .how { margin-top: 40px; border-top: 1px solid var(--rule); padding-top: 28px; }
+  .how h2 { font-size: 20px; margin-bottom: 14px; }
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(238px, 1fr)); gap: 26px 32px; }
+  .cols h3 { font-family: var(--sans); font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .cols p { margin: 0; font-size: 13.5px; color: var(--ink-2); line-height: 1.6; }
+  .cols ul { margin: 0; padding-left: 17px; font-size: 13.5px; color: var(--ink-2); line-height: 1.6; }
+  .disclaimer {
+    margin-top: 30px; padding: 14px 16px; border: 1px solid var(--rule-2); border-radius: 3px;
+    background: var(--sheet-2); font-size: 12.5px; color: var(--ink-2); line-height: 1.6;
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="mark"><span class="word">Itemize</span></div>
+    <div class="tagline">Line-by-line audit of a hospital bill. Finds the coding errors, the prices no one should pay, and the federal rights nobody told you about &mdash; then writes the letter.</div>
+    <div class="legal-chip">Prototype &middot; not legal advice</div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="controls">
+    <div class="field">
+      <label for="example">Bill on the table</label>
+      <select id="example">
+        <option value="er">ER visit &mdash; ankle injury (uninsured)</option>
+        <option value="mri">Outpatient MRI + labs (PPO insured)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="status">Coverage at time of service</label>
+      <select id="status">
+        <option value="selfpay">Uninsured / self-pay</option>
+        <option value="insured">Insured &mdash; some providers out of network</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="gfe">Good faith estimate ($)</label>
+      <input id="gfe" type="number" min="0" step="1" style="width:130px" />
+    </div>
+    <div class="spacer"></div>
+    <button class="btn" id="paste-open">Paste my own bill</button>
+    <button class="btn" id="addline">+ Add line</button>
+  </div>
+
+  <div class="grid">
+    <section class="sheet" aria-label="Itemized statement">
+      <div class="sheet-head">
+        <div class="facility" id="facility"></div>
+        <div class="sheet-meta" id="sheetmeta"></div>
+      </div>
+      <div class="scroller">
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              <th>Rev</th>
+              <th>Code</th>
+              <th>Description</th>
+              <th class="num">Units</th>
+              <th class="num">Charge</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="lines"></tbody>
+          <tfoot>
+            <tr>
+              <td colspan="5">TOTAL CHARGES</td>
+              <td class="num tnum" id="total"></td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div class="sheet-foot">Units and charges are editable &mdash; type over any number and the audit re-runs.</div>
+    </section>
+
+    <aside class="panel">
+      <div class="card">
+        <div class="verdict">
+          <div class="kicker">Questionable charges found</div>
+          <div class="big tnum" id="recovery">$0</div>
+          <div class="of tnum" id="ofline"></div>
+          <div class="meter" id="meter"></div>
+          <div class="legend">
+            <span><i class="dot" style="background:var(--err)"></i> Billing error</span>
+            <span><i class="dot" style="background:var(--price)"></i> Price to negotiate</span>
+            <span><i class="dot" style="background:var(--rule-2)"></i> Not disputed</span>
+          </div>
+        </div>
+        <div class="findings" id="findings"></div>
+        <div class="actions">
+          <button class="btn primary" id="gen">Write my appeal packet</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <section class="card output" id="output" hidden>
+    <div class="out-head">
+      <h2>Appeal packet</h2>
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="tab-letter" aria-selected="true">Letter</button>
+        <button class="tab" role="tab" id="tab-script" aria-selected="false">Phone script</button>
+      </div>
+      <button class="btn" id="copy">Copy</button>
+    </div>
+    <pre class="letter" id="letter"></pre>
+  </section>
+
+  <section class="how">
+    <h2>What the audit actually checks</h2>
+    <div class="cols">
+      <div>
+        <h3>Coding errors</h3>
+        <ul>
+          <li>Same code, same date, billed twice</li>
+          <li>Panel components billed apart from the panel (NCCI unbundling)</li>
+          <li>Units above the medically unlikely edit for the code</li>
+          <li>Routine supplies already paid for in the room rate</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Prices</h3>
+        <p>Every coded line is divided by the Medicare national rate for that code. Private plans pay roughly 2.5&times; Medicare on average, so anything above 4&times; is surfaced with the discount to ask for &mdash; and the hospital's own cash price, which it is required to publish, as the lever.</p>
+      </div>
+      <div>
+        <h3>Federal rights</h3>
+        <p>The engine applies the right law for the patient. Insured with an out-of-network ER clinician: the No Surprises Act bans the balance bill. Uninsured and billed more than $400 over the good faith estimate: the federal dispute process is open for 120 days, for a $25 fee.</p>
+      </div>
+      <div>
+        <h3>Then it writes the letter</h3>
+        <p>Each finding becomes a numbered objection with the rule it violates, addressed to the billing office, with a records request and a hold on collections. Print it, sign it, send it.</p>
+      </div>
+    </div>
+    <div class="disclaimer">
+      <b>Read this part.</b> Itemize is a working prototype built for the Blue Ocean Student Entrepreneur Competition. It is not legal, medical, or financial advice, and it does not replace a licensed patient advocate or attorney. The Medicare reference rates below the hood are rounded national averages used for benchmarking only; a production version reads live CMS fee schedules and the hospital's own machine-readable price file, both of which are public. Nothing you type here leaves your browser &mdash; there is no server, no account, and no bill data stored anywhere.
+    </div>
+  </section>
+</div>
+
+<dialog id="pastedlg">
+  <div class="dlg-body">
+    <h2>Paste your itemized bill</h2>
+    <p>One line item per row. The parser looks for a CPT/HCPCS code, a description, units, and a dollar amount in any order &mdash; commas, pipes, or spacing all work.</p>
+    <textarea id="pastebox" spellcheck="false"></textarea>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn" id="paste-cancel">Cancel</button>
+    <button class="btn primary" id="paste-run">Read this bill</button>
+  </div>
+</dialog>
+
+<script>
+/* ============================================================
+   Reference data.
+   Medicare rates are rounded 2025 national averages, used only
+   as a benchmark denominator. Production reads the live CMS
+   fee schedules + the hospital's 45 CFR 180 price file.
+   ============================================================ */
+const MEDICARE = {
+  "99285": 660, "99284": 420, "99283": 300, "99282": 180,
+  "73610": 40,  "71046": 32,  "70551": 220,
+  "80053": 12,  "82565": 5,   "82947": 5,   "80061": 15, "36415": 3,
+  "J1885": 2,   "A4570": 40
+};
+/* Panel code -> component codes that must not be billed separately (NCCI PTP). */
+const PANELS = {
+  "80053": ["82565","82947","84295","82374","82040","84075","84450","84460","82310","84520","82248","83615"],
+  "80061": ["82465","83718","84478"],
+  "80048": ["82565","82947","84295","82374","82040","82310","84520","82248"]
+};
+/* Medically unlikely edits: plausible max units per date of service. */
+const MUE = { "J1885": 8, "73610": 2, "70551": 1, "80053": 1, "80061": 1, "99285": 1, "A4570": 2 };
+/* Room-rate items that are not separately billable. */
+const ROUTINE = /\b(glove|gown|mask|ppe|sterile supply|supply kit|pillow|blanket|gauze|alcohol (pad|prep)|table pad|linen|admission kit|thermometer cover)\b/i;
+const OTC = /\b(acetaminophen|tylenol|ibuprofen|advil|motrin|aspirin|antacid|tums|docusate|senna|saline nasal|melatonin)\b/i;
+
+const FAIR_MULTIPLE = 2.5;   /* RAND: commercial plans pay ~254% of Medicare */
+const FLAG_MULTIPLE = 4.0;   /* below this we do not bother the patient */
+const GFE_THRESHOLD = 400;   /* 45 CFR 149.610 */
+
+/* ============================================================ */
+const EXAMPLES = {
+  er: {
+    facility: "Riverside Regional Medical Center",
+    acct: "RRMC-4417822",
+    date: "March 14, 2026",
+    status: "selfpay",
+    gfe: 1850,
+    lines: [
+      { rev:"0450", code:"99285", desc:"EMERGENCY DEPT VISIT — LEVEL 5", units:1, charge:3240 },
+      { rev:"0320", code:"73610", desc:"X-RAY ANKLE, COMPLETE 3+ VIEWS", units:1, charge:612 },
+      { rev:"0320", code:"73610", desc:"X-RAY ANKLE, COMPLETE 3+ VIEWS", units:1, charge:612 },
+      { rev:"0636", code:"J1885", desc:"KETOROLAC TROMETHAMINE, PER 15 MG", units:20, charge:340 },
+      { rev:"0270", code:"",      desc:"STERILE SUPPLY — GLOVE & GOWN KIT", units:1, charge:58 },
+      { rev:"0250", code:"",      desc:"PHARMACY — ACETAMINOPHEN 325MG TAB", units:2, charge:46 },
+      { rev:"0272", code:"A4570", desc:"SPLINT, ANKLE, PREFABRICATED", units:1, charge:289 },
+      { rev:"0981", code:"99285", desc:"PROFESSIONAL FEE — ED PHYSICIAN GROUP", units:1, charge:980, oon:true },
+      { rev:"0301", code:"80053", desc:"COMPREHENSIVE METABOLIC PANEL", units:1, charge:268 },
+      { rev:"0301", code:"82565", desc:"CREATININE, SERUM", units:1, charge:88 },
+      { rev:"0301", code:"82947", desc:"GLUCOSE, QUANTITATIVE", units:1, charge:76 }
+    ]
+  },
+  mri: {
+    facility: "Lakeview Health Imaging Center",
+    acct: "LHIC-90233",
+    date: "January 9, 2026",
+    status: "insured",
+    gfe: 0,
+    lines: [
+      { rev:"0610", code:"70551", desc:"MRI BRAIN WITHOUT CONTRAST", units:1, charge:4850 },
+      { rev:"0981", code:"70551", desc:"PROFESSIONAL READ — RADIOLOGY GROUP", units:1, charge:890, oon:true },
+      { rev:"0300", code:"80061", desc:"LIPID PANEL — ROUTINE SCREENING", units:1, charge:210, preventive:true },
+      { rev:"0300", code:"82465", desc:"CHOLESTEROL, SERUM, TOTAL", units:1, charge:64 },
+      { rev:"0300", code:"36415", desc:"ROUTINE VENIPUNCTURE", units:1, charge:52 },
+      { rev:"0250", code:"",      desc:"PHARMACY — IBUPROFEN 200MG TAB", units:2, charge:38 },
+      { rev:"0270", code:"",      desc:"MED/SURG SUPPLIES — TABLE PAD, LINEN", units:1, charge:42 }
+    ]
+  }
+};
+
+let state = null;
+let uid = 0;
+
+function load(key) {
+  const ex = EXAMPLES[key];
+  state = {
+    facility: ex.facility, acct: ex.acct, date: ex.date,
+    status: ex.status, gfe: ex.gfe,
+    lines: ex.lines.map(l => Object.assign({ id: ++uid, oon:false, preventive:false }, l))
+  };
+  document.getElementById("status").value = state.status;
+  document.getElementById("gfe").value = state.gfe || "";
+  render();
+}
+
+const money = n => "$" + Math.round(n).toLocaleString("en-US");
+const money2 = n => "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/* ============================================================
+   The audit engine
+   ============================================================ */
+function audit() {
+  const L = state.lines;
+  const f = [];
+  const push = (o) => f.push(Object.assign({ kind: "err" }, o));
+  /* Lines a finding asks to strike from the bill entirely. Never also
+     negotiate the price of a charge you are arguing does not belong. */
+  const struck = new Set();
+
+  /* 1. duplicates ------------------------------------------------ */
+  const seen = {};
+  L.forEach(l => {
+    if (!l.code) return;
+    const k = l.code + "|" + l.desc;
+    (seen[k] = seen[k] || []).push(l);
+  });
+  Object.values(seen).forEach(group => {
+    if (group.length < 2) return;
+    const extras = group.slice(1);
+    extras.forEach(l => struck.add(l.id));
+    push({
+      kind: "err",
+      title: "The same procedure is billed " + group.length + " times on one date",
+      lines: group.map(l => l.id),
+      amount: extras.reduce((s,l) => s + l.charge, 0),
+      why: "Code " + group[0].code + " appears " + group.length + " times for " + state.date + ". A repeat of the same imaging or procedure on the same day needs a separate order in the chart and a repeat modifier on the claim. Absent that, the extra line is a keying error — one of the most common there is.",
+      basis: "CMS medically unlikely edits · duplicate claim logic",
+      say: "I see " + group[0].code + " billed " + group.length + " times on " + state.date + ". Please send me the physician order and report for each one, or remove the duplicate."
+    });
+  });
+
+  /* 2. unbundling ------------------------------------------------ */
+  Object.keys(PANELS).forEach(panel => {
+    const p = L.find(l => l.code === panel);
+    if (!p) return;
+    const comps = L.filter(l => PANELS[panel].includes(l.code));
+    if (!comps.length) return;
+    comps.forEach(c => struck.add(c.id));
+    push({
+      kind: "err",
+      title: "Lab tests billed separately from the panel that already includes them",
+      lines: [p.id].concat(comps.map(c => c.id)),
+      amount: comps.reduce((s,c) => s + c.charge, 0),
+      why: "Panel " + panel + " (" + p.desc.toLowerCase() + ") already contains " + comps.map(c => c.code).join(", ") + ". Billing a component on its own line on top of the panel is unbundling, and the correct coding edits reject it.",
+      basis: "CMS National Correct Coding Initiative · procedure-to-procedure edits",
+      say: "You billed the panel " + panel + " and then billed its components separately. NCCI edits bundle those. Please rebill with the panel code only."
+    });
+  });
+
+  /* 3. unit anomalies -------------------------------------------- */
+  L.forEach(l => {
+    const max = MUE[l.code];
+    if (!max || l.units <= max) return;
+    const excess = l.units - max;
+    push({
+      kind: "err",
+      title: "Quantity above the limit for " + l.code + ": " + l.units + " units billed",
+      lines: [l.id],
+      amount: l.charge * (excess / l.units),
+      why: l.desc + " is billed in units of the amount named in the code, not by the dose. " + l.units + " units exceeds the medically unlikely edit of " + max + " for a single date — usually a decimal or a milligram-versus-unit slip in data entry.",
+      basis: "CMS medically unlikely edits (MUE)",
+      say: "Line " + l.code + " shows " + l.units + " units. The MUE limit is " + max + ". Please confirm the administration record or correct the units."
+    });
+  });
+
+  /* 4. routine supplies ------------------------------------------ */
+  L.filter(l => ROUTINE.test(l.desc)).forEach(l => {
+    struck.add(l.id);
+    push({
+      kind: "err",
+      title: "Routine supplies billed on top of the room charge",
+      lines: [l.id],
+      amount: l.charge,
+      why: "Gloves, gowns, linens and other routine supplies are part of the facility's overhead and are already inside the room or treatment-room rate. They are not separately billable items.",
+      basis: "Medicare Provider Reimbursement Manual · routine supplies included in room rate",
+      say: "Revenue code " + l.rev + " is routine supply already included in the facility charge. Please remove it."
+    });
+  });
+
+  /* 5. self-administered OTC markup ------------------------------ */
+  L.filter(l => OTC.test(l.desc) && l.charge / Math.max(l.units,1) > 5).forEach(l => {
+    push({
+      kind: "price",
+      title: "Over-the-counter medication at " + money2(l.charge / Math.max(l.units,1)) + " per dose",
+      lines: [l.id],
+      amount: Math.max(0, l.charge - l.units * 1),
+      why: "This is a drug you can buy for pennies at any pharmacy. It is not a coding error, but it is the single easiest line to get written off, and asking for it signals that the whole bill is being read.",
+      basis: "Self-administered drug · negotiable at hospital discretion",
+      say: "You charged " + money2(l.charge / Math.max(l.units,1)) + " for one " + l.desc.split("—").pop().trim().toLowerCase() + ". Please adjust that line to cost."
+    });
+  });
+
+  /* 6. rights: No Surprises Act balance billing (insured only) ---- */
+  const oon = L.filter(l => l.oon);
+  if (state.status === "insured" && oon.length) {
+    oon.forEach(l => struck.add(l.id));
+    push({
+      kind: "right",
+      title: "Out-of-network clinician you did not choose — this bill is barred",
+      lines: oon.map(l => l.id),
+      amount: oon.reduce((s,l) => s + l.charge, 0),
+      why: "You went to the facility; you did not pick the physician group that read the scan or staffed the room. For emergency care anywhere, and for ancillary clinicians at an in-network facility, federal law caps what you owe at your in-network cost sharing. The clinician has to settle the rest with your plan, not with you. This is not a negotiation — the bill is not lawful.",
+      basis: "No Surprises Act · PHS Act §2799B-1 and §2799B-2 · complaints to CMS at 1-800-985-3059",
+      say: "This is a surprise bill from an out-of-network provider at an in-network facility. Under the No Surprises Act I owe only my in-network cost sharing. Please withdraw it and bill my plan."
+    });
+  }
+
+  /* 7. rights: good faith estimate variance (self-pay only) ------- */
+  const total = L.reduce((s,l) => s + l.charge, 0);
+  if (state.status === "selfpay" && state.gfe > 0 && total - state.gfe > GFE_THRESHOLD) {
+    push({
+      kind: "right",
+      title: "Final bill is " + money(total - state.gfe) + " over the good faith estimate",
+      lines: [],
+      amount: 0,
+      why: "As an uninsured or self-pay patient you were entitled to a written good faith estimate before this visit. Because the bill exceeds it by more than $400, you can open the federal patient-provider dispute resolution process within 120 days of the bill for a $25 fee — and while that dispute is pending the provider may not send you to collections. Most billing offices settle rather than go through it.",
+      basis: "No Surprises Act · 45 CFR 149.610 · patient-provider dispute resolution",
+      say: "My bill exceeds my good faith estimate by more than $400. I intend to file for patient-provider dispute resolution, and collections must be paused while it is pending."
+    });
+  }
+
+  /* 8. preventive cost sharing ------------------------------------ */
+  L.filter(l => l.preventive).forEach(l => {
+    if (state.status !== "insured") return;
+    struck.add(l.id);
+    push({
+      kind: "right",
+      title: "Preventive screening billed with cost sharing",
+      lines: [l.id],
+      amount: l.charge,
+      why: "Screenings graded A or B by the US Preventive Services Task Force must be covered by a non-grandfathered plan with no copay, coinsurance or deductible when billed in network. A charge landing on you usually means the claim went out with a diagnostic code instead of a screening code — a one-character fix at the billing office.",
+      basis: "Affordable Care Act · PHS Act §2713 preventive services",
+      say: "This was routine screening, not diagnostic. Please rebill it with the preventive code so it processes at no cost sharing."
+    });
+  });
+
+  /* 9. price benchmark ------------------------------------------- */
+  const priced = {};
+  L.forEach(l => {
+    const rate = MEDICARE[l.code];
+    if (!rate || !l.units || struck.has(l.id)) return;
+    const allowed = rate * l.units;
+    if (l.charge / allowed < FLAG_MULTIPLE) return;
+    const g = priced[l.code] = priced[l.code] || { lines: [], charge: 0, allowed: 0, desc: l.desc };
+    g.lines.push(l.id); g.charge += l.charge; g.allowed += allowed;
+  });
+  Object.keys(priced).forEach(code => {
+    const g = priced[code];
+    const ratio = g.charge / g.allowed;
+    const fair = g.allowed * FAIR_MULTIPLE;
+    push({
+      kind: "price",
+      title: serviceName(g.desc) + " is priced at " + ratio.toFixed(1) + "\u00d7 the Medicare rate",
+      lines: g.lines,
+      amount: Math.max(0, g.charge - fair),
+      why: "Medicare pays about " + money(g.allowed) + " for this" + (g.lines.length > 1 ? " across the " + g.lines.length + " lines it appears on" : "") +
+           ". Commercial insurers negotiate roughly " + FAIR_MULTIPLE + "\u00d7 Medicare on average, which puts a defensible number at " +
+           money(fair) + " against the " + money(g.charge) + " billed. Since 2021 every hospital has had to publish its own discounted cash price for this code in a machine-readable file \u2014 ask for that price by name.",
+      basis: "Hospital Price Transparency Rule, 45 CFR 180 \u00b7 RAND: commercial \u2248 254% of Medicare",
+      say: "Under the hospital price transparency rule you publish a discounted cash price for " + code + ". I'm asking to be billed at that published rate rather than the chargemaster rate."
+    });
+  });
+
+  /* 10. E/M level review ------------------------------------------ */
+  const em5 = L.find(l => l.code === "99285" && l.rev !== "0981");
+  const criticalSigns = L.some(l => /critical care|cardiac monitor|ventilat|intubat|99291/i.test(l.desc));
+  if (em5 && !criticalSigns) {
+    const down = MEDICARE["99285"] - MEDICARE["99283"];
+    push({
+      kind: "price",
+      title: "Highest-acuity visit level billed with no high-acuity treatment on the bill",
+      lines: [em5.id],
+      amount: 0,
+      why: "99285 is the top emergency visit level — it describes a presentation posing an immediate significant threat to life or function. Nothing else on this bill (imaging of one limb, an anti-inflammatory, a splint) supports that level. It may still be correct; the chart decides. Ask for the coding sheet. A drop to 99283 is roughly " + money(down) + " of Medicare-equivalent difference and far more at chargemaster prices.",
+      basis: "AMA CPT evaluation & management guidelines · request the coding audit",
+      say: "Please send the coding worksheet supporting a level 5 emergency visit, and have a coder re-review the level against the chart."
+    });
+  }
+
+  /* order: errors, then rights, then prices; biggest first */
+  const rank = { err: 0, right: 1, price: 2 };
+  f.sort((a,b) => rank[a.kind] - rank[b.kind] || b.amount - a.amount);
+  f.forEach((x,i) => x.n = i + 1);
+  return f;
+}
+
+/* "X-RAY ANKLE, COMPLETE 3+ VIEWS" -> "X-ray ankle" */
+const ACRONYMS = /^(mri|ct|ekg|ecg|eeg|iv|ed|er|cbc|cmp|bmp|tsh|us|pet|dme|otc)$/;
+function serviceName(desc) {
+  const head = desc.split(/[,\u2014]/)[0].trim().toLowerCase();
+  const words = head.split(/\s+/).map(w => ACRONYMS.test(w) ? w.toUpperCase() : w);
+  return words[0].charAt(0).toUpperCase() + words[0].slice(1) + (words.length > 1 ? " " + words.slice(1).join(" ") : "");
+}
+
+/* Per-line cap so overlapping findings never inflate the headline. */
+function recovery(findings) {
+  const perLine = {};
+  findings.forEach(f => {
+    if (!f.lines.length || !f.amount) return;
+    const share = f.amount / f.lines.length;
+    f.lines.forEach(id => { perLine[id] = (perLine[id] || 0) + share; });
+  });
+  let errTotal = 0, priceTotal = 0;
+  Object.keys(perLine).forEach(id => {
+    const line = state.lines.find(l => l.id === +id);
+    if (!line) return;
+    const capped = Math.min(perLine[id], line.charge);
+    const kinds = findings.filter(f => f.lines.includes(+id) && f.amount);
+    const hard = kinds.some(f => f.kind === "err" || f.kind === "right");
+    if (hard) errTotal += capped; else priceTotal += capped;
+  });
+  return { err: errTotal, price: priceTotal, total: errTotal + priceTotal };
+}
+
+/* ============================================================
+   Render
+   ============================================================ */
+function render() { renderTable(); refresh(); }
+
+function renderTable() {
+  document.getElementById("facility").textContent = state.facility;
+  document.getElementById("sheetmeta").innerHTML =
+    "<span>ACCOUNT <b>" + state.acct + "</b></span>" +
+    "<span>DATE OF SERVICE <b>" + state.date + "</b></span>" +
+    "<span>STATUS <b>" + (state.status === "selfpay" ? "SELF-PAY" : "INSURED") + "</b></span>";
+
+  const tbody = document.getElementById("lines");
+  tbody.innerHTML = "";
+  state.lines.forEach(l => {
+    const tr = document.createElement("tr");
+    tr.dataset.id = l.id;
+    tr.innerHTML =
+      '<td class="flagcell"></td>' +
+      '<td class="tnum">' + l.rev + '</td>' +
+      '<td>' + (l.code || "\u2014") + '</td>' +
+      '<td class="desc">' + l.desc + (l.oon ? '<div class="sub">OUT OF NETWORK</div>' : "") + '</td>' +
+      '<td class="num"><input class="cellinput units tnum" type="number" min="0" step="1" value="' + l.units + '" data-f="units" aria-label="Units"></td>' +
+      '<td class="num"><input class="cellinput tnum" type="number" min="0" step="0.01" value="' + l.charge + '" data-f="charge" aria-label="Charge in dollars"></td>' +
+      '<td><button class="del" title="Remove line" aria-label="Remove line">&times;</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+/* Re-runs the audit and repaints everything except the cells being typed into. */
+function refresh() {
+  const findings = audit();
+  const byLine = {};
+  findings.forEach(f => f.lines.forEach(id => (byLine[id] = byLine[id] || []).push(f)));
+
+  state.lines.forEach(l => {
+    const tr = document.querySelector('tr[data-id="' + l.id + '"]');
+    if (!tr) return;
+    const flags = byLine[l.id] || [];
+    const hard = flags.some(f => f.kind === "err" || f.kind === "right");
+    tr.className = flags.length ? "flagged" + (hard ? "" : " price") : "";
+    tr.querySelector(".flagcell").innerHTML =
+      flags.map(f => '<span class="fnum">' + f.n + '</span>').join(" ");
+  });
+
+  const total = state.lines.reduce((s, l) => s + l.charge, 0);
+  document.getElementById("total").textContent = money2(total);
+
+  const r = recovery(findings);
+  document.getElementById("recovery").textContent = money(r.total);
+  document.getElementById("ofline").textContent =
+    "of " + money(total) + " billed \u00b7 " + (total ? Math.round(r.total / total * 100) : 0) + "% of this bill is in question";
+  document.getElementById("meter").innerHTML =
+    '<i class="m-err" style="width:' + (total ? r.err / total * 100 : 0) + '%"></i>' +
+    '<i class="m-price" style="width:' + (total ? r.price / total * 100 : 0) + '%"></i>';
+
+  const box = document.getElementById("findings");
+  box.innerHTML = "";
+  if (!findings.length) {
+    box.innerHTML = '<div style="padding:18px 20px;color:var(--ink-2);font-size:13.5px">Nothing flagged on this bill. That is rare \u2014 check that the units and charges came through correctly.</div>';
+  }
+  findings.forEach(f => {
+    const el = document.createElement("div");
+    el.className = "finding";
+    const label = f.kind === "err" ? "Billing error" : f.kind === "right" ? "Your legal right" : "Price";
+    el.innerHTML =
+      '<button class="f-head" aria-expanded="false">' +
+        '<span class="f-title">' + f.n + ". " + f.title + '</span>' +
+        '<span class="f-amt tnum">' + (f.amount ? money(f.amount) : "review") + '</span>' +
+        '<span class="f-tags">' +
+          '<span class="tag ' + f.kind + '">' + label + '</span>' +
+          (f.lines.length ? '<span class="tag line">' + f.lines.length + ' line' + (f.lines.length > 1 ? "s" : "") + '</span>' : "") +
+          '<span class="chev">+</span>' +
+        '</span>' +
+      '</button>' +
+      '<div class="f-body">' +
+        '<p>' + f.why + '</p>' +
+        '<p class="say">' + f.say + '</p>' +
+        '<p class="basis">' + f.basis + '</p>' +
+      '</div>';
+    const head = el.querySelector(".f-head");
+    head.addEventListener("click", () => {
+      const open = el.classList.toggle("open");
+      head.setAttribute("aria-expanded", open ? "true" : "false");
+      el.querySelector(".chev").textContent = open ? "\u2212" : "+";
+      document.querySelectorAll("tr.lit").forEach(tr => tr.classList.remove("lit"));
+      if (open) f.lines.forEach(id => {
+        const tr = document.querySelector('tr[data-id="' + id + '"]');
+        if (tr) tr.classList.add("lit");
+      });
+    });
+    box.appendChild(el);
+  });
+
+  window.__findings = findings;
+  window.__recovery = r;
+  if (!document.getElementById("output").hidden) writeOutput();
+}
+
+/* ============================================================
+   Appeal packet
+   ============================================================ */
+function letterText() {
+  const f = window.__findings, r = window.__recovery;
+  const total = state.lines.reduce((s,l) => s + l.charge, 0);
+  const today = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
+  const lineRef = ids => ids.map(id => {
+    const l = state.lines.find(x => x.id === id);
+    return l ? (l.code || "rev " + l.rev) + " — " + money2(l.charge) : "";
+  }).filter(Boolean).join("; ");
+
+  let out = "";
+  out += today + "\n\n";
+  out += "Patient Financial Services\n" + state.facility + "\n\n";
+  out += "RE: Account " + state.acct + " — request for correction and itemized review\n";
+  out += "Date of service: " + state.date + "     Total billed: " + money2(total) + "\n\n";
+  out += "To the billing office:\n\n";
+  out += "I have reviewed the itemized statement for the account above line by line. " +
+         "I am disputing " + f.filter(x => x.amount).length + " items totalling approximately " + money(r.total) +
+         " and requesting a corrected bill. Each objection is stated below with the basis for it. " +
+         "This letter is a good-faith request for correction, not a refusal to pay what is properly owed.\n\n";
+  f.forEach(x => {
+    out += x.n + ". " + x.title.toUpperCase() + "\n";
+    if (x.lines.length) out += "   Line(s): " + lineRef(x.lines) + "\n";
+    if (x.amount) out += "   Amount in dispute: " + money(x.amount) + "\n";
+    out += "   Basis: " + x.basis + "\n";
+    out += "   " + x.say + "\n\n";
+  });
+  out += "I am also requesting, in writing:\n";
+  out += "  a. A fully itemized statement with every CPT/HCPCS code, revenue code, quantity and unit price.\n";
+  out += "  b. The medical records and physician orders supporting the disputed lines.\n";
+  out += "  c. Your published discounted cash price for each coded item, as required by 45 CFR 180.\n";
+  out += "  d. A copy of your financial assistance policy and application.\n";
+  if (state.status === "selfpay" && state.gfe > 0) {
+    out += "  e. The good faith estimate issued to me before service, on which I was quoted " + money(state.gfe) + ".\n";
+  }
+  out += "\nPlease place this account on hold and suspend any collection activity or credit reporting while this dispute is under review. ";
+  out += "I ask for a written response within 30 days. I can be reached at the contact information below and I am willing to resolve this by phone.\n\n";
+  if (state.status === "selfpay" && state.gfe > 0 && total - state.gfe > GFE_THRESHOLD) {
+    out += "Please note: this bill exceeds my good faith estimate by " + money(total - state.gfe) +
+           ". If we cannot resolve it, I intend to file for patient-provider dispute resolution under 45 CFR 149.610 " +
+           "within the 120-day window, during which collection activity must be suspended.\n\n";
+  }
+  if (state.status === "insured" && state.lines.some(l => l.oon)) {
+    out += "Please note: the out-of-network professional charges on this account are subject to the No Surprises Act. " +
+           "I did not select these providers and my liability is limited to in-network cost sharing. " +
+           "I will file a complaint with the No Surprises Help Desk (1-800-985-3059) if the balance bill is not withdrawn.\n\n";
+  }
+  out += "Sincerely,\n\n\n";
+  out += "[Your name]\n[Address]\n[Phone / email]\n[Date of birth and account number for verification]\n\n";
+  out += "cc: file — sent " + today + "\n";
+  out += "\n— — —\nDrafted with Itemize. Review it, edit anything that does not match your records, and sign it yourself.\n";
+  return out;
+}
+
+function scriptText() {
+  const f = window.__findings, r = window.__recovery;
+  let out = "PHONE SCRIPT — patient financial services\n";
+  out += "Ask for a supervisor or a patient account representative. Keep it short and friendly. Write down who you spoke to and when.\n\n";
+  out += "OPEN\n";
+  out += "\"Hi, I'm calling about account " + state.acct + ", date of service " + state.date + ". ";
+  out += "I've gone through the itemized bill and I have a few line items I need corrected before I can pay. Can you pull it up with me?\"\n\n";
+  out += "THEN, ONE AT A TIME\n";
+  f.forEach(x => { out += "  " + x.n + ". " + x.say + "\n"; });
+  out += "\nIF THEY SAY THE CHARGES ARE CORRECT\n";
+  out += "\"I understand. Please send me the itemized statement with the codes and the records supporting those lines in writing, and put the account on hold while I review them.\"\n\n";
+  out += "IF THEY OFFER A DISCOUNT ON THE SPOT\n";
+  out += "\"Thank you. Before I agree, can you send the revised statement in writing? And can you also send me your financial assistance application — I'd like to be screened for it.\"\n\n";
+  out += "ALWAYS CLOSE WITH\n";
+  out += "\"Can you confirm the account is on hold and won't go to collections while this is open? And can I get a reference number for this call?\"\n\n";
+  out += "AT STAKE ON THIS CALL: about " + money(r.total) + ".\n";
+  return out;
+}
+
+let tab = "letter";
+function writeOutput() {
+  document.getElementById("letter").textContent = tab === "letter" ? letterText() : scriptText();
+  document.getElementById("tab-letter").setAttribute("aria-selected", tab === "letter");
+  document.getElementById("tab-script").setAttribute("aria-selected", tab === "script");
+}
+
+/* ============================================================
+   Parser for pasted bills
+   ============================================================ */
+function parseBill(text) {
+  const out = [];
+  text.split(/\r?\n/).forEach(raw => {
+    const line = raw.trim();
+    if (!line || /total charges|patient responsib|balance due|amount due|^-+$/i.test(line)) return;
+    const amounts = line.match(/\$?\s?\d{1,3}(?:,\d{3})*(?:\.\d{2})|\$\s?\d+(?:\.\d+)?/g);
+    if (!amounts) return;
+    const charge = parseFloat(amounts[amounts.length - 1].replace(/[$,\s]/g, ""));
+    if (!isFinite(charge)) return;
+    const code = (line.match(/\b([A-JLPQRSTVW]\d{4}|\d{5})\b/) || [])[1] || "";
+    const rev = (line.match(/\b(0\d{3})\b/) || [])[1] || "";
+    const unitsMatch = line.match(/(?:qty|units?|x)\s*[:=]?\s*(\d{1,3})\b/i);
+    let units = unitsMatch ? parseInt(unitsMatch[1], 10) : 1;
+    let desc = line
+      .replace(/\$?\s?\d{1,3}(?:,\d{3})*(?:\.\d{2})/g, " ")
+      .replace(/\b([A-JLPQRSTVW]\d{4}|\d{5}|0\d{3})\b/g, " ")
+      .replace(/(?:qty|units?)\s*[:=]?\s*\d{1,3}\b/gi, " ")
+      .replace(/[|,;\t]+/g, " ")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+    if (!desc) desc = code ? "CODE " + code : "UNLABELED CHARGE";
+    out.push({ id: ++uid, rev: rev || "————", code, desc: desc.toUpperCase().slice(0, 62), units: units || 1, charge, oon:false, preventive:false });
+  });
+  return out;
+}
+
+/* ============================================================
+   Wiring
+   ============================================================ */
+document.getElementById("example").addEventListener("change", e => load(e.target.value));
+document.getElementById("status").addEventListener("change", e => { state.status = e.target.value; render(); });
+document.getElementById("gfe").addEventListener("input", e => { state.gfe = parseFloat(e.target.value) || 0; render(); });
+
+document.getElementById("lines").addEventListener("input", e => {
+  const inp = e.target.closest(".cellinput");
+  if (!inp) return;
+  const line = state.lines.find(l => l.id === +inp.closest("tr").dataset.id);
+  const v = parseFloat(inp.value);
+  line[inp.dataset.f] = isFinite(v) ? v : 0;
+  refresh();
+});
+document.getElementById("lines").addEventListener("click", e => {
+  if (!e.target.closest(".del")) return;
+  const id = +e.target.closest("tr").dataset.id;
+  state.lines = state.lines.filter(l => l.id !== id);
+  render();
+});
+
+document.getElementById("addline").addEventListener("click", () => {
+  state.lines.push({ id: ++uid, rev:"————", code:"", desc:"NEW LINE ITEM — TYPE OVER THIS", units:1, charge:0, oon:false, preventive:false });
+  render();
+});
+
+const dlg = document.getElementById("pastedlg");
+document.getElementById("paste-open").addEventListener("click", () => {
+  document.getElementById("pastebox").value =
+    "0450 | 99284 | EMERGENCY DEPT VISIT LEVEL 4 | qty 1 | $2,180.00\n" +
+    "0320 | 71046 | CHEST X-RAY 2 VIEWS | qty 1 | $486.00\n" +
+    "0250 |       | PHARMACY IBUPROFEN 400MG | qty 4 | $92.00";
+  dlg.showModal();
+});
+document.getElementById("paste-cancel").addEventListener("click", () => dlg.close());
+document.getElementById("paste-run").addEventListener("click", () => {
+  const lines = parseBill(document.getElementById("pastebox").value);
+  if (!lines.length) { alert("No line items found. Each row needs at least a description and a dollar amount."); return; }
+  state.facility = "Your hospital";
+  state.acct = "[account number]";
+  state.date = "[date of service]";
+  state.lines = lines;
+  dlg.close();
+  render();
+});
+
+document.getElementById("gen").addEventListener("click", () => {
+  const out = document.getElementById("output");
+  out.hidden = false;
+  writeOutput();
+  out.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+document.getElementById("tab-letter").addEventListener("click", () => { tab = "letter"; writeOutput(); });
+document.getElementById("tab-script").addEventListener("click", () => { tab = "script"; writeOutput(); });
+document.getElementById("copy").addEventListener("click", async () => {
+  const btn = document.getElementById("copy");
+  try {
+    await navigator.clipboard.writeText(document.getElementById("letter").textContent);
+    btn.textContent = "Copied";
+  } catch (err) {
+    const range = document.createRange();
+    range.selectNodeContents(document.getElementById("letter"));
+    const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range);
+    btn.textContent = "Selected — press Ctrl+C";
+  }
+  setTimeout(() => { btn.textContent = "Copy"; }, 2200);
+});
+
+load("er");
+</script>

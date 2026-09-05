@@ -1,0 +1,497 @@
+<title>Itemize Strategy Pack</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+  :root {
+    color-scheme: light;
+    --paper:   #F2F4F3;
+    --sheet:   #FFFFFF;
+    --sheet-2: #F7F9F8;
+    --ink:     #121B1D;
+    --ink-2:   #56696B;
+    --ink-3:   #849798;
+    --rule:    #DCE3E1;
+    --rule-2:  #C3CFCC;
+    --err:     #A81F27;
+    --err-bg:  #FBEDED;
+    --price:   #91600A;
+    --price-bg:#FCF3E3;
+    --right:   #0B6257;
+    --right-bg:#E7F3F0;
+    --s1: #2a78d6;   /* incumbent: advocacy firms */
+    --s2: #eb6834;   /* incumbent: status quo */
+    --s3: #1baf7a;   /* Itemize */
+    --shadow: 0 1px 2px rgba(18,27,29,.06), 0 8px 24px -12px rgba(18,27,29,.18);
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, Segoe UI, sans-serif;
+    --serif: "IBM Plex Serif", Georgia, serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper:#0C1213; --sheet:#141C1E; --sheet-2:#182224;
+      --ink:#E7EEEC; --ink-2:#9AACAC; --ink-3:#718384;
+      --rule:#263234; --rule-2:#354547;
+      --err:#F0787E; --err-bg:#2A1618;
+      --price:#E3AC4E; --price-bg:#291F10;
+      --right:#5BD3BF; --right-bg:#0E2622;
+      --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper:#0C1213; --sheet:#141C1E; --sheet-2:#182224;
+    --ink:#E7EEEC; --ink-2:#9AACAC; --ink-3:#718384;
+    --rule:#263234; --rule-2:#354547;
+    --err:#F0787E; --err-bg:#2A1618;
+    --price:#E3AC4E; --price-bg:#291F10;
+    --right:#5BD3BF; --right-bg:#0E2622;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 0 22px 80px; }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 600; text-wrap: balance; margin: 0; letter-spacing: -.01em; }
+  h1 { font-size: 38px; line-height: 1.12; }
+  h2 { font-size: 25px; }
+  h3 { font-size: 16px; }
+  p { margin: 0 0 14px; max-width: 68ch; }
+  a { color: var(--right); text-underline-offset: 2px; }
+  .tnum { font-variant-numeric: tabular-nums; }
+
+  header.top { border-bottom: 1px solid var(--rule); background: var(--sheet); }
+  .top-inner { max-width: 940px; margin: 0 auto; padding: 34px 22px 30px; }
+  .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 12px; }
+  .thesis { font-size: 18px; color: var(--ink-2); max-width: 62ch; margin-top: 14px; }
+  .thesis b { color: var(--ink); font-weight: 600; }
+  .demo { display: inline-flex; align-items: center; gap: 9px; margin-top: 20px; font-family: var(--mono); font-size: 13px;
+          border: 1px solid var(--rule-2); border-radius: 2px; padding: 9px 13px; text-decoration: none; color: var(--ink); background: var(--sheet-2); }
+  .demo:hover { border-color: var(--right); }
+  .demo .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--s3); }
+
+  section { padding-top: 46px; }
+  .sec-label { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 8px; }
+  .lede { font-size: 16.5px; color: var(--ink-2); max-width: 66ch; margin: 10px 0 22px; }
+
+  /* stat row */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; margin: 24px 0 8px; }
+  .stat { background: var(--sheet); padding: 16px 18px; }
+  .stat .n { font-family: var(--serif); font-size: 30px; line-height: 1.1; letter-spacing: -.02em; }
+  .stat .l { font-size: 12.5px; color: var(--ink-2); margin-top: 5px; line-height: 1.45; }
+  .srcnote { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); letter-spacing: .03em; }
+
+  /* tiers */
+  .tiers { display: grid; gap: 14px; }
+  .tier { display: grid; grid-template-columns: 46px 1fr; gap: 18px; background: var(--sheet); border: 1px solid var(--rule); border-left: 3px solid var(--s3); border-radius: 3px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .tier .num { font-family: var(--serif); font-size: 30px; color: var(--s3); line-height: 1; }
+  .tier h3 { margin-bottom: 4px; }
+  .tier p { margin: 0; font-size: 14px; color: var(--ink-2); }
+  .tier .size { font-family: var(--mono); font-size: 11.5px; color: var(--ink); margin-top: 9px; padding-top: 9px; border-top: 1px dotted var(--rule-2); }
+
+  /* chart */
+  figure { margin: 0; background: var(--sheet); border: 1px solid var(--rule); border-radius: 3px; box-shadow: var(--shadow); overflow: hidden; }
+  .fig-head { padding: 18px 20px 4px; }
+  .fig-head h3 { font-size: 17px; }
+  .fig-head p { font-size: 13.5px; color: var(--ink-2); margin: 6px 0 0; }
+  .chart-scroll { overflow-x: auto; padding: 6px 12px 4px; }
+  svg.canvas { display: block; min-width: 780px; width: 100%; height: auto; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 20px; padding: 6px 20px 18px; font-size: 13px; color: var(--ink-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .swatch { width: 16px; height: 3px; border-radius: 2px; display: inline-block; }
+  figcaption { padding: 14px 20px 18px; border-top: 1px solid var(--rule); background: var(--sheet-2); font-size: 13px; color: var(--ink-2); }
+  #tip { position: fixed; pointer-events: none; opacity: 0; transition: opacity .12s; background: var(--sheet); border: 1px solid var(--rule-2);
+         box-shadow: var(--shadow); border-radius: 3px; padding: 9px 11px; font-size: 12.5px; z-index: 20; min-width: 168px; }
+  #tip .t { font-weight: 600; margin-bottom: 5px; }
+  #tip .r { display: flex; justify-content: space-between; gap: 16px; color: var(--ink-2); }
+  #tip .r b { color: var(--ink); font-family: var(--mono); font-weight: 500; }
+
+  details.table { margin-top: 14px; }
+  details.table summary { font-family: var(--mono); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); cursor: pointer; padding: 6px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--rule); }
+  th { font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); font-weight: 500; }
+  td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  /* ERRC */
+  .errc { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
+  @media (max-width: 700px) { .errc { grid-template-columns: 1fr; } }
+  .q { background: var(--sheet); padding: 18px 20px 20px; }
+  .q h3 { font-family: var(--mono); font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; font-weight: 600; margin-bottom: 12px; }
+  .q.elim h3, .q.red h3 { color: var(--err); }
+  .q.raise h3, .q.create h3 { color: var(--right); }
+  .q ul { margin: 0; padding-left: 18px; }
+  .q li { font-size: 14px; margin-bottom: 8px; color: var(--ink-2); }
+  .q li b { color: var(--ink); font-weight: 600; }
+
+  /* utility map */
+  .map-scroll { overflow-x: auto; }
+  table.map { min-width: 720px; border: 1px solid var(--rule); }
+  table.map th { background: var(--sheet-2); }
+  table.map th.stage { text-align: center; }
+  table.map td { text-align: center; padding: 0; height: 58px; border: 1px solid var(--rule); vertical-align: middle; }
+  table.map td.lever { text-align: left; padding: 8px 12px; font-size: 12.5px; color: var(--ink-2); background: var(--sheet-2); font-weight: 500; min-width: 150px; }
+  table.map td.hit { background: var(--right-bg); }
+  table.map td.hit span { display: block; font-size: 11px; line-height: 1.3; color: var(--right); font-weight: 600; padding: 6px 8px; }
+  table.map td.hit::before { content: "\2715"; display: block; font-size: 13px; color: var(--right); }
+
+  /* model */
+  .model { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+  .card { background: var(--sheet); border: 1px solid var(--rule); border-radius: 3px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .card h3 { font-family: var(--sans); font-size: 14px; margin-bottom: 6px; }
+  .card p { font-size: 13.5px; color: var(--ink-2); margin: 0; }
+  .card .price { font-family: var(--mono); font-size: 12px; color: var(--right); margin-top: 9px; display: block; }
+  .note { border-left: 3px solid var(--price); background: var(--price-bg); padding: 14px 18px; border-radius: 0 3px 3px 0; margin-top: 20px; }
+  .note p { margin: 0; font-size: 14px; }
+  .note b { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; display: block; margin-bottom: 6px; color: var(--price); }
+
+  ol.sources { font-size: 13px; color: var(--ink-2); padding-left: 20px; }
+  ol.sources li { margin-bottom: 8px; }
+  footer { margin-top: 54px; padding-top: 20px; border-top: 1px solid var(--rule); font-size: 12.5px; color: var(--ink-3); }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="eyebrow">Blue Ocean Student Entrepreneur Competition &middot; strategy pack</div>
+    <h1>Itemize</h1>
+    <p class="thesis">Every year Americans are billed for care they did not receive, at prices no insurer would pay, in violation of laws written to protect them. The people who can fix a bill charge <b>25&ndash;35% of what they save you</b> and will not touch a bill under a few thousand dollars. Itemize does the same audit in three minutes, on any bill, for <b>nothing</b> &mdash; and writes the letter.</p>
+    <a class="demo" href="https://claude.ai/code/artifact/590c13e0-c88f-49e3-9801-da2e301a631f"><span class="dot"></span> Open the working prototype</a>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <div class="sec-label">The problem</div>
+    <h2>A bill nobody can read, and a right nobody uses</h2>
+    <p class="lede">A hospital bill arrives as a wall of five-digit codes. Almost no one can tell whether a line is correct, whether the price is defensible, or whether federal law already voids it. So the bill gets paid, or it goes to collections.</p>
+    <div class="stats">
+      <div class="stat"><div class="n tnum">100M+</div><div class="l">US adults carrying medical debt they cannot pay</div></div>
+      <div class="stat"><div class="n tnum">$220B</div><div class="l">Total medical debt owed in the United States</div></div>
+      <div class="stat"><div class="n tnum">~half</div><div class="l">Of adults could not cover an unexpected $500 bill</div></div>
+      <div class="stat"><div class="n tnum">25&ndash;35%</div><div class="l">Of your savings, taken by a billing advocate</div></div>
+    </div>
+    <p class="srcnote">Sources listed at the end. Error-rate figures often quoted for hospital bills (&ldquo;up to 80%&rdquo;) come from an industry association rather than peer review, so this pack does not lean on them &mdash; the case stands on debt scale, price dispersion, and unexercised legal rights, all of which are documented.</p>
+    <p style="margin-top:18px">Three specific things go wrong on a bill, and they need three different arguments:</p>
+    <p><b>Coding errors</b> &mdash; a procedure keyed twice, a panel billed alongside the tests it already contains, twenty units of a drug given once. These are factually wrong and get removed.<br>
+    <b>Prices</b> &mdash; a $612 ankle X-ray that Medicare pays $40 for. Not illegal, but every hospital has been required since 2021 to publish its own cash price, which makes the number negotiable.<br>
+    <b>Voided charges</b> &mdash; an out-of-network ER physician's balance bill, barred outright by the No Surprises Act; a bill $400 over a good faith estimate, which opens a federal dispute; a preventive screening billed with cost sharing, barred by the ACA.</p>
+  </section>
+
+  <section>
+    <div class="sec-label">Three tiers of noncustomers</div>
+    <h2>The market is everyone who has already given up</h2>
+    <p class="lede">Bill advocacy today serves a sliver: large bills, patients who will hand over their records and a third of the winnings. Itemize is aimed at the three tiers outside that sliver.</p>
+    <div class="tiers">
+      <div class="tier">
+        <div class="num">1</div>
+        <div>
+          <h3>Soon-to-be: the ones who suspect, then stop</h3>
+          <p>They open the bill, feel that something is off, search a phrase from it, land on forum threads and a paywall, and pay. They are already looking for exactly this and finding nothing usable.</p>
+          <div class="size">Reached at the moment of doubt &mdash; search, and the hospital's own financial counselor.</div>
+        </div>
+      </div>
+      <div class="tier">
+        <div class="num">2</div>
+        <div>
+          <h3>Refusing: the ones an advocate turns away</h3>
+          <p>Their bill is $700, not $70,000, so no contingency advocate will take the case &mdash; the fee would not cover the hour. Others refuse on principle to sign over a third of their own money or hand a stranger their medical records.</p>
+          <div class="size">Small bills are the majority of bills. Nobody is serving them at all.</div>
+        </div>
+      </div>
+      <div class="tier">
+        <div class="num">3</div>
+        <div>
+          <h3>Unexplored: the ones who never knew a bill could be wrong</h3>
+          <p>Uninsured and self-pay patients, students paying a first ER bill, people billing in a second language, anyone who pays the day it arrives because a hospital bill reads like a tax notice. Their legal rights &mdash; a good faith estimate, a $400 variance dispute, a collections hold &mdash; expire unused.</p>
+          <div class="size">This tier has never been anyone's customer, and it is the largest of the three.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-label">Strategy canvas</div>
+    <h2>Where the curve breaks away</h2>
+    <p class="lede">Advocacy firms compete on expertise and charge for it. The status quo &mdash; an insurer portal, a summary of benefits, a call to the billing office &mdash; competes on nothing. Itemize takes the factors both under-serve and raises them, while cutting the two that make advocacy expensive: expert labor and case intake.</p>
+
+    <figure>
+      <div class="fig-head">
+        <h3>Competing factors, offering level</h3>
+        <p>Higher is more of that factor. On <em>cost to the patient</em>, higher means more expensive &mdash; the one factor where the low line wins.</p>
+      </div>
+      <div class="chart-scroll">
+        <svg class="canvas" viewBox="0 0 1040 400" role="img" aria-label="Strategy canvas comparing patient advocacy firms, the status quo, and Itemize across eight competing factors.">
+          <g id="grid"></g>
+          <g id="series"></g>
+        </svg>
+      </div>
+      <div class="legend">
+        <span><i class="swatch" style="background:var(--s1)"></i> Patient advocacy firms</span>
+        <span><i class="swatch" style="background:var(--s2)"></i> Status quo: portals, billing office, DIY</span>
+        <span><i class="swatch" style="background:var(--s3)"></i> Itemize</span>
+      </div>
+      <figcaption>
+        The two curves that matter are <b>cost to the patient</b> and <b>works on small bills</b>. Advocacy scores high on detection precisely because a human does the work &mdash; which is what forces the fee up and the minimum bill size with it. Itemize gets most of that detection from deterministic rules over public data, so the cost line can go to the floor instead.
+        <details class="table">
+          <summary>View the underlying values</summary>
+          <table id="canvas-table"></table>
+        </details>
+      </figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <div class="sec-label">Eliminate &middot; Reduce &middot; Raise &middot; Create</div>
+    <h2>What comes out, and what goes in</h2>
+    <p class="lede">The grid is the whole business in one page: the left column is how the price gets to zero, the right column is why anyone would use it anyway.</p>
+    <div class="errc">
+      <div class="q elim">
+        <h3>Eliminate</h3>
+        <ul>
+          <li><b>The contingency fee.</b> No 25&ndash;35% of savings. The patient keeps everything.</li>
+          <li><b>Case intake.</b> No consultation call, no case manager, no queue.</li>
+          <li><b>The records handover.</b> No account, no upload, no third party holding your medical history.</li>
+          <li><b>The minimum bill size.</b> No threshold below which the case is not worth taking.</li>
+        </ul>
+      </div>
+      <div class="q red">
+        <h3>Reduce</h3>
+        <ul>
+          <li><b>Time to a first answer</b> &mdash; from weeks of back-and-forth to about three minutes.</li>
+          <li><b>Documents the patient must gather</b> &mdash; the itemized bill alone starts the audit.</li>
+          <li><b>Jargon.</b> Every finding is written in the sentence you would actually say on the phone.</li>
+          <li><b>Marginal cost per audit</b> &mdash; to effectively zero, which is what makes free durable.</li>
+        </ul>
+      </div>
+      <div class="q raise">
+        <h3>Raise</h3>
+        <ul>
+          <li><b>Legal coverage.</b> The No Surprises Act, good faith estimates, ACA preventive rules and price transparency, all applied to the same bill at once.</li>
+          <li><b>Price transparency.</b> Every coded line benchmarked against the Medicare rate, with the multiple stated out loud.</li>
+          <li><b>Evidence.</b> Each objection carries the rule it rests on, so the billing office cannot wave it off.</li>
+          <li><b>Privacy.</b> The audit runs in the browser; no bill ever reaches a server.</li>
+        </ul>
+      </div>
+      <div class="q create">
+        <h3>Create</h3>
+        <ul>
+          <li><b>An instant line-by-line verdict</b> read off the bill itself, with a dollar figure attached to every objection.</li>
+          <li><b>The appeal packet</b> &mdash; a formatted letter and a phone script, written before you have decided to fight.</li>
+          <li><b>A rights engine that follows the patient</b>: change coverage from self-pay to insured and the governing law, and the argument, changes with it.</li>
+          <li><b>An audit worth running on a $600 bill</b> &mdash; a category that did not previously exist.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-label">Buyer utility map</div>
+    <h2>Utility the incumbents leave on the table</h2>
+    <p class="lede">Marked cells are where Itemize creates utility that neither an advocacy firm nor the status quo delivers.</p>
+    <div class="map-scroll">
+      <table class="map">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="stage">Purchase</th><th class="stage">Delivery</th><th class="stage">Use</th>
+            <th class="stage">Supplements</th><th class="stage">Maintenance</th><th class="stage">Disposal</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="lever">Customer productivity</td><td></td><td></td>
+            <td class="hit"><span>Three minutes replaces weeks</span></td><td></td><td></td><td></td></tr>
+          <tr><td class="lever">Simplicity</td>
+            <td class="hit"><span>No account, no intake</span></td><td></td>
+            <td class="hit"><span>Codes translated to plain sentences</span></td><td></td><td></td><td></td></tr>
+          <tr><td class="lever">Convenience</td><td></td>
+            <td class="hit"><span>Opens in a browser, on a phone, at 2am</span></td><td></td>
+            <td class="hit"><span>Letter and script generated, nothing else to buy</span></td><td></td><td></td></tr>
+          <tr><td class="lever">Risk reduction</td><td></td><td></td><td></td><td></td>
+            <td class="hit"><span>Collections hold and filing deadlines named</span></td>
+            <td class="hit"><span>Nothing retained after you close the tab</span></td></tr>
+          <tr><td class="lever">Fun and image</td><td></td><td></td>
+            <td class="hit"><span>Walking in prepared instead of ashamed</span></td><td></td><td></td><td></td></tr>
+          <tr><td class="lever">Environmental friendliness</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-label">Commercial viability</div>
+    <h2>Free at the core, paid at the edges</h2>
+    <p class="lede">The audit is free permanently, and that is a strategic choice, not a phase: charging a percentage of savings is the incumbent's model and the thing being eliminated. Revenue comes from things with real marginal cost, and from the institutions that save the most when patients audit their bills.</p>
+    <div class="model">
+      <div class="card">
+        <h3>Certified dispatch</h3>
+        <p>We print the packet, send it certified with tracking, and keep proof of delivery &mdash; which is what makes a dispute stick.</p>
+        <span class="price">$9 per packet &middot; ~$5 cost</span>
+      </div>
+      <div class="card">
+        <h3>Federal dispute filing</h3>
+        <p>For self-pay patients over the $400 good-faith-estimate variance: we prepare and file the patient-provider dispute.</p>
+        <span class="price">$15 + the $25 federal fee</span>
+      </div>
+      <div class="card">
+        <h3>Employer and union licensing</h3>
+        <p>Self-insured employers pay their employees' claims. An audited claim is a cheaper claim, so they buy Itemize as a benefit.</p>
+        <span class="price">$0.40 per member per month</span>
+      </div>
+      <div class="card">
+        <h3>Free forever, by design</h3>
+        <p>Community health centers, financial counselors and legal-aid clinics get it at no cost. They are the distribution.</p>
+        <span class="price">$0 &mdash; and the growth engine</span>
+      </div>
+    </div>
+    <div class="note">
+      <p><b>Why the unit economics hold</b>
+      The audit is a deterministic rules engine running in the visitor's own browser over public reference data. There is no inference cost, no storage cost, and no per-audit staffing cost &mdash; one audit and one million audits cost the same to serve. That is the low-cost half of value innovation, and it is what lets the differentiated half be given away.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-label">Technical feasibility</div>
+    <h2>Built, not imagined</h2>
+    <p>The prototype linked at the top is real and runs today. It parses an itemized bill, applies ten rules across coding, pricing and federal patient-protection law, caps overlapping findings so the headline number cannot be inflated, and drafts the appeal letter and phone script. Everything it needs already exists in public:</p>
+    <table style="margin-top:16px">
+      <thead><tr><th>What the engine needs</th><th>Where it comes from</th><th class="n">Status</th></tr></thead>
+      <tbody>
+        <tr><td>Correct-coding and unit limits</td><td>CMS National Correct Coding Initiative edits and MUE tables, published quarterly</td><td class="n">Public, free</td></tr>
+        <tr><td>Price benchmarks</td><td>CMS physician fee schedule and OPPS rates</td><td class="n">Public, free</td></tr>
+        <tr><td>Hospital-specific cash prices</td><td>Machine-readable files every hospital must publish under 45 CFR 180</td><td class="n">Public, free</td></tr>
+        <tr><td>Legal rules</td><td>No Surprises Act, 45 CFR 149.610, ACA &sect;2713 &mdash; encoded once, applied per patient</td><td class="n">Encoded</td></tr>
+        <tr><td>Reading a photographed bill</td><td>On-device OCR</td><td class="n">Next build</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:16px">Deliberately, the core has no language model in it. Rules are auditable, repeatable and explainable to a billing office &mdash; and they cost nothing per run, which is the entire reason the product can be free.</p>
+  </section>
+
+  <section>
+    <div class="sec-label">Honest limits</div>
+    <h2>What would have to go right</h2>
+    <p><b>Reference data at scale.</b> The prototype ships rounded Medicare rates for a demonstration set of codes. Production needs the full fee schedules and thousands of hospital price files ingested and kept current &mdash; a real engineering job, though every input is free and machine-readable.</p>
+    <p><b>Reading real bills.</b> Bills arrive as paper and PDFs in hundreds of layouts. The parser handles clean text today; photographs need OCR and a correction step where the patient confirms what was read.</p>
+    <p><b>Staying on the right side of the line.</b> Itemize gives patients information and drafts their own letters. It does not represent anyone, and it says so on every screen. Anything resembling representation would need licensed advocates &mdash; and would rebuild the cost structure this strategy exists to eliminate.</p>
+    <p><b>Hospitals may not like it.</b> They do not have to. The patient is the buyer, the arguments cite the hospital's own published prices and federal rules, and a billing office that ignores a documented dispute is a billing office in front of a regulator.</p>
+  </section>
+
+  <section>
+    <div class="sec-label">Sources</div>
+    <h2>Where the numbers came from</h2>
+    <ol class="sources">
+      <li>KFF Health News with NPR and CBS News, <em>Diagnosis: Debt</em> &mdash; more than 100 million people in America hold medical debt they cannot pay. <a href="https://kffhealthnews.org/diagnosis-debt/">kffhealthnews.org/diagnosis-debt</a></li>
+      <li>Peterson-KFF Health System Tracker, <em>The burden of medical debt in the United States</em> &mdash; at least $220 billion owed. <a href="https://www.healthsystemtracker.org/brief/the-burden-of-medical-debt-in-the-united-states/">healthsystemtracker.org</a></li>
+      <li>KFF, <em>Americans' Challenges with Health Care Costs</em> &mdash; about half of adults could not pay an unexpected $500 medical bill. <a href="https://www.kff.org/health-costs/americans-challenges-with-health-care-costs/">kff.org</a></li>
+      <li>Consumer Reports and industry surveys of medical billing advocates &mdash; typical fees of 25&ndash;35% of savings, or $75&ndash;$350 per hour. <a href="https://www.consumerreports.org/medical-billing/how-to-get-help-with-your-medical-bills/">consumerreports.org</a></li>
+      <li>CMS, <em>Understanding the good faith estimate and patient-provider dispute resolution process</em> &mdash; the $400 threshold, the 120-day window, the $25 administrative fee, and the collections pause. <a href="https://www.cms.gov/marketplace/technical-assistance-resources/understanding-good-faith-estimate-and-dispute-resolution-process.pdf">cms.gov</a></li>
+      <li>Consumer Financial Protection Bureau, <em>What is a surprise medical bill</em> &mdash; No Surprises Act protections for emergency and out-of-network ancillary care. <a href="https://www.consumerfinance.gov/ask-cfpb/what-is-a-surprise-medical-bill-and-what-should-i-know-about-the-no-surprises-act-en-2123/">consumerfinance.gov</a></li>
+      <li>Hospital Price Transparency Rule, 45 CFR Part 180 &mdash; the machine-readable standard-charge files the price benchmark leans on.</li>
+      <li>RAND Corporation hospital price transparency studies &mdash; private plans pay roughly 254% of Medicare, the basis for the 2.5&times; fair-price target in the engine.</li>
+    </ol>
+  </section>
+
+  <footer>
+    Itemize &mdash; strategy pack for the Blue Ocean Student Entrepreneur Competition. The prototype is a demonstration, not legal, medical or financial advice.
+  </footer>
+</div>
+
+<div id="tip" role="status" aria-live="polite"></div>
+
+<script>
+const FACTORS = [
+  ["Cost to","the patient"],
+  ["Speed to","first answer"],
+  ["Coding-error","detection"],
+  ["Price","benchmarking"],
+  ["Legal rights","covered"],
+  ["Paperwork","written for you"],
+  ["Works on","small bills"],
+  ["Privacy of","your records"]
+];
+const SERIES = [
+  { name: "Patient advocacy firms", color: "var(--s1)", v: [8, 3, 9, 6, 7, 8, 1, 3] },
+  { name: "Status quo", color: "var(--s2)", v: [1, 2, 1.5, 1, 2, 1, 3, 4] },
+  { name: "Itemize", color: "var(--s3)", v: [0.5, 9.5, 8, 9, 9, 9.5, 9.5, 10], hero: true }
+];
+
+const X0 = 74, X1 = 828, Y0 = 44, Y1 = 348;
+const xAt = i => X0 + i * (X1 - X0) / (FACTORS.length - 1);
+const yAt = v => Y1 - (v / 10) * (Y1 - Y0);
+
+const grid = document.getElementById("grid");
+const svgns = "http://www.w3.org/2000/svg";
+const el = (tag, attrs, text) => {
+  const n = document.createElementNS(svgns, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (text != null) n.textContent = text;
+  return n;
+};
+
+/* y gridlines: low / medium / high, the only levels a strategy canvas asserts */
+[[0,"low"],[5,"medium"],[10,"high"]].forEach(([v,label]) => {
+  grid.appendChild(el("line", { x1:X0-10, x2:X1+8, y1:yAt(v), y2:yAt(v),
+    style:"stroke:var(--rule);stroke-width:1" }));
+  grid.appendChild(el("text", { x:X0-16, y:yAt(v)+4, "text-anchor":"end",
+    style:"font-family:var(--mono);font-size:11px;fill:var(--ink-3)" }, label));
+});
+/* x category ticks + wrapped labels */
+FACTORS.forEach((lines, i) => {
+  grid.appendChild(el("line", { x1:xAt(i), x2:xAt(i), y1:Y0-6, y2:Y1,
+    style:"stroke:var(--rule);stroke-width:1;stroke-dasharray:2 4" }));
+  const t = el("text", { x:xAt(i), y:Y1+24, "text-anchor":"middle",
+    style:"font-family:var(--sans);font-size:11.5px;fill:var(--ink-2)" });
+  lines.forEach((ln, k) => t.appendChild(el("tspan", { x:xAt(i), dy: k ? 14 : 0 }, ln)));
+  grid.appendChild(t);
+});
+
+/* series */
+const series = document.getElementById("series");
+SERIES.forEach(s => {
+  const d = s.v.map((v,i) => (i ? "L" : "M") + xAt(i) + " " + yAt(v)).join(" ");
+  series.appendChild(el("path", { d, style:"fill:none;stroke:" + s.color +
+    ";stroke-width:" + (s.hero ? 3 : 2) + ";stroke-linejoin:round;stroke-linecap:round" +
+    (s.name === "Status quo" ? ";stroke-dasharray:7 5" : "") }));
+  s.v.forEach((v,i) => {
+    series.appendChild(el("circle", { cx:xAt(i), cy:yAt(v), r: s.hero ? 5.5 : 4.5,
+      style:"fill:" + s.color + ";stroke:var(--sheet);stroke-width:2" }));
+  });
+  /* direct label at the right end - also the relief for the light-mode contrast warning */
+  const last = s.v[s.v.length - 1];
+  series.appendChild(el("text", { x:X1+16, y:yAt(last)+4,
+    style:"font-family:var(--sans);font-size:12.5px;font-weight:" + (s.hero ? 600 : 500) +
+    ";fill:" + s.color }, s.name));
+});
+
+/* hover: crosshair + one tooltip carrying all three values at that factor */
+const tip = document.getElementById("tip");
+const cross = el("line", { y1:Y0-6, y2:Y1, style:"stroke:var(--ink-3);stroke-width:1", opacity:0 });
+series.appendChild(cross);
+FACTORS.forEach((lines, i) => {
+  const half = (X1 - X0) / (FACTORS.length - 1) / 2;
+  const band = el("rect", { x:xAt(i)-half, y:Y0-10, width:half*2, height:Y1-Y0+20,
+    fill:"transparent", style:"cursor:crosshair" });
+  band.addEventListener("mousemove", e => {
+    cross.setAttribute("x1", xAt(i)); cross.setAttribute("x2", xAt(i));
+    cross.setAttribute("opacity", .45);
+    tip.innerHTML = '<div class="t">' + lines.join(" ") + '</div>' +
+      SERIES.map(s => '<div class="r"><span>' + s.name + '</span><b>' + s.v[i].toFixed(1) + '</b></div>').join("");
+    tip.style.opacity = 1;
+    tip.style.left = Math.min(e.clientX + 16, innerWidth - 200) + "px";
+    tip.style.top = (e.clientY - 12) + "px";
+  });
+  band.addEventListener("mouseleave", () => { tip.style.opacity = 0; cross.setAttribute("opacity", 0); });
+  series.appendChild(band);
+});
+
+/* the table view the accessibility pass requires */
+const tbl = document.getElementById("canvas-table");
+tbl.innerHTML =
+  "<thead><tr><th>Competing factor</th>" + SERIES.map(s => '<th class="n">' + s.name + "</th>").join("") + "</tr></thead><tbody>" +
+  FACTORS.map((lines,i) => "<tr><td>" + lines.join(" ") + "</td>" +
+    SERIES.map(s => '<td class="n">' + s.v[i].toFixed(1) + "</td>").join("") + "</tr>").join("") +
+  "</tbody>";
+</script>
