@@ -1,0 +1,24 @@
+{
+  "name": "a11y-audit-kit",
+  "version": "1.0.0",
+  "description": "Automated web accessibility audits that produce client-ready reports you can sell.",
+  "type": "module",
+  "bin": {
+    "a11y-audit": "./bin/audit.js"
+  },
+  "scripts": {
+    "test": "node test/run-tests.js",
+    "audit": "node bin/audit.js",
+    "demo": "node bin/audit.js scan https://example.com --brand 'Your Agency'",
+    "sample": "node scripts/generate-sample.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "axe-core": "^4.10.2",
+    "playwright": "^1.49.0"
+  },
+  "license": "MIT",
+  "private": true
+}

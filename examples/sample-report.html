@@ -1,0 +1,744 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accessibility Audit — Bramble &amp; Co Dental</title>
+<style>
+  :root {
+    --ink: #16191d;
+    --ink-soft: #4a5058;
+    --ink-faint: #7b828c;
+    --rule: #e3e6ea;
+    --rule-soft: #eff1f4;
+    --paper: #ffffff;
+    --wash: #f7f8fa;
+    --accent: #1f4fd8;
+    --critical: #b3261e;
+    --serious: #c2620b;
+    --moderate: #8a6d0b;
+    --minor: #5a6472;
+    --good: #1d7a4c;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    margin: 0;
+    background: var(--wash);
+    color: var(--ink);
+    font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  .sheet {
+    max-width: 860px;
+    margin: 0 auto;
+    background: var(--paper);
+    padding: 56px 64px 72px;
+  }
+  h1, h2, h3 { line-height: 1.25; margin: 0; font-weight: 650; letter-spacing: -0.015em; }
+  h1 { font-size: 34px; }
+  h2 { font-size: 21px; margin: 0 0 16px; }
+  h3 { font-size: 16px; }
+  p { margin: 0 0 14px; }
+  .mono { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; font-size: 0.88em; }
+  .muted { color: var(--ink-faint); }
+
+  /* ---- cover ---- */
+  .cover { border-bottom: 2px solid var(--ink); padding-bottom: 28px; margin-bottom: 36px; }
+  .brandline {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-faint); margin-bottom: 40px;
+  }
+  .brandline strong { color: var(--ink); font-weight: 650; letter-spacing: 0.12em; }
+  .cover .eyebrow { font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); font-weight: 650; margin-bottom: 10px; }
+  .cover .site { font-size: 17px; color: var(--ink-soft); margin-top: 10px; }
+  .cover .standard { font-size: 13px; color: var(--ink-faint); margin-top: 18px; }
+
+  /* ---- score ---- */
+  .scorecard {
+    display: grid; grid-template-columns: 210px 1fr; gap: 36px;
+    align-items: center; background: var(--wash);
+    border: 1px solid var(--rule); border-radius: 10px;
+    padding: 28px 32px; margin-bottom: 34px;
+  }
+  .gauge { text-align: center; }
+  .gauge svg { display: block; margin: 0 auto; }
+  .gauge .num { font-size: 46px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+  .gauge .of { font-size: 13px; color: var(--ink-faint); }
+  .gauge .grade { margin-top: 8px; font-size: 13px; font-weight: 650; letter-spacing: 0.06em; text-transform: uppercase; }
+  .tone-good { color: var(--good); }
+  .tone-ok { color: var(--moderate); }
+  .tone-warn { color: var(--serious); }
+  .tone-bad { color: var(--critical); }
+
+  .tally { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px; }
+  .tally div { border-left: 3px solid var(--rule); padding-left: 12px; }
+  .tally strong { display: block; font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+  .tally span { font-size: 12px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.06em; }
+  .tally .t-critical { border-left-color: var(--critical); } .t-critical strong { color: var(--critical); }
+  .tally .t-serious { border-left-color: var(--serious); } .t-serious strong { color: var(--serious); }
+  .tally .t-moderate { border-left-color: var(--moderate); } .t-moderate strong { color: var(--moderate); }
+  .tally .t-minor { border-left-color: var(--minor); } .t-minor strong { color: var(--minor); }
+
+  /* ---- sections ---- */
+  section.block { margin: 0 0 38px; }
+  .lede { font-size: 16px; color: var(--ink-soft); }
+  .callout {
+    border-left: 3px solid var(--accent); background: #f4f7ff;
+    padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 0 0 20px;
+  }
+  .callout p:last-child { margin-bottom: 0; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-faint); border-bottom: 1px solid var(--rule); font-weight: 650; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* ---- findings ---- */
+  .finding { border: 1px solid var(--rule); border-radius: 10px; padding: 20px 22px; margin-bottom: 16px; break-inside: avoid; }
+  .finding-head { display: grid; grid-template-columns: 34px 1fr auto; gap: 14px; align-items: start; margin-bottom: 12px; }
+  .finding-num {
+    width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 650;
+  }
+  .finding-chips { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    display: inline-block; font-size: 11px; font-weight: 650; letter-spacing: 0.04em;
+    padding: 3px 9px; border-radius: 20px; border: 1px solid var(--rule); color: var(--ink-soft);
+  }
+  .impact-critical { background: #fdecea; border-color: #f3c4bf; color: var(--critical); }
+  .impact-serious  { background: #fdf1e3; border-color: #f0d2ae; color: var(--serious); }
+  .impact-moderate { background: #fbf6e0; border-color: #ead9a6; color: var(--moderate); }
+  .impact-minor    { background: #f2f4f7; border-color: #dfe3e9; color: var(--minor); }
+  .chip-level { background: #fff; }
+  .chip-wcag { background: #f4f7ff; border-color: #d3ddfa; color: var(--accent); }
+  .finding-stats { display: flex; gap: 18px; text-align: right; }
+  .finding-stats div { min-width: 62px; }
+  .finding-stats strong { display: block; font-size: 18px; font-weight: 680; letter-spacing: -0.02em; }
+  .finding-stats span { font-size: 11px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.05em; }
+  .finding-impact { background: var(--wash); padding: 12px 14px; border-radius: 7px; font-size: 14px; margin-bottom: 12px; }
+  .finding-detail summary { cursor: pointer; font-size: 13px; font-weight: 650; color: var(--ink-soft); margin-bottom: 10px; }
+  .finding-desc { font-size: 14px; color: var(--ink-soft); }
+  .sample { margin-bottom: 10px; }
+  .sample-target { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; color: var(--accent); margin-bottom: 4px; word-break: break-all; }
+  .sample-code {
+    margin: 0; padding: 10px 12px; background: #f6f7f9; border: 1px solid var(--rule-soft);
+    border-radius: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11.5px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; color: #2b3038;
+    max-height: 130px; overflow: hidden;
+  }
+  .finding-ref { font-size: 12px; color: var(--ink-faint); margin: 8px 0 0; word-break: break-all; }
+  .quickwins { margin: 0 0 14px; padding-left: 20px; }
+  .quickwins li { margin-bottom: 7px; }
+
+  /* ---- quote ---- */
+  .quote-box {
+    border: 2px solid var(--ink); border-radius: 10px; padding: 26px 30px; margin-top: 8px;
+  }
+  .quote-figure { font-size: 32px; font-weight: 700; letter-spacing: -0.025em; margin: 6px 0 4px; }
+  .quote-terms { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--rule); }
+  .quote-terms div span { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); margin-bottom: 3px; }
+  .quote-terms div strong { font-size: 15px; font-weight: 650; }
+
+  footer { margin-top: 46px; padding-top: 20px; border-top: 1px solid var(--rule); font-size: 12px; color: var(--ink-faint); }
+  footer strong { color: var(--ink-soft); }
+
+  @media print {
+    body { background: #fff; }
+    .sheet { max-width: none; padding: 0 12mm; }
+    @page { margin: 14mm 0; size: A4; }
+    .finding, .scorecard, .quote-box, table { break-inside: avoid; }
+    section.block { break-inside: auto; }
+    h2 { break-after: avoid; }
+    details { open: true; }
+    .page-break { break-before: page; }
+  }
+  @media (max-width: 700px) {
+    .sheet { padding: 28px 20px 44px; }
+    .scorecard { grid-template-columns: 1fr; gap: 22px; }
+    .tally { grid-template-columns: repeat(2, 1fr); }
+    .finding-head { grid-template-columns: 1fr; }
+    .finding-stats { justify-content: flex-start; text-align: left; }
+    .quote-terms { grid-template-columns: 1fr; }
+    h1 { font-size: 27px; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="brandline">
+    <strong>Northside Digital</strong>
+    <span>September 6, 2026</span>
+  </div>
+
+  <header class="cover">
+    <div class="eyebrow">Web Accessibility Audit</div>
+    <h1>Bramble &amp; Co Dental</h1>
+    <div class="site">https://bramblecodental.example</div>
+    <div class="standard">
+      Assessed against WCAG 2.1 Level A &amp; AA · 3 pages scanned · Automated testing with axe-core
+    </div>
+  </header>
+
+  <div class="scorecard">
+    <div class="gauge">
+      <svg width="140" height="82" viewBox="0 0 140 82" role="img" aria-label="Accessibility score 35 out of 100">
+        <path d="M 16 70 A 54 54 0 0 1 124 70" fill="none" stroke="#e3e6ea" stroke-width="11" stroke-linecap="round"/>
+        <path d="M 16 70 A 54 54 0 0 1 124 70" fill="none"
+              stroke="#b3261e"
+              stroke-width="11" stroke-linecap="round"
+              stroke-dasharray="59.4 169.6"/>
+      </svg>
+      <div class="num">35</div>
+      <div class="of">out of 100</div>
+      <div class="grade tone-bad">F · Severe exposure</div>
+    </div>
+    <div>
+      <div class="tally">
+        <div class="t-critical"><strong>4</strong><span>Critical</span></div>
+        <div class="t-serious"><strong>5</strong><span>Serious</span></div>
+        <div class="t-moderate"><strong>4</strong><span>Moderate</span></div>
+        <div class="t-minor"><strong>0</strong><span>Minor</span></div>
+      </div>
+      <p style="margin:0;font-size:14px;color:var(--ink-soft)">
+        <strong>13</strong> distinct issue types producing
+        <strong>49</strong> individual failures across
+        <strong>3</strong> pages.
+      </p>
+    </div>
+  </div>
+
+  <section class="block">
+    <h2>Executive summary</h2>
+    <p class="lede">
+      We scanned 3 pages of Bramble &amp; Co Dental against
+      WCAG 2.1 Level A &amp; AA — the standard US courts and procurement teams reference when assessing whether a
+      website is accessible. The scan found <strong>49 individual failures</strong>
+      spanning <strong>13 issue types</strong>.
+    </p>
+    <div class="callout">
+             <p><strong>9 of these issue types are rated critical or serious</strong>,
+             meaning they block or substantially degrade use of the site for people relying on screen readers, keyboard
+             navigation, or magnification. These are the categories most commonly cited in accessibility demand letters
+             and the ones to address first.</p>
+           </div>
+    <p>
+      Automated testing reliably catches roughly a third of WCAG success criteria — the machine-checkable ones.
+      Issues like whether alt text is <em>meaningful</em>, whether focus order is <em>logical</em>, or whether
+      an interaction makes sense to a screen-reader user require manual review. Everything in this report is
+      a confirmed, reproducible failure; a manual audit would likely surface more.
+    </p>
+  </section>
+
+  <section class="block">
+    <h2>Fastest wins</h2>
+    <p>These are the highest-impact issues with the lowest remediation cost — the place to start.</p>
+    <ul class="quickwins"><li><strong>Images must have alternative text</strong> — 4 occurrences, about 0.7h of work.</li><li><strong>Form elements must have labels</strong> — 3 occurrences, about 1.1h of work.</li><li><strong>Buttons must have discernible text</strong> — 1 occurrence, about 0.6h of work.</li><li><strong>Select element must have an accessible name</strong> — 1 occurrence, about 0.6h of work.</li><li><strong>&lt;html&gt; element must have a lang attribute</strong> — 3 occurrences, about 0.3h of work.</li></ul>
+  </section>
+
+  <section class="block page-break">
+    <h2>Findings, by priority</h2>
+    <p class="muted" style="font-size:14px">
+      Ordered by severity, then by how widely each issue appears across the site.
+    </p>
+    
+  <section class="finding" id="finding-1">
+    <div class="finding-head">
+      <div class="finding-num">1</div>
+      <div class="finding-title">
+        <h3>Images must have alternative text</h3>
+        <div class="finding-chips">
+          <span class="chip impact-critical">Critical</span>
+          <span class="chip chip-level">Level A</span>
+          <span class="chip chip-wcag">WCAG 1.1.1</span>
+        </div>
+      </div>
+      <div class="finding-stats">
+        <div><strong>4</strong><span>occurrences</span></div>
+        <div><strong>2</strong><span>pages</span></div>
+        <div><strong>0.7h</strong><span>to fix</span></div>
+      </div>
+    </div>
+    <p class="finding-impact"><strong>What this breaks:</strong> Screen readers announce nothing for these images, so blind users miss the content — including, often, product photos and calls to action.</p>
+    <details class="finding-detail" open>
+      <summary>Technical detail &amp; examples</summary>
+      <p class="finding-desc">Ensure &lt;img&gt; elements have alternative text or a role of none or presentation</p>
+      
+      <div class="sample">
+        <div class="sample-target">a[href$=&quot;shop.html&quot;] &gt; img</div>
+        <pre class="sample-code">&lt;img src=&quot;data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&quot;&gt;</pre>
+      </div>
+      <div class="sample">
+        <div class="sample-target">img[width=&quot;300&quot;][height=&quot;180&quot;]:nth-child(5)</div>
+        <pre class="sample-code">&lt;img src=&quot;data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&quot; width=&quot;300&quot; height=&quot;180&quot;&gt;</pre>
+      </div>
+      <div class="sample">
+        <div class="sample-target">img[width=&quot;300&quot;][height=&quot;180&quot;]:nth-child(6)</div>
+        <pre class="sample-code">&lt;img src=&quot;data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&quot; width=&quot;300&quot; height=&quot;180&quot;&gt;</pre>
+      </div>
+      <p class="finding-ref">Reference: <span class="mono">image-alt</span> — https://dequeuniversity.com/rules/axe/4.13/image-alt?application=axeAPI</p>
+    </details>
+  </section>
+  <section class="finding" id="finding-2">
+    <div class="finding-head">
+      <div class="finding-num">2</div>
+      <div class="finding-title">
+        <h3>Form elements must have labels</h3>
+        <div class="finding-chips">
+          <span class="chip impact-critical">Critical</span>
+          <span class="chip chip-level">Level A</span>
+          <span class="chip chip-wcag">WCAG 4.1.2</span>
+        </div>
+      </div>
+      <div class="finding-stats">
+        <div><strong>3</strong><span>occurrences</span></div>
+        <div><strong>1</strong><span>page</span></div>
+        <div><strong>1.1h</strong><span>to fix</span></div>
+      </div>
+    </div>
+    <p class="finding-impact"><strong>What this breaks:</strong> Form fields have no associated label, so assistive tech cannot tell the user what to type. This is the single most common reason a checkout or contact form is unusable.</p>
+    <details class="finding-detail" open>
+      <summary>Technical detail &amp; examples</summary>
+      <p class="finding-desc">Ensure every form element has a label</p>
+      
+      <div class="sample">
+        <div class="sample-target">input[type=&quot;text&quot;]</div>
+        <pre class="sample-code">&lt;input type=&quot;text&quot; name=&quot;name&quot;&gt;</pre>
+      </div>
+      <div class="sample">
+        <div class="sample-target">input[type=&quot;tel&quot;]</div>
+        <pre class="sample-code">&lt;input type=&quot;tel&quot; name=&quot;phone&quot;&gt;</pre>
+      </div>
+      <div class="sample">
+        <div class="sample-target">textarea</div>
+        <pre class="sample-code">&lt;textarea name=&quot;message&quot;&gt;&lt;/textarea&gt;</pre>
+      </div>
+      <p class="finding-ref">Reference: <span class="mono">label</span> — https://dequeuniversity.com/rules/axe/4.13/label?application=axeAPI</p>
+    </details>
+  </section>
+  <section class="finding" id="finding-3">
+    <div class="finding-head">
+      <div class="finding-num">3</div>
+      <div class="finding-title">
+        <h3>Buttons must have discernible text</h3>
+        <div class="finding-chips">
+          <span class="chip impact-critical">Critical</span>
+          <span class="chip chip-level">Level A</span>
+          <span class="chip chip-wcag">WCAG 4.1.2</span>
+        </div>
+      </div>
+      <div class="finding-stats">
+        <div><strong>1</strong><span>occurrence</span></div>
+        <div><strong>1</strong><span>page</span></div>
+        <div><strong>0.6h</strong><span>to fix</span></div>
+      </div>
+    </div>
+    <p class="finding-impact"><strong>What this breaks:</strong> Buttons have no accessible name. A screen-reader user cannot tell what the button does before pressing it.</p>
+    <details class="finding-detail" open>
+      <summary>Technical detail &amp; examples</summary>
+      <p class="finding-desc">Ensure buttons have discernible text</p>
+      
+      <div class="sample">
+        <div class="sample-target">button</div>
+        <pre class="sample-code">&lt;button&gt;&lt;/button&gt;</pre>
+      </div>
+      <p class="finding-ref">Reference: <span class="mono">button-name</span> — https://dequeuniversity.com/rules/axe/4.13/button-name?application=axeAPI</p>
+    </details>
+  </section>
+  <section class="finding" id="finding-4">
+    <div class="finding-head">
+      <div class="finding-num">4</div>
+      <div class="finding-title">
+        <h3>Select element must have an accessible name</h3>
+        <div class="finding-chips">
+          <span class="chip impact-critical">Critical</span>
+          <span class="chip chip-level">Level A</span>
+          <span class="chip chip-wcag">WCAG 4.1.2</span>
+        </div>
+      </div>
+      <div class="finding-stats">
+        <div><strong>1</strong><span>occurrence</span></div>
+        <div><strong>1</strong><span>page</span></div>
+        <div><strong>0.6h</strong><span>to fix</span></div>
+      </div>
+    </div>
+    <p class="finding-impact"><strong>What this breaks:</strong> Dropdowns have no accessible name, so their purpose is unannounced.</p>
+    <details class="finding-detail" open>
+      <summary>Technical detail &amp; examples</summary>
+      <p class="finding-desc">Ensure select element has an accessible name</p>
+      
+      <div class="sample">
+        <div class="sample-target">select</div>
+        <pre class="sample-code">&lt;select name=&quot;service&quot;&gt;
+      &lt;option&gt;Checkup&lt;/option&gt;
+      &lt;option&gt;Whitening&lt;/option&gt;
+    &lt;/select&gt;</pre>
+      </div>
+      <p class="finding-ref">Reference: <span class="mono">select-name</span> — https://dequeuniversity.com/rules/axe/4.13/select-name?application=axeAPI</p>
+    </details>
+  </section>
+  <section class="finding" id="finding-5">
+    <div class="finding-head">
+      <div class="finding-num">5</div>
+      <div class="finding-title">
+        <h3>Elements must meet minimum color contrast ratio thresholds</h3>
+        <div class="finding-chips">
+          <span class="chip impact-serious">Serious</span>
+          <span class="chip chip-level">Level AA</span>
+          <span class="chip chip-wcag">WCAG 1.4.3</span>
+        </div>
+      </div>
+      <div class="finding-stats">
+        <div><strong>4</strong><span>occurrences</span></div>
+        <div><strong>3</strong><span>pages</span></div>
+        <div><strong>1.6h</strong><span>to fix</span></div>
+      </div>
+    </div>
+    <p class="finding-impact"><strong>What this breaks:</strong> Text is too low-contrast to read for users with low vision, color blindness, or anyone on a phone in daylight.</p>
+    <details class="finding-detail" open>
+      <summary>Technical detail &amp; examples</summary>
+      <p class="finding-desc">Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds</p>
+      
+      <div class="sample">
+        <div class="sample-target">p</div>
+        <pre class="sample-code">&lt;p style=&quot;color:#b8b8b8;background:#ffffff&quot;&gt;
+    We have provided gentle family dentistry for over twenty years.
+  &lt;/p&gt;</pre>
+      </div>
+      <div class="sample">
+        <div class="sample-target">div[onclick=&quot;alert('call')&quot;]</div>
+        <pre class="sample-code">&lt;div onclick=&quot;alert('call')&quot; style=&quot;color:#c9c9c9;background:#fff&quot;&gt;Call us today&lt;/div&gt;</pre>
+      </div>
+      <div class="sample">
+        <div class="sample-target">p</div>
+        <pre class="sample-code">&lt;p style=&quot;color:#c0c0c0;background:#ffffff&quot;&gt;Established 2003.&lt;/p&gt;</pre>
+      </div>
+      <p class="finding-ref">Reference: <span class="mono">color-contrast</span> — https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=axeAPI</p>
+    </details>
+  </section>
+  <section class="finding" id="finding-6">
+    <div class="finding-head">
+      <div class="finding-num">6</div>
+      <div class="finding-title">
+        <h3>&lt;html&gt; element must have a lang attribute</h3>
+        <div class="finding-chips">
+          <span class="chip impact-serious">Serious</span>
+          <span class="chip chip-level">Level A</span>
+          <span class="chip chip-wcag">WCAG 3.1.1</span>
+        </div>
+      </div>
+      <div class="finding-stats">
+        <div><strong>3</strong><span>occurrences</span></div>
+        <div><strong>3</strong><span>pages</span></div>
+        <div><strong>0.3h</strong><span>to fix</span></div>
+      </div>
+    </div>
+    <p class="finding-impact"><strong>What this breaks:</strong> The page does not declare a language, so screen readers may read it with the wrong pronunciation engine.</p>
+    <details class="finding-detail" open>
+      <summary>Technical detail &amp; examples</summary>
+      <p class="finding-desc">Ensure every HTML document has a lang attribute</p>
+      
+      <div class="sample">
+        <div class="sample-target">html</div>
+        <pre class="sample-code">&lt;html&gt;</pre>
+      </div>
+      <div class="sample">
+        <div class="sample-target">html</div>
+        <pre class="sample-code">&lt;html&gt;</pre>
+      </div>
+      <div class="sample">
+        <div class="sample-target">html</div>
+        <pre class="sample-code">&lt;html&gt;</pre>
+      </div>
+      <p class="finding-ref">Reference: <span class="mono">html-has-lang</span> — https://dequeuniversity.com/rules/axe/4.13/html-has-lang?application=axeAPI</p>
+    </details>
+  </section>
+  <section class="finding" id="finding-7">
+    <div class="finding-head">
+      <div class="finding-num">7</div>
+      <div class="finding-title">
+        <h3>Links must have discernible text</h3>
+        <div class="finding-chips">
+          <span class="chip impact-serious">Serious</span>
+          <span class="chip chip-level">Level A</span>
+          <span class="chip chip-wcag">WCAG 2.4.4</span><span class="chip chip-wcag">WCAG 4.1.2</span>
+        </div>
+      </div>
+      <div class="finding-stats">
+        <div><strong>2</strong><span>occurrences</span></div>
+        <div><strong>2</strong><span>pages</span></div>
+        <div><strong>0.7h</strong><span>to fix</span></div>
+      </div>
+    </div>
+    <p class="finding-impact"><strong>What this breaks:</strong> Links have no readable name, so screen-reader users hear &quot;link&quot; with no idea where it goes.</p>
+    <details class="finding-detail" open>
+      <summary>Technical detail &amp; examples</summary>
+      <p class="finding-desc">Ensure links have discernible text</p>
+      
+      <div class="sample">
+        <div class="sample-target">a[href$=&quot;shop.html&quot;]</div>
+        <pre class="sample-code">&lt;a href=&quot;shop.html&quot;&gt;&lt;img src=&quot;data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&quot;&gt;&lt;/a&gt;</pre>
+      </div>
+      <div class="sample">
+        <div class="sample-target">a[href$=&quot;team.html&quot;]</div>
+        <pre class="sample-code">&lt;a href=&quot;team.html&quot;&gt;&lt;/a&gt;</pre>
+      </div>
+      <p class="finding-ref">Reference: <span class="mono">link-name</span> — https://dequeuniversity.com/rules/axe/4.13/link-name?application=axeAPI</p>
+    </details>
+  </section>
+  <section class="finding" id="finding-8">
+    <div class="finding-head">
+      <div class="finding-num">8</div>
+      <div class="finding-title">
+        <h3>Frames must have an accessible name</h3>
+        <div class="finding-chips">
+          <span class="chip impact-serious">Serious</span>
+          <span class="chip chip-level">Level A</span>
+          <span class="chip chip-wcag">WCAG 4.1.2</span>
+        </div>
+      </div>
+      <div class="finding-stats">
+        <div><strong>1</strong><span>occurrence</span></div>
+        <div><strong>1</strong><span>page</span></div>
+        <div><strong>0.6h</strong><span>to fix</span></div>
+      </div>
+    </div>
+    <p class="finding-impact"><strong>What this breaks:</strong> Embedded frames have no title, so screen-reader users cannot tell what is inside them.</p>
+    <details class="finding-detail" open>
+      <summary>Technical detail &amp; examples</summary>
+      <p class="finding-desc">Ensure &lt;iframe&gt; and &lt;frame&gt; elements have an accessible name</p>
+      
+      <div class="sample">
+        <div class="sample-target">iframe</div>
+        <pre class="sample-code">&lt;iframe src=&quot;about:blank&quot; width=&quot;200&quot; height=&quot;100&quot;&gt;&lt;/iframe&gt;</pre>
+      </div>
+      <p class="finding-ref">Reference: <span class="mono">frame-title</span> — https://dequeuniversity.com/rules/axe/4.13/frame-title?application=axeAPI</p>
+    </details>
+  </section>
+  <section class="finding" id="finding-9">
+    <div class="finding-head">
+      <div class="finding-num">9</div>
+      <div class="finding-title">
+        <h3>Elements should not have tabindex greater than zero</h3>
+        <div class="finding-chips">
+          <span class="chip impact-serious">Serious</span>
+          <span class="chip chip-level">Level —</span>
+          <span class="chip chip-wcag">Best practice</span>
+        </div>
+      </div>
+      <div class="finding-stats">
+        <div><strong>1</strong><span>occurrence</span></div>
+        <div><strong>1</strong><span>page</span></div>
+        <div><strong>1.2h</strong><span>to fix</span></div>
+      </div>
+    </div>
+    <p class="finding-impact"><strong>What this breaks:</strong> Positive tabindex values override the natural focus order, making keyboard navigation jump unpredictably.</p>
+    <details class="finding-detail" open>
+      <summary>Technical detail &amp; examples</summary>
+      <p class="finding-desc">Ensure tabindex attribute values are not greater than 0</p>
+      
+      <div class="sample">
+        <div class="sample-target">a[href$=&quot;offers.html&quot;]</div>
+        <pre class="sample-code">&lt;a href=&quot;offers.html&quot; tabindex=&quot;5&quot;&gt;Read more&lt;/a&gt;</pre>
+      </div>
+      <p class="finding-ref">Reference: <span class="mono">tabindex</span> — https://dequeuniversity.com/rules/axe/4.13/tabindex?application=axeAPI</p>
+    </details>
+  </section>
+  <section class="finding" id="finding-10">
+    <div class="finding-head">
+      <div class="finding-num">10</div>
+      <div class="finding-title">
+        <h3>All page content should be contained by landmarks</h3>
+        <div class="finding-chips">
+          <span class="chip impact-moderate">Moderate</span>
+          <span class="chip chip-level">Level —</span>
+          <span class="chip chip-wcag">Best practice</span>
+        </div>
+      </div>
+      <div class="finding-stats">
+        <div><strong>22</strong><span>occurrences</span></div>
+        <div><strong>3</strong><span>pages</span></div>
+        <div><strong>1.8h</strong><span>to fix</span></div>
+      </div>
+    </div>
+    <p class="finding-impact"><strong>What this breaks:</strong> Content sits outside any landmark region, making the page harder to navigate by structure.</p>
+    <details class="finding-detail" open>
+      <summary>Technical detail &amp; examples</summary>
+      <p class="finding-desc">Ensure all page content is contained by landmarks</p>
+      
+      <div class="sample">
+        <div class="sample-target">#nav</div>
+        <pre class="sample-code">&lt;div id=&quot;nav&quot;&gt;
+    &lt;a href=&quot;index.html&quot;&gt;Home&lt;/a&gt;
+    &lt;a href=&quot;about.html&quot;&gt;About&lt;/a&gt;
+    &lt;a href=&quot;contact.html&quot;&gt;Contact&lt;/a&gt;
+    &lt;a href=&quot;shop.html&quot;&gt;&lt;img src=&quot;data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7&quot;&gt;&lt;/a&gt;
+  &lt;/div&gt;</pre>
+      </div>
+      <div class="sample">
+        <div class="sample-target">div:nth-child(2)</div>
+        <pre class="sample-code">&lt;div style=&quot;font-size:30px;font-weight:bold&quot;&gt;Bramble &amp;amp; Co Dental&lt;/div&gt;</pre>
+      </div>
+      <div class="sample">
+        <div class="sample-target">h3</div>
+        <pre class="sample-code">&lt;h3&gt;Welcome&lt;/h3&gt;</pre>
+      </div>
+      <p class="finding-ref">Reference: <span class="mono">region</span> — https://dequeuniversity.com/rules/axe/4.13/region?application=axeAPI</p>
+    </details>
+  </section>
+  <section class="finding" id="finding-11">
+    <div class="finding-head">
+      <div class="finding-num">11</div>
+      <div class="finding-title">
+        <h3>Document should have one main landmark</h3>
+        <div class="finding-chips">
+          <span class="chip impact-moderate">Moderate</span>
+          <span class="chip chip-level">Level —</span>
+          <span class="chip chip-wcag">Best practice</span>
+        </div>
+      </div>
+      <div class="finding-stats">
+        <div><strong>3</strong><span>occurrences</span></div>
+        <div><strong>3</strong><span>pages</span></div>
+        <div><strong>1h</strong><span>to fix</span></div>
+      </div>
+    </div>
+    <p class="finding-impact"><strong>What this breaks:</strong> There is no &lt;main&gt; landmark, so users cannot jump straight to the primary content.</p>
+    <details class="finding-detail" open>
+      <summary>Technical detail &amp; examples</summary>
+      <p class="finding-desc">Ensure the document has a main landmark</p>
+      
+      <div class="sample">
+        <div class="sample-target">html</div>
+        <pre class="sample-code">&lt;html&gt;</pre>
+      </div>
+      <div class="sample">
+        <div class="sample-target">html</div>
+        <pre class="sample-code">&lt;html&gt;</pre>
+      </div>
+      <div class="sample">
+        <div class="sample-target">html</div>
+        <pre class="sample-code">&lt;html&gt;</pre>
+      </div>
+      <p class="finding-ref">Reference: <span class="mono">landmark-one-main</span> — https://dequeuniversity.com/rules/axe/4.13/landmark-one-main?application=axeAPI</p>
+    </details>
+  </section>
+  <section class="finding" id="finding-12">
+    <div class="finding-head">
+      <div class="finding-num">12</div>
+      <div class="finding-title">
+        <h3>Page should contain a level-one heading</h3>
+        <div class="finding-chips">
+          <span class="chip impact-moderate">Moderate</span>
+          <span class="chip chip-level">Level —</span>
+          <span class="chip chip-wcag">Best practice</span>
+        </div>
+      </div>
+      <div class="finding-stats">
+        <div><strong>3</strong><span>occurrences</span></div>
+        <div><strong>3</strong><span>pages</span></div>
+        <div><strong>0.7h</strong><span>to fix</span></div>
+      </div>
+    </div>
+    <p class="finding-impact"><strong>What this breaks:</strong> The page has no top-level heading, removing the main navigation landmark for assistive tech.</p>
+    <details class="finding-detail" open>
+      <summary>Technical detail &amp; examples</summary>
+      <p class="finding-desc">Ensure that the page, or at least one of its frames contains a level-one heading</p>
+      
+      <div class="sample">
+        <div class="sample-target">html</div>
+        <pre class="sample-code">&lt;html&gt;</pre>
+      </div>
+      <div class="sample">
+        <div class="sample-target">html</div>
+        <pre class="sample-code">&lt;html&gt;</pre>
+      </div>
+      <div class="sample">
+        <div class="sample-target">html</div>
+        <pre class="sample-code">&lt;html&gt;</pre>
+      </div>
+      <p class="finding-ref">Reference: <span class="mono">page-has-heading-one</span> — https://dequeuniversity.com/rules/axe/4.13/page-has-heading-one?application=axeAPI</p>
+    </details>
+  </section>
+    <p class="muted"><em>1 additional lower-severity issue type was identified and is included in the full data export accompanying this report.</em></p>
+  </section>
+
+  <section class="block">
+    <h2>Pages scanned</h2>
+    <table>
+      <thead>
+        <tr><th>URL</th><th class="num">Failures</th><th class="num">Issue types</th><th class="num">Load time</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+              <td class="mono" style="word-break:break-all">/</td>
+              <td class="num">26</td>
+              <td class="num">12</td>
+              <td class="num">0.03s</td>
+            </tr><tr>
+              <td class="mono" style="word-break:break-all">/about.html</td>
+              <td class="num">10</td>
+              <td class="num">7</td>
+              <td class="num">0.01s</td>
+            </tr><tr>
+              <td class="mono" style="word-break:break-all">/contact.html</td>
+              <td class="num">13</td>
+              <td class="num">6</td>
+              <td class="num">0.01s</td>
+            </tr>
+      </tbody>
+    </table>
+    
+  </section>
+
+  <section class="block">
+    <h2>Performance snapshot</h2>
+    <p class="muted" style="font-size:14px">Lab measurements taken during the scan. Slow pages compound accessibility problems — assistive technology users are disproportionately affected by long load times.</p>
+    <table><tbody>
+      <tr><td>Average page load</td><td class="num"><strong>3.20s</strong></td></tr><tr><td>First contentful paint</td><td class="num">1.40s</td></tr><tr><td>Largest contentful paint</td><td class="num">2.90s</td></tr><tr><td>Time to first byte</td><td class="num">0.62s</td></tr><tr><td>Requests per page</td><td class="num">54</td></tr><tr><td>Page weight</td><td class="num">2,180 KB</td></tr>
+    </tbody></table>
+  </section>
+
+  <section class="block">
+    <h2>Remediation scope &amp; investment</h2>
+    <p>
+      The estimate below covers fixing every issue in this report, retesting with assistive technology,
+      and a verification pass confirming each fix holds.
+    </p>
+    <div class="quote-box">
+      <span class="muted" style="font-size:12px;text-transform:uppercase;letter-spacing:0.06em">Estimated remediation investment</span>
+      <div class="quote-figure">$2,250 – $3,350</div>
+      <p class="muted" style="font-size:13px;margin:0">
+        Based on approximately 16.2 hours of engineering and QA.
+      </p>
+      <div class="quote-terms">
+        <div><span>Scope</span><strong>13 issue types</strong></div>
+        <div><span>Typical timeline</span><strong>1–2 weeks</strong></div>
+        <div><span>Deliverable</span><strong>Verified fixes + retest</strong></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Recommended next steps</h2>
+    <ol>
+      <li><strong>Remediate critical and serious issues first.</strong> They carry the most legal exposure and lock the most people out.</li>
+      <li><strong>Commission a manual audit</strong> to cover the roughly two-thirds of WCAG criteria automated tools cannot evaluate.</li>
+      <li><strong>Publish an accessibility statement</strong> documenting your conformance level and how users can report barriers. This is a documented good-faith signal.</li>
+      <li><strong>Add automated checks to your build</strong> so new regressions are caught before they ship rather than months later.</li>
+    </ol>
+  </section>
+
+  <footer>
+    <p><strong>Northside Digital</strong> · Sam Rivera · sam@northsidedigital.example · (555) 014-2280</p>
+    <p>
+      Report generated September 6, 2026 using axe-core against WCAG 2.1 Level A &amp; AA.
+      Automated testing identifies machine-detectable failures only and does not constitute a legal
+      compliance certification. This document is a technical assessment, not legal advice.
+    </p>
+  </footer>
+
+</div>
+</body>
+</html>
