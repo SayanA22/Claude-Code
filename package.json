@@ -17,6 +17,7 @@
     "start": "npm run build && node --env-file-if-exists=.env server/src/index.js",
     "server": "node --env-file-if-exists=.env server/src/index.js",
     "sync": "node --env-file-if-exists=.env server/src/cli-sync.js",
-    "test": "node --test server/test/*.test.js"
+    "test": "node --test server/test/*.test.js",
+    "demo": "npm run build && DEMO_MODE=1 node server/src/index.js"
   }
 }

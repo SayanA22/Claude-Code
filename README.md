@@ -24,6 +24,12 @@ cp .env.example .env      # then paste in a GitHub token
 npm run dev               # → http://localhost:5173
 ```
 
+Want to see it before setting up a token?
+
+```bash
+npm run demo               # → http://localhost:4000, sample data, no GitHub calls
+```
+
 For the token, create one at <https://github.com/settings/tokens>:
 
 - **Classic token** — needs the `repo` scope (add `read:org` for organisation repos)
@@ -78,6 +84,7 @@ All optional except the token. See [`.env.example`](.env.example).
 | `STALE_AFTER_DAYS` | `7` | Idle days before a PR is flagged stale |
 | `REPO_FILTER` | *(all)* | Comma-separated `owner/repo` allowlist |
 | `DB_PATH` | `./data/radar.db` | Where the SQLite file lives |
+| `DEMO_MODE` | unset | `1` serves sample data and never calls GitHub |
 
 ## Commands
 
@@ -88,6 +95,7 @@ All optional except the token. See [`.env.example`](.env.example).
 | `npm test` | Run the triage test suite |
 | `npm run sync` | One-shot sync from the terminal |
 | `npm run server` | API only, no frontend build |
+| `npm run demo` | Serve sample data without touching GitHub |
 
 ## How it fits together
 

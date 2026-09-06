@@ -5,11 +5,12 @@
 import { validateConfig } from "./config.js";
 import { sync } from "./sync.js";
 
-const problems = validateConfig();
+const { problems, warnings } = validateConfig();
 if (problems.length > 0) {
   for (const problem of problems) console.error(`error: ${problem}`);
   process.exit(1);
 }
+for (const warning of warnings) console.warn(`warning: ${warning}`);
 
 const result = await sync();
 if (result.ok) {

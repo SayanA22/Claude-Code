@@ -15,13 +15,14 @@ import {
 import { buildSections } from "./triage.js";
 import { startPolling, sync } from "./sync.js";
 
-const problems = validateConfig();
+const { problems, warnings } = validateConfig();
 if (problems.length > 0) {
   console.error("\nPR Radar cannot start:\n");
   for (const problem of problems) console.error(`  - ${problem}`);
   console.error("");
   process.exit(1);
 }
+for (const warning of warnings) console.warn(`  warning: ${warning}`);
 
 openDb();
 

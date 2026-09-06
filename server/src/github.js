@@ -56,6 +56,28 @@ export class GitHubError extends Error {
   }
 }
 
+/**
+ * Pull the human-readable reason out of an error response, whichever shape
+ * GitHub used. Never throws: a body we cannot parse just yields null.
+ */
+async function readErrorMessage(response) {
+  try {
+    const body = await response.text();
+    if (!body) return null;
+    try {
+      const parsed = JSON.parse(body);
+      const message =
+        parsed.message ??
+        parsed.errors?.map((error) => error.message).filter(Boolean).join("; ");
+      return message || null;
+    } catch {
+      return body.slice(0, 200);
+    }
+  } catch {
+    return null;
+  }
+}
+
 async function graphql(variables) {
   let response;
   try {
@@ -74,22 +96,22 @@ async function graphql(variables) {
     });
   }
 
-  if (response.status === 401) {
-    throw new GitHubError("GitHub rejected the token (401).", {
-      status: 401,
-      hint: "The token is invalid or expired. Generate a new one and update GITHUB_TOKEN in .env.",
-    });
-  }
-  if (response.status === 403) {
-    throw new GitHubError("GitHub returned 403.", {
-      status: 403,
-      hint: "Usually a missing scope (classic tokens need `repo`) or a rate limit. Check the token's permissions.",
-    });
-  }
   if (!response.ok) {
+    // Always lead with GitHub's own explanation. Our hint is a guess about the
+    // common case; the API's message is the actual reason, and hiding it makes
+    // unusual failures (blocked endpoints, SSO, IP allowlists) impossible to
+    // diagnose from the UI.
+    const detail = await readErrorMessage(response);
+    const hints = {
+      401: "The token is invalid, expired, or not accepted for GraphQL. Check GITHUB_TOKEN in .env.",
+      403: "Usually a missing scope (classic tokens need `repo`), SSO authorization, or a rate limit.",
+      404: "The token cannot see this resource. For org repos, classic tokens also need `read:org`.",
+    };
     throw new GitHubError(
-      `GitHub returned ${response.status} ${response.statusText}.`,
-      { status: response.status },
+      detail
+        ? `GitHub returned ${response.status}: ${detail}`
+        : `GitHub returned ${response.status} ${response.statusText}.`,
+      { status: response.status, hint: hints[response.status] ?? null },
     );
   }
 

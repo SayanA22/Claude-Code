@@ -5,6 +5,7 @@ import {
   setMeta,
   startSyncRun,
 } from "./db.js";
+import { DEMO_PULL_REQUESTS } from "./demo-data.js";
 import { fetchDashboard } from "./github.js";
 
 let inFlight = null;
@@ -27,7 +28,13 @@ async function runSync() {
   const startedAt = new Date().toISOString();
   const runId = startSyncRun(startedAt);
   try {
-    const { viewer, pullRequests, rateLimit } = await fetchDashboard();
+    const { viewer, pullRequests, rateLimit } = config.demoMode
+      ? {
+          viewer: { login: "demo-user", avatarUrl: null },
+          pullRequests: DEMO_PULL_REQUESTS,
+          rateLimit: null,
+        }
+      : await fetchDashboard();
     replacePullRequests(pullRequests, startedAt);
     setMeta("viewer_login", viewer.login);
     if (viewer.avatarUrl) setMeta("viewer_avatar", viewer.avatarUrl);
@@ -35,7 +42,10 @@ async function runSync() {
     finishSyncRun(runId, { ok: true, prCount: pullRequests.length });
     return { ok: true, count: pullRequests.length };
   } catch (error) {
-    const message = error.hint ? `${error.message} ${error.hint}` : error.message;
+    // Join the API's message and our hint into one readable sentence pair;
+    // GitHub's messages do not come with trailing punctuation.
+    const stem = /[.!?]$/.test(error.message) ? error.message : `${error.message}.`;
+    const message = error.hint ? `${stem} ${error.hint}` : stem;
     finishSyncRun(runId, { ok: false, error: message });
     return { ok: false, error: message };
   }
