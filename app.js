@@ -1,0 +1,479 @@
+/* Mile Trainer — plan generation, logging, progress tracking, pace calculator.
+   All state lives in localStorage; no backend, no build step. */
+
+const STORAGE_KEY = 'mileTrainerState.v1';
+
+// ---------- time helpers ----------
+function parseTime(str) {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(str.trim());
+  if (!m) return null;
+  const min = parseInt(m[1], 10);
+  const sec = parseInt(m[2], 10);
+  if (sec > 59) return null;
+  return min * 60 + sec;
+}
+
+function formatTime(totalSec) {
+  totalSec = Math.round(totalSec);
+  const sign = totalSec < 0 ? '-' : '';
+  totalSec = Math.abs(totalSec);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${sign}${m}:${String(s).padStart(2, '0')}`;
+}
+
+function addDays(dateStr, days) {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+function daysBetween(a, b) {
+  const da = new Date(a + 'T00:00:00');
+  const db = new Date(b + 'T00:00:00');
+  return Math.round((db - da) / 86400000);
+}
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+// ---------- state ----------
+function defaultState() {
+  const start = todayStr();
+  return {
+    settings: {
+      startDate: start,
+      goalDate: addDays(start, 16 * 7),
+      startTimeSec: 300, // 5:00
+      goalTimeSec: 280,  // 4:40
+    },
+    logs: [],       // {id, date, kind: 'timeTrial'|'workout', timeSec?, desc?, rpe?, notes?}
+    completed: {},  // { 'w2-1': true }
+  };
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    return Object.assign(defaultState(), parsed, {
+      settings: Object.assign(defaultState().settings, parsed.settings || {}),
+      logs: parsed.logs || [],
+      completed: parsed.completed || {},
+    });
+  } catch (e) {
+    return defaultState();
+  }
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+let state = loadState();
+
+// ---------- plan generation ----------
+// Phases across the block, proportional to total weeks.
+function phaseForWeek(weekNum, totalWeeks) {
+  const pct = weekNum / totalWeeks;
+  if (pct <= 0.25) return 'Base Building';
+  if (pct <= 0.55) return 'Aerobic Power';
+  if (pct <= 0.80) return 'Threshold & VO2max';
+  if (weekNum === totalWeeks) return 'Taper & Time Trial';
+  return 'Race-Pace Sharpening';
+}
+
+// Glide-path mile ability (sec) for a given week, linear from start to goal.
+function glideMileSec(weekNum, totalWeeks, startSec, goalSec) {
+  const t = Math.min(1, weekNum / totalWeeks);
+  return startSec + (goalSec - startSec) * t;
+}
+
+function trainingPaces(mileSec) {
+  const per400 = mileSec / 4;
+  const per800 = mileSec / 2;
+  return {
+    mileSec,
+    interval200: per400 / 2 - 1,      // slightly faster than mile pace, per 200m
+    interval400: per400 - 1,          // ~ goal mile pace per 400m
+    interval800: per800 + 3,          // slightly conservative per 800m
+    tempoPerMile: mileSec + 50,       // comfortably hard
+    easyPerMile: mileSec + 105,       // conversational
+    longRunPerMile: mileSec + 115,
+  };
+}
+
+function workoutsForWeek(weekNum, totalWeeks, phase, paces) {
+  const w = [];
+  const p400 = formatTime(paces.interval400);
+  const p200 = formatTime(paces.interval200);
+  const p800 = formatTime(paces.interval800);
+  const tempo = formatTime(paces.tempoPerMile);
+  const easy = formatTime(paces.easyPerMile);
+  const long = formatTime(paces.longRunPerMile);
+
+  if (phase === 'Base Building') {
+    w.push({ day: 'Tue', desc: `Easy run + 6x20s strides @ ${easy}/mi pace, full recovery` });
+    w.push({ day: 'Thu', desc: `Hill sprints: 6-8x10s hard uphill, walk-back recovery` });
+    w.push({ day: 'Sat', desc: `Long run, easy/conversational @ ${long}/mi` });
+    w.push({ day: 'Sun/Mon/Wed/Fri', desc: `Easy runs or rest @ ${easy}/mi` });
+  } else if (phase === 'Aerobic Power') {
+    const reps = 5 + Math.min(3, Math.floor((weekNum - 1) / 2));
+    w.push({ day: 'Tue', desc: `${reps}x400m @ ${p400} w/ 400m jog recovery` });
+    w.push({ day: 'Thu', desc: `Tempo run: 15-20 min @ ${tempo}/mi (comfortably hard)` });
+    w.push({ day: 'Sat', desc: `Long run @ ${long}/mi, last mile @ ${tempo}/mi` });
+    w.push({ day: 'Other days', desc: `Easy runs / rest @ ${easy}/mi` });
+  } else if (phase === 'Threshold & VO2max') {
+    w.push({ day: 'Tue', desc: `4-5x800m @ ${p800} w/ 2-3 min jog recovery` });
+    w.push({ day: 'Thu', desc: `8-10x200m @ ${p200} w/ full recovery (speed/form)` });
+    w.push({ day: 'Sat', desc: `Long run @ ${long}/mi with 2 mi @ ${tempo}/mi` });
+    w.push({ day: 'Other days', desc: `Easy runs / rest @ ${easy}/mi` });
+  } else if (phase === 'Race-Pace Sharpening') {
+    w.push({ day: 'Tue', desc: `3-4x400m @ goal pace (${p400}) w/ full recovery` });
+    w.push({ day: 'Thu', desc: `5x300m @ ${p200}-pace effort, walk recovery` });
+    w.push({ day: 'Sat', desc: `Medium-long run @ ${long}/mi, controlled` });
+    w.push({ day: 'Other days', desc: `Easy runs / extra rest day @ ${easy}/mi` });
+  } else if (phase === 'Taper & Time Trial') {
+    w.push({ day: 'Tue', desc: `4x200m fast @ ${p200}, full recovery (sharpen, not tired)` });
+    w.push({ day: 'Thu', desc: `Easy shakeout + 4x100m strides` });
+    w.push({ day: 'Sat/Sun', desc: `GOAL TIME TRIAL: run the mile, log your result!` });
+    w.push({ day: 'Other days', desc: `Rest or very easy jog @ ${easy}/mi` });
+  }
+  return w;
+}
+
+function buildPlan() {
+  const { startDate, goalDate, startTimeSec, goalTimeSec } = state.settings;
+  const totalDays = Math.max(7, daysBetween(startDate, goalDate));
+  const totalWeeks = Math.max(4, Math.min(24, Math.round(totalDays / 7)));
+  const weeks = [];
+  for (let w = 1; w <= totalWeeks; w++) {
+    const phase = phaseForWeek(w, totalWeeks);
+    const mileSec = glideMileSec(w, totalWeeks, startTimeSec, goalTimeSec);
+    const paces = trainingPaces(mileSec);
+    const weekStart = addDays(startDate, (w - 1) * 7);
+    const weekEnd = addDays(weekStart, 6);
+    weeks.push({
+      weekNum: w,
+      phase,
+      weekStart,
+      weekEnd,
+      targetMileSec: mileSec,
+      paces,
+      workouts: workoutsForWeek(w, totalWeeks, phase, paces),
+    });
+  }
+  return { totalWeeks, weeks };
+}
+
+// ---------- rendering ----------
+const tabs = document.querySelectorAll('.tab-btn');
+const panels = document.querySelectorAll('.tab-panel');
+tabs.forEach(btn => {
+  btn.addEventListener('click', () => {
+    tabs.forEach(b => b.classList.remove('active'));
+    panels.forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'progress') renderProgress();
+  });
+});
+
+function currentWeekInfo(plan) {
+  const today = todayStr();
+  const idx = plan.weeks.findIndex(w => today >= w.weekStart && today <= w.weekEnd);
+  if (idx >= 0) return plan.weeks[idx];
+  if (today < plan.weeks[0].weekStart) return plan.weeks[0];
+  return plan.weeks[plan.weeks.length - 1];
+}
+
+function bestRecentTimeTrial() {
+  const trials = state.logs.filter(l => l.kind === 'timeTrial').sort((a, b) => a.date < b.date ? 1 : -1);
+  return trials[0] || null;
+}
+
+function renderDashboard(plan) {
+  const { startDate, goalDate, startTimeSec, goalTimeSec } = state.settings;
+  const wk = currentWeekInfo(plan);
+  const daysLeft = Math.max(0, daysBetween(todayStr(), goalDate));
+  const latest = bestRecentTimeTrial();
+  const currentBestSec = latest ? latest.timeSec : startTimeSec;
+  const gapSec = currentBestSec - goalTimeSec;
+
+  const cards = document.getElementById('dashboardCards');
+  cards.innerHTML = '';
+  const stats = [
+    { label: 'Goal', value: formatTime(goalTimeSec), cls: '' },
+    { label: 'Current Best', value: formatTime(currentBestSec), cls: gapSec <= 0 ? '' : (gapSec > 20 ? 'bad' : 'warn') },
+    { label: 'Gap to Goal', value: (gapSec <= 0 ? 'Goal met!' : formatTime(gapSec)), cls: gapSec <= 0 ? '' : (gapSec > 20 ? 'bad' : 'warn') },
+    { label: 'Days Remaining', value: daysLeft, cls: '' },
+    { label: 'Current Week', value: `${wk.weekNum} / ${plan.totalWeeks}`, cls: '' },
+    { label: 'Phase', value: wk.phase, cls: '' },
+  ];
+  stats.forEach(s => {
+    const el = document.createElement('div');
+    el.className = `stat-card ${s.cls}`;
+    el.innerHTML = `<div class="value">${s.value}</div><div class="label">${s.label}</div>`;
+    cards.appendChild(el);
+  });
+
+  document.getElementById('headerSubtitle').textContent =
+    `Get from ${formatTime(startTimeSec)} to ${formatTime(goalTimeSec)} by ${goalDate}`;
+
+  const box = document.getElementById('thisWeekBox');
+  box.innerHTML = `<p class="muted">${wk.weekStart} → ${wk.weekEnd} · <strong>${wk.phase}</strong></p>`;
+  const list = document.createElement('div');
+  wk.workouts.forEach((w, i) => {
+    const key = `w${wk.weekNum}-${i}`;
+    const done = !!state.completed[key];
+    const item = document.createElement('div');
+    item.className = 'workout-item';
+    item.innerHTML = `<input type="checkbox" data-key="${key}" ${done ? 'checked' : ''}>
+      <span class="day-label">${w.day}</span>
+      <span class="desc ${done ? 'done' : ''}">${w.desc}</span>`;
+    list.appendChild(item);
+  });
+  box.appendChild(list);
+  box.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      state.completed[cb.dataset.key] = cb.checked;
+      saveState();
+      renderAll();
+    });
+  });
+}
+
+function renderPlan(plan) {
+  document.getElementById('planIntro').textContent =
+    `${plan.totalWeeks}-week plan from ${state.settings.startDate} to ${state.settings.goalDate}. ` +
+    `Paces progress weekly along a glide path from your current mile time to your goal.`;
+  const container = document.getElementById('planWeeks');
+  container.innerHTML = '';
+  plan.weeks.forEach(wk => {
+    const block = document.createElement('div');
+    block.className = 'week-block';
+    const header = document.createElement('div');
+    header.className = 'week-header';
+    header.innerHTML = `<div><strong>Week ${wk.weekNum}</strong> · ${wk.weekStart} → ${wk.weekEnd}
+        <div class="pace-line">Target mile pace this week: ${formatTime(wk.targetMileSec)}</div></div>
+        <span class="phase-tag">${wk.phase}</span>`;
+    header.addEventListener('click', () => block.classList.toggle('open'));
+
+    const body = document.createElement('div');
+    body.className = 'week-body';
+    const paceLine = document.createElement('div');
+    paceLine.className = 'pace-line';
+    paceLine.textContent = `Easy: ${formatTime(wk.paces.easyPerMile)}/mi · Tempo: ${formatTime(wk.paces.tempoPerMile)}/mi ` +
+      `· 400m: ${formatTime(wk.paces.interval400)} · 800m: ${formatTime(wk.paces.interval800)} · 200m: ${formatTime(wk.paces.interval200)}`;
+    body.appendChild(paceLine);
+
+    wk.workouts.forEach((w, i) => {
+      const key = `w${wk.weekNum}-${i}`;
+      const done = !!state.completed[key];
+      const item = document.createElement('div');
+      item.className = 'workout-item';
+      item.innerHTML = `<input type="checkbox" data-key="${key}" ${done ? 'checked' : ''}>
+        <span class="day-label">${w.day}</span>
+        <span class="desc ${done ? 'done' : ''}">${w.desc}</span>`;
+      body.appendChild(item);
+    });
+
+    block.appendChild(header);
+    block.appendChild(body);
+    container.appendChild(block);
+  });
+  container.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      state.completed[cb.dataset.key] = cb.checked;
+      saveState();
+      renderAll();
+    });
+  });
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  list.innerHTML = '';
+  const sorted = [...state.logs].sort((a, b) => a.date < b.date ? 1 : -1);
+  if (sorted.length === 0) {
+    list.innerHTML = '<p class="muted">No entries yet.</p>';
+    return;
+  }
+  sorted.forEach(log => {
+    const row = document.createElement('div');
+    row.className = 'history-item';
+    let text;
+    if (log.kind === 'timeTrial') {
+      text = `<strong>${log.date}</strong> — Time Trial: ${formatTime(log.timeSec)} ${log.notes ? '· ' + log.notes : ''}`;
+    } else {
+      text = `<strong>${log.date}</strong> — ${log.desc} (${log.rpe})`;
+    }
+    row.innerHTML = `<span>${text}</span>`;
+    const del = document.createElement('button');
+    del.textContent = 'Delete';
+    del.addEventListener('click', () => {
+      state.logs = state.logs.filter(l => l.id !== log.id);
+      saveState();
+      renderAll();
+    });
+    row.appendChild(del);
+    list.appendChild(row);
+  });
+}
+
+function renderProgress() {
+  const plan = buildPlan();
+  const { startDate, goalDate, startTimeSec, goalTimeSec } = state.settings;
+  const trials = state.logs.filter(l => l.kind === 'timeTrial').sort((a, b) => a.date < b.date ? -1 : 1);
+
+  const statsBox = document.getElementById('progressStats');
+  statsBox.innerHTML = '';
+  const wk = currentWeekInfo(plan);
+  const expectedNow = wk.targetMileSec;
+  const latest = trials[trials.length - 1];
+  let onTrackLabel = 'No data yet';
+  let cls = '';
+  if (latest) {
+    const diff = latest.timeSec - expectedNow;
+    if (diff <= 0) { onTrackLabel = `Ahead by ${formatTime(-diff)}`; cls = ''; }
+    else if (diff <= 5) { onTrackLabel = `On track`; cls = ''; }
+    else if (diff <= 15) { onTrackLabel = `Slightly behind (${formatTime(diff)})`; cls = 'warn'; }
+    else { onTrackLabel = `Behind by ${formatTime(diff)}`; cls = 'bad'; }
+  }
+  [
+    { label: 'Expected pace this week', value: formatTime(expectedNow) },
+    { label: 'Latest time trial', value: latest ? formatTime(latest.timeSec) : '—' },
+    { label: 'Status', value: onTrackLabel, cls },
+  ].forEach(s => {
+    const el = document.createElement('div');
+    el.className = `stat-card ${s.cls || ''}`;
+    el.innerHTML = `<div class="value">${s.value}</div><div class="label">${s.label}</div>`;
+    statsBox.appendChild(el);
+  });
+
+  // SVG chart: x = days from start, y = mile time (inverted, faster = higher)
+  const totalDays = daysBetween(startDate, goalDate);
+  const width = Math.max(600, totalDays * 4);
+  const height = 260;
+  const padL = 50, padR = 20, padT = 20, padB = 30;
+  const plotW = width - padL - padR;
+  const plotH = height - padT - padB;
+
+  const yMax = Math.max(startTimeSec, ...trials.map(t => t.timeSec)) + 5;
+  const yMin = Math.min(goalTimeSec, ...trials.map(t => t.timeSec)) - 5;
+  const xOf = (dateStr) => padL + (daysBetween(startDate, dateStr) / totalDays) * plotW;
+  const yOf = (sec) => padT + (1 - (sec - yMin) / (yMax - yMin)) * plotH;
+
+  const glideX1 = xOf(startDate), glideY1 = yOf(startTimeSec);
+  const glideX2 = xOf(goalDate), glideY2 = yOf(goalTimeSec);
+
+  let points = trials.map(t => `<circle cx="${xOf(t.date).toFixed(1)}" cy="${yOf(t.timeSec).toFixed(1)}" r="4" fill="#5fd3a3" />`).join('');
+  let pathD = trials.map((t, i) => `${i === 0 ? 'M' : 'L'} ${xOf(t.date).toFixed(1)} ${yOf(t.timeSec).toFixed(1)}`).join(' ');
+
+  const svg = `
+  <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
+    <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${height - padB}" stroke="#2a3450" />
+    <line x1="${padL}" y1="${height - padB}" x2="${width - padR}" y2="${height - padB}" stroke="#2a3450" />
+    <line x1="${glideX1}" y1="${glideY1}" x2="${glideX2}" y2="${glideY2}" stroke="#f2a154" stroke-dasharray="5,4" stroke-width="2" />
+    <text x="${glideX2 - 60}" y="${glideY2 - 8}" fill="#f2a154">Goal glide-path</text>
+    ${pathD ? `<path d="${pathD}" fill="none" stroke="#5fd3a3" stroke-width="2" />` : ''}
+    ${points}
+    <text x="${padL}" y="${padT - 6}">${formatTime(yMax)}</text>
+    <text x="${padL}" y="${height - padB + 4}" dy="10">${formatTime(yMin)}</text>
+    <text x="${padL - 5}" y="${height - padB + 20}" text-anchor="start">${startDate}</text>
+    <text x="${width - padR - 60}" y="${height - padB + 20}">${goalDate}</text>
+  </svg>`;
+  document.getElementById('chartContainer').innerHTML = svg;
+}
+
+// ---------- pace calculator (Riegel formula: T2 = T1 * (D2/D1)^1.06) ----------
+function riegelPredict(t1, d1, d2) {
+  return t1 * Math.pow(d2 / d1, 1.06);
+}
+
+document.getElementById('paceCalcForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const dist = parseFloat(document.getElementById('pcDistance').value);
+  const timeSec = parseTime(document.getElementById('pcTime').value);
+  const resultBox = document.getElementById('paceCalcResult');
+  if (timeSec === null) { resultBox.innerHTML = '<p class="muted">Enter time as mm:ss</p>'; return; }
+  const equivMileSec = riegelPredict(timeSec, dist, 1609.34);
+  const paces = trainingPaces(equivMileSec);
+  const goalPaces = trainingPaces(state.settings.goalTimeSec);
+  resultBox.innerHTML = `
+    <p><strong>Estimated current mile equivalent:</strong> ${formatTime(equivMileSec)}</p>
+    <p class="pace-line">At current fitness — Easy: ${formatTime(paces.easyPerMile)}/mi · Tempo: ${formatTime(paces.tempoPerMile)}/mi
+      · 400m: ${formatTime(paces.interval400)} · 800m: ${formatTime(paces.interval800)} · 200m: ${formatTime(paces.interval200)}</p>
+    <p class="pace-line">At goal fitness (${formatTime(state.settings.goalTimeSec)} mile) — Easy: ${formatTime(goalPaces.easyPerMile)}/mi · Tempo: ${formatTime(goalPaces.tempoPerMile)}/mi
+      · 400m: ${formatTime(goalPaces.interval400)} · 800m: ${formatTime(goalPaces.interval800)} · 200m: ${formatTime(goalPaces.interval200)}</p>
+  `;
+});
+
+// ---------- forms ----------
+document.getElementById('timeTrialForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const date = document.getElementById('ttDate').value;
+  const timeSec = parseTime(document.getElementById('ttTime').value);
+  const notes = document.getElementById('ttNotes').value.trim();
+  if (!date || timeSec === null) return;
+  state.logs.push({ id: crypto.randomUUID(), kind: 'timeTrial', date, timeSec, notes });
+  saveState();
+  e.target.reset();
+  renderAll();
+});
+
+document.getElementById('workoutLogForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const date = document.getElementById('wlDate').value;
+  const desc = document.getElementById('wlDesc').value.trim();
+  const rpe = document.getElementById('wlRpe').value;
+  if (!date || !desc) return;
+  state.logs.push({ id: crypto.randomUUID(), kind: 'workout', date, desc, rpe });
+  saveState();
+  e.target.reset();
+  renderAll();
+});
+
+document.getElementById('setupForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const startDate = document.getElementById('setStartDate').value;
+  const goalDate = document.getElementById('setGoalDate').value;
+  const startTimeSec = parseTime(document.getElementById('setStartTime').value);
+  const goalTimeSec = parseTime(document.getElementById('setGoalTime').value);
+  if (!startDate || !goalDate || startTimeSec === null || goalTimeSec === null) return;
+  if (goalDate <= startDate) { alert('Goal date must be after start date.'); return; }
+  state.settings = { startDate, goalDate, startTimeSec, goalTimeSec };
+  saveState();
+  renderAll();
+  document.querySelector('.tab-btn[data-tab="dashboard"]').click();
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!confirm('This will erase all logs and settings. Continue?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  state = defaultState();
+  populateSetupForm();
+  renderAll();
+});
+
+function populateSetupForm() {
+  document.getElementById('setStartDate').value = state.settings.startDate;
+  document.getElementById('setGoalDate').value = state.settings.goalDate;
+  document.getElementById('setStartTime').value = formatTime(state.settings.startTimeSec);
+  document.getElementById('setGoalTime').value = formatTime(state.settings.goalTimeSec);
+  document.getElementById('ttDate').value = todayStr();
+  document.getElementById('wlDate').value = todayStr();
+}
+
+function renderAll() {
+  const plan = buildPlan();
+  renderDashboard(plan);
+  renderPlan(plan);
+  renderHistory();
+  if (document.getElementById('progress').classList.contains('active')) renderProgress();
+}
+
+populateSetupForm();
+renderAll();

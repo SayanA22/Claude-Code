@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mile Trainer — 5:00 → 4:40</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <header class="app-header">
+    <h1>Mile Trainer</h1>
+    <p class="subtitle" id="headerSubtitle">Get from 5:00 to 4:40</p>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+    <button class="tab-btn" data-tab="plan">Training Plan</button>
+    <button class="tab-btn" data-tab="log">Log</button>
+    <button class="tab-btn" data-tab="progress">Progress</button>
+    <button class="tab-btn" data-tab="paces">Pace Calculator</button>
+    <button class="tab-btn" data-tab="setup">Setup</button>
+  </nav>
+
+  <main>
+    <section id="dashboard" class="tab-panel active">
+      <div class="card-grid" id="dashboardCards"></div>
+      <div class="card">
+        <h2>This Week</h2>
+        <div id="thisWeekBox"></div>
+      </div>
+    </section>
+
+    <section id="plan" class="tab-panel">
+      <div class="card">
+        <h2>16-Week Plan Overview</h2>
+        <p id="planIntro" class="muted"></p>
+        <div id="planWeeks"></div>
+      </div>
+    </section>
+
+    <section id="log" class="tab-panel">
+      <div class="card">
+        <h2>Log a Time Trial</h2>
+        <form id="timeTrialForm" class="form-row">
+          <label>Date
+            <input type="date" id="ttDate" required>
+          </label>
+          <label>Mile Time
+            <input type="text" id="ttTime" placeholder="mm:ss" pattern="^\d{1,2}:\d{2}$" required>
+          </label>
+          <label>Notes
+            <input type="text" id="ttNotes" placeholder="track, weather, effort...">
+          </label>
+          <button type="submit">Add Time Trial</button>
+        </form>
+      </div>
+      <div class="card">
+        <h2>Log a Workout Note</h2>
+        <form id="workoutLogForm" class="form-row">
+          <label>Date
+            <input type="date" id="wlDate" required>
+          </label>
+          <label>What did you do?
+            <input type="text" id="wlDesc" placeholder="e.g. 6x400m @ 82s" required>
+          </label>
+          <label>How did it feel?
+            <select id="wlRpe">
+              <option value="easy">Easy</option>
+              <option value="moderate" selected>Moderate</option>
+              <option value="hard">Hard</option>
+              <option value="allout">All-out</option>
+            </select>
+          </label>
+          <button type="submit">Add Log</button>
+        </form>
+      </div>
+      <div class="card">
+        <h2>History</h2>
+        <div id="historyList"></div>
+      </div>
+    </section>
+
+    <section id="progress" class="tab-panel">
+      <div class="card">
+        <h2>Progress vs Goal</h2>
+        <div id="progressStats" class="card-grid"></div>
+        <div id="chartContainer"></div>
+      </div>
+    </section>
+
+    <section id="paces" class="tab-panel">
+      <div class="card">
+        <h2>Pace Calculator</h2>
+        <p class="muted">Enter a recent race or time-trial result to estimate your current mile-equivalent fitness and training paces.</p>
+        <form id="paceCalcForm" class="form-row">
+          <label>Distance
+            <select id="pcDistance">
+              <option value="400">400m</option>
+              <option value="800">800m</option>
+              <option value="1600" selected>1600m / Mile</option>
+              <option value="5000">5K</option>
+            </select>
+          </label>
+          <label>Time
+            <input type="text" id="pcTime" placeholder="mm:ss" pattern="^\d{1,2}:\d{2}$" required>
+          </label>
+          <button type="submit">Calculate</button>
+        </form>
+        <div id="paceCalcResult"></div>
+      </div>
+    </section>
+
+    <section id="setup" class="tab-panel">
+      <div class="card">
+        <h2>Goal Setup</h2>
+        <form id="setupForm" class="form-row">
+          <label>Start Date
+            <input type="date" id="setStartDate" required>
+          </label>
+          <label>Goal Date
+            <input type="date" id="setGoalDate" required>
+          </label>
+          <label>Current Mile Time
+            <input type="text" id="setStartTime" placeholder="mm:ss" pattern="^\d{1,2}:\d{2}$" required>
+          </label>
+          <label>Goal Mile Time
+            <input type="text" id="setGoalTime" placeholder="mm:ss" pattern="^\d{1,2}:\d{2}$" required>
+          </label>
+          <button type="submit">Save & Regenerate Plan</button>
+        </form>
+        <p class="muted">Changing these will regenerate your training plan (your logs are kept).</p>
+        <hr>
+        <button id="resetBtn" class="danger">Reset All Data</button>
+      </div>
+    </section>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

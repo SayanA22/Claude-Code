@@ -1,0 +1,185 @@
+:root {
+  --bg: #0f1420;
+  --panel: #171e2e;
+  --panel-2: #1e2740;
+  --border: #2a3450;
+  --text: #e8ecf5;
+  --muted: #93a0bd;
+  --accent: #5fd3a3;
+  --accent-2: #f2a154;
+  --danger: #e3595f;
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app { max-width: 960px; margin: 0 auto; padding: 20px 16px 60px; }
+
+.app-header { text-align: center; margin-bottom: 20px; }
+.app-header h1 { margin: 0 0 4px; font-size: 1.8rem; }
+.subtitle { color: var(--muted); margin: 0; }
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.tab-btn.active {
+  background: var(--accent);
+  color: #0b1a14;
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  margin-bottom: 16px;
+}
+
+.card h2 { margin-top: 0; font-size: 1.1rem; }
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  text-align: center;
+}
+
+.stat-card .value { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+.stat-card .label { color: var(--muted); font-size: 0.78rem; margin-top: 4px; }
+.stat-card.warn .value { color: var(--accent-2); }
+.stat-card.bad .value { color: var(--danger); }
+
+.muted { color: var(--muted); font-size: 0.88rem; }
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: end;
+}
+
+.form-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  flex: 1 1 140px;
+}
+
+input, select, button {
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+}
+
+button {
+  background: var(--accent);
+  color: #0b1a14;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  height: 38px;
+}
+
+button.danger { background: var(--danger); color: #2a0d0f; }
+
+.week-block {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.week-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--panel-2);
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.week-header .phase-tag {
+  font-size: 0.72rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.week-body { padding: 12px 16px; display: none; }
+.week-block.open .week-body { display: block; }
+
+.workout-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--border);
+}
+.workout-item:last-child { border-bottom: none; }
+.workout-item input[type="checkbox"] { margin-top: 3px; }
+.workout-item .day-label { font-weight: 600; min-width: 45px; color: var(--accent-2); font-size: 0.8rem; }
+.workout-item .desc { flex: 1; font-size: 0.88rem; }
+.workout-item .desc.done { text-decoration: line-through; color: var(--muted); }
+
+.pace-line { font-size: 0.82rem; color: var(--muted); margin-top: 6px; }
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+}
+.history-item:last-child { border-bottom: none; }
+.history-item button { height: 26px; padding: 2px 8px; font-size: 0.75rem; background: var(--panel-2); color: var(--danger); border: 1px solid var(--border); }
+
+#chartContainer { overflow-x: auto; }
+svg text { fill: var(--muted); font-size: 10px; }
+
+hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+@media (max-width: 600px) {
+  .tab-btn { font-size: 0.75rem; padding: 6px 10px; }
+}
