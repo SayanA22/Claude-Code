@@ -2,9 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Mile Trainer — 5:00 → 4:40</title>
 <link rel="stylesheet" href="styles.css">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="theme-color" content="#0f1420">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mile Trainer">
 </head>
 <body>
 <div class="app">
@@ -133,9 +140,41 @@
         <hr>
         <button id="resetBtn" class="danger">Reset All Data</button>
       </div>
+
+      <div class="card">
+        <h2>Install as an App</h2>
+        <p class="muted">Add Mile Trainer to your home screen for an app-like, offline-capable experience.</p>
+        <p class="muted" id="installHint">
+          <strong>iPhone (Safari):</strong> tap the Share icon, then "Add to Home Screen".<br>
+          <strong>Android (Chrome):</strong> tap the menu (⋮), then "Add to Home screen" / "Install app".
+        </p>
+        <button id="installBtn" style="display:none;">Install App</button>
+      </div>
+
+      <div class="card">
+        <h2>Workout Reminders (Push Notifications)</h2>
+        <p class="muted">
+          Get notified about your scheduled workout. This requires a small notification
+          server (included in this project's <code>server/</code> folder) — deploy it
+          once, then point this app at its URL below. On iPhone, install this app to your
+          Home Screen first (iOS 16.4+) before enabling notifications.
+        </p>
+        <form id="reminderForm" class="form-row">
+          <label>Notification Server URL
+            <input type="url" id="remServerUrl" placeholder="https://your-server.example.com">
+          </label>
+          <label>Daily Reminder Time
+            <input type="time" id="remTime" value="07:00">
+          </label>
+          <button type="submit" id="remEnableBtn">Enable Reminders</button>
+        </form>
+        <p class="muted" id="remStatus"></p>
+        <button id="remDisableBtn" class="danger" style="display:none;">Disable Reminders</button>
+      </div>
     </section>
   </main>
 </div>
+<script src="planLogic.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
