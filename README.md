@@ -49,9 +49,9 @@ On first load, defaults are a 16-week plan starting today, going from 5:00 to
 
 **Important:** service workers (needed for installability + notifications)
 require HTTPS in production — `localhost` is exempted for local testing.
-Deploy the static files (`index.html`, `styles.css`, `app.js`,
-`planLogic.js`, `sw.js`, `manifest.webmanifest`, `icons/`) to any static host
-that serves HTTPS (GitHub Pages, Netlify, Vercel, Cloudflare Pages, etc).
+This repo is set up to deploy to **GitHub Pages** (frontend) + **Render**
+(notification server) — see [Deploying](#deploying-github-pages--render)
+below.
 
 ## Installing as a mobile app
 
@@ -61,42 +61,52 @@ that serves HTTPS (GitHub Pages, Netlify, Vercel, Cloudflare Pages, etc).
    or use the **Install App** button on the Setup tab.
 3. Launch it from your home screen — it opens full-screen, like a native app.
 
-## Setting up workout reminder notifications
+## Deploying: GitHub Pages + Render
 
-True push notifications (delivered even when the app is closed) require a
-server that can wake your phone's push service on a schedule — that's what
-`server/` is for. It's a small Node/Express service; you run or deploy it
-once, then point the app at its URL.
+### 1. Frontend on GitHub Pages
 
-```bash
-cd server
-npm install
-npm run generate-vapid-keys        # prints VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY
-```
+1. On GitHub, go to this repo's **Settings → Pages**.
+2. Under **Build and deployment → Source**, choose **Deploy from a branch**.
+3. Branch: select this branch (or `main`, once merged) · Folder: **/ (root)**.
+4. Save. GitHub gives you a URL like `https://<your-username>.github.io/<repo>/`
+   within a minute or two — that's your app's install URL.
 
-Create `server/.env` with the keys it printed:
+The repo already includes `.nojekyll` so GitHub Pages serves the files
+as-is (no Jekyll processing).
 
-```
-VAPID_PUBLIC_KEY=...
-VAPID_PRIVATE_KEY=...
-VAPID_SUBJECT=mailto:you@example.com
-PORT=3001
-```
+### 2. Notification server on Render
 
-Then run it:
+1. Generate your own VAPID keys locally (don't reuse anyone else's):
+   ```bash
+   cd server && npm install && npm run generate-vapid-keys
+   ```
+   Copy the `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` it prints — you'll paste
+   them into Render, never into the repo.
+2. On [render.com](https://render.com), sign up/log in, then **New → Blueprint**.
+3. Connect your GitHub account and select this repository. Render detects the
+   included `render.yaml` and proposes a **mile-trainer-notify** web service
+   (free plan, root dir `server`, build `npm install`, start `npm start`).
+4. When prompted for environment variables, paste in:
+   - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` — from step 1
+   - `VAPID_SUBJECT` — `mailto:you@example.com` (any contact email)
+   - `ALLOWED_ORIGIN` — your GitHub Pages URL from part 1 (or leave `*`)
+5. Deploy. Render gives you a URL like
+   `https://mile-trainer-notify.onrender.com`.
+6. **Free-tier caveat:** Render's free web services spin down after ~15
+   minutes with no incoming requests, which would stop the internal
+   once-a-minute reminder check. Keep it awake for free with an uptime
+   pinger — e.g. [UptimeRobot](https://uptimerobot.com) or
+   [cron-job.org](https://cron-job.org), hitting
+   `https://mile-trainer-notify.onrender.com/healthz` every 5–10 minutes.
+   (Or upgrade to Render's paid Starter plan for an always-on instance.)
 
-```bash
-npm start
-```
+### 3. Connect the app to the server
 
-Deploy this anywhere that can run a persistent Node process (Render, Fly.io,
-Railway, a small VPS, etc — it needs to stay running to check the schedule
-every minute). It stores subscriptions in `server/data/subscriptions.json`
-(gitignored) — no database needed for personal use.
-
-In the app's **Setup** tab, under **Workout Reminders**, enter your deployed
-server's URL and a daily reminder time, then tap **Enable Reminders**. Grant
-notification permission when prompted.
+1. Open your GitHub Pages URL on your phone.
+2. Install it to your Home Screen (see below).
+3. In the **Setup** tab → **Workout Reminders**, enter your Render URL
+   (e.g. `https://mile-trainer-notify.onrender.com`) and a daily reminder
+   time, then tap **Enable Reminders** and grant notification permission.
 
 **Platform notes:**
 - **Android (Chrome):** works after installing the PWA, and often even
@@ -115,6 +125,8 @@ notification permission when prompted.
 - `sw.js` — service worker: offline caching + push/notificationclick handling
 - `manifest.webmanifest` — PWA metadata (name, icons, display mode)
 - `icons/` — app icons
+- `.nojekyll` — tells GitHub Pages to serve files as-is
+- `render.yaml` — Render Blueprint for one-click backend deployment
 - `server/` — optional Node/Express push-notification backend
   - `server.js` — subscription storage + daily reminder scheduler
   - `generate-vapid-keys.js` — one-time VAPID key generation
