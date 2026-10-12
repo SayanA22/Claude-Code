@@ -1,4 +1,4 @@
-const CACHE = "dinner-ideas-v2";
+const CACHE = "dinner-ideas-v3";
 const FILES = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
