@@ -12,19 +12,22 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
+<script>try{var t=localStorage.getItem("dinnerTheme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>
   :root{--bg:#fafaf9;--card:#fff;--ink:#1c1917;--muted:#78716c;--accent:#f97316;--accent-ink:#fff;
     --soft:#f5f5f4;--line:#e7e5e4;--yes:#16a34a;--no:#ef4444;--shadow:0 10px 30px rgba(28,25,23,.12)}
-  @media (prefers-color-scheme: dark){:root{--bg:#141210;--card:#211e1b;--ink:#fafaf9;--muted:#a8a29e;
-    --accent:#fb923c;--accent-ink:#1c1917;--soft:#2c2825;--line:#3a3532;--shadow:0 10px 30px rgba(0,0,0,.5)}}
+  :root{--blob1:#ffedd5;--blob2:#fed7aa;color-scheme:light}
+  :root[data-theme="dark"]{--bg:#141210;--card:#211e1b;--ink:#fafaf9;--muted:#a8a29e;--accent:#fb923c;--accent-ink:#1c1917;--soft:#2c2825;--line:#3a3532;--shadow:0 10px 30px rgba(0,0,0,.5);--blob1:#5a3a24;--blob2:#3a2518;color-scheme:dark}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#141210;--card:#211e1b;--ink:#fafaf9;--muted:#a8a29e;--accent:#fb923c;--accent-ink:#1c1917;--soft:#2c2825;--line:#3a3532;--shadow:0 10px 30px rgba(0,0,0,.5);--blob1:#5a3a24;--blob2:#3a2518;color-scheme:dark}}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);overscroll-behavior:none;
     font:18px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
   body{display:flex;flex-direction:column;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
   header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 6px;max-width:520px;width:100%;margin:0 auto}
-  header h1{font-size:1.3rem;margin:0;letter-spacing:-.02em}
+  header h1{font-size:1.2rem;margin:0;letter-spacing:-.02em}
   header nav{display:flex;gap:6px}
-  .ib{width:44px;height:44px;border-radius:50%;border:0;background:var(--soft);font-size:1.2rem;color:var(--ink)}
+  header h1{white-space:nowrap}
+  .ib{width:40px;height:40px;flex:none;border-radius:50%;border:0;background:var(--soft);font-size:1.2rem;color:var(--ink)}
   .filters{max-width:520px;width:100%;margin:0 auto;padding:6px 18px 0}
   .scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:4px 0}
   .scroll::-webkit-scrollbar{display:none}
@@ -38,8 +41,7 @@
     touch-action:pan-y;user-select:none;will-change:transform}
   .card.back{transform:scale(.94) translateY(14px);opacity:.6;box-shadow:none;pointer-events:none}
   .blob{width:min(52vw,210px);aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;
-    font-size:min(26vw,110px);background:radial-gradient(circle at 30% 25%,#ffedd5,#fed7aa);margin-bottom:22px}
-  @media (prefers-color-scheme: dark){.blob{background:radial-gradient(circle at 30% 25%,#5a3a24,#3a2518)}}
+    font-size:min(26vw,110px);background:radial-gradient(circle at 30% 25%,var(--blob1),var(--blob2));margin-bottom:22px}
   .card h2{margin:0;font-size:1.75rem;letter-spacing:-.02em;line-height:1.15}
   .card .note{color:var(--muted);margin:8px 0 14px;font-size:.95rem}
   .meta{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
@@ -74,7 +76,7 @@
 </style>
 </head>
 <body>
-<header><h1>🍽️ Dinner ideas</h1><nav><button class="ib" data-open="favs" aria-label="Favorites">♥</button><button class="ib" data-open="list" aria-label="All ideas">☰</button><button class="ib" data-open="add" aria-label="Add">＋</button></nav></header>
+<header><h1>Dinner ideas</h1><nav><button class="ib" id="theme" aria-label="Dark mode">🌙</button><button class="ib" data-open="favs" aria-label="Favorites">♥</button><button class="ib" data-open="list" aria-label="All ideas">☰</button><button class="ib" data-open="add" aria-label="Add">＋</button></nav></header>
 <div class="filters" id="filters"></div>
 <div id="stage"></div>
 <div class="sheet" id="sheet" hidden></div>
@@ -86,63 +88,82 @@ const BUILTIN = [
   ["🥣","Oatmeal with fruit","Breakfast",10,"Warm and easy"],
   ["🍞","Cinnamon toast","Breakfast",10,"Quick and cozy"],
   ["🥑","Avocado toast","Breakfast",10,"Add tomato or chili flakes"],
-  ["🍚","Poha","Breakfast",20,"Light flattened-rice breakfast"],
-  ["🥣","Upma","Breakfast",20,"Savory semolina with veggies"],
-  ["🫓","Aloo paratha","Breakfast",35,"Stuffed flatbread with yogurt"],
-  ["🥞","Dosa with chutney","Breakfast",30,"Crispy and satisfying"],
-  ["🍚","Idli & sambar","Breakfast",30,"Soft steamed rice cakes"],
   ["🥤","Fruit smoothie bowl","Breakfast",10,"Blend, top, enjoy"],
+  ["🥯","Bagel with cream cheese","Breakfast",5,"Add tomato and cucumber"],
+  ["🧇","Waffles with berries","Breakfast",20,"Fresh fruit on top"],
+  ["🥣","Granola & yogurt","Breakfast",5,"No cooking at all"],
+  ["🍚","Poha","Breakfast",20,"Flattened rice with peanuts"],
+  ["🥣","Upma","Breakfast",20,"Savory semolina with veggies"],
+  ["🫓","Aloo paratha","Breakfast",35,"Potato-stuffed flatbread with yogurt"],
+  ["🥞","Dosa with chutney","Breakfast",30,"Crispy rice crepe"],
+  ["🍚","Idli & sambar","Breakfast",30,"Steamed rice cakes with lentil stew"],
   ["🥪","Grilled cheese & tomato soup","Lunch",15,"Comfort classic"],
-  ["🥗","Chickpea salad sandwich","Lunch",15,"Mashed chickpeas, easy and filling"],
+  ["🥪","Caprese sandwich","Lunch",10,"Tomato, mozzarella and basil"],
+  ["🥪","Chickpea salad sandwich","Lunch",15,"Mashed chickpeas, easy and filling"],
   ["🌯","Bean & cheese burritos","Lunch",15,"Easy and cheap"],
   ["🥙","Veggie wraps with hummus","Lunch",10,"No cooking needed"],
   ["🍲","Lentil soup","Lunch",40,"Makes lots of leftovers"],
   ["🧆","Falafel pita","Lunch",30,"With cucumber and tahini"],
-  ["🍚","Curd rice","Lunch",15,"Cool and simple"],
-  ["🍋","Lemon rice","Lunch",20,"Tangy with peanuts"],
-  ["🥗","Quinoa veggie bowl","Lunch",25,"Colorful and healthy"],
   ["🍅","Tomato soup","Lunch",25,"Great with crusty bread"],
+  ["🥗","Quinoa veggie bowl","Lunch",25,"Colorful and healthy"],
+  ["🥗","Caesar-style salad with croutons","Lunch",15,"Crunchy and filling"],
+  ["🍟","Veggie nachos","Lunch",15,"Beans, cheese and salsa"],
+  ["🍚","Curd rice","Lunch",15,"Cool yogurt rice"],
+  ["🍋","Lemon rice","Lunch",20,"Tangy with peanuts"],
+  ["🌮","Tacos","Dinner",25,"Beans, peppers, cheese, salsa"],
+  ["🌮","Black bean tacos","Dinner",25,"Let everyone build their own"],
+  ["🫔","Veggie fajitas","Dinner",25,"Sizzling peppers and onions"],
+  ["🥙","Burrito bowls","Dinner",25,"Rice, beans, corn, guacamole"],
+  ["🍝","Spaghetti with marinara","Dinner",30,"Simple and everyone likes it"],
   ["🍝","Spaghetti with lentil marinara","Dinner",35,"Hearty, no meat needed"],
+  ["🍝","Pesto pasta","Dinner",20,"Add cherry tomatoes"],
+  ["🍝","Fettuccine Alfredo","Dinner",25,"Creamy and rich"],
+  ["🍝","Pasta primavera","Dinner",25,"Lots of fresh veggies"],
   ["🍝","Baked ziti","Dinner",50,"Lots of cheese"],
   ["🧀","Veggie lasagna","Dinner",70,"Spinach and ricotta"],
-  ["🌮","Black bean tacos","Dinner",25,"Let everyone build their own"],
-  ["🍛","Chana masala","Dinner",35,"Chickpea curry with rice or roti"],
-  ["🧀","Paneer butter masala","Dinner",35,"Creamy and rich"],
-  ["🥬","Palak paneer","Dinner",35,"Spinach and paneer"],
-  ["🥔","Aloo gobi","Dinner",35,"Potato and cauliflower"],
-  ["🍛","Rajma chawal","Dinner",50,"Kidney bean curry and rice"],
-  ["🍛","Dal tadka & rice","Dinner",35,"Simple and satisfying"],
-  ["🍲","Khichdi","Dinner",30,"Rice and lentils, very comforting"],
-  ["🍚","Vegetable biryani","Dinner",60,"Fragrant and festive"],
-  ["🍚","Vegetable pulao","Dinner",35,"Easy one-pot rice"],
-  ["🍆","Baingan bharta","Dinner",45,"Smoky roasted eggplant"],
-  ["🍆","Eggplant parmesan","Dinner",60,"Cheesy favorite"],
-  ["🍚","Veggie fried rice","Dinner",20,"Perfect for leftover rice"],
-  ["🥘","Vegetable stir-fry with tofu","Dinner",20,"Quick, lots of veggies"],
-  ["🍜","Veggie noodle soup","Dinner",35,"Warm and gentle"],
   ["🍕","Homemade veggie pizza","Dinner",45,"Fun and customizable"],
   ["🍔","Veggie burgers","Dinner",25,"Black bean or lentil patties"],
+  ["🧀","Macaroni & cheese","Dinner",30,"Comfort food"],
+  ["🍆","Eggplant parmesan","Dinner",60,"Cheesy favorite"],
   ["🍄","Mushroom stroganoff","Dinner",35,"Creamy over noodles"],
   ["🍲","Three-bean chili","Dinner",60,"Great the next day too"],
   ["🥔","Loaded baked potatoes","Dinner",60,"Top with beans and cheese"],
-  ["🧀","Macaroni & cheese","Dinner",30,"Comfort food"],
   ["🥬","Stuffed bell peppers","Dinner",55,"Rice, beans and cheese"],
   ["🫓","Veggie quesadillas","Dinner",15,"Ready in minutes"],
-  ["🍝","Pasta primavera","Dinner",25,"Lots of fresh veggies"],
   ["🥔","Roasted veggies & potatoes","Dinner",40,"Toss it all on one pan"],
   ["🥗","Big Greek salad with pita","Dinner",20,"Light, no oven"],
+  ["🍜","Veggie noodle soup","Dinner",35,"Warm and gentle"],
+  ["🍜","Veggie ramen","Dinner",25,"Noodles, greens and mushrooms"],
+  ["🍜","Pad Thai with tofu","Dinner",30,"Peanuts and lime"],
+  ["🍚","Veggie fried rice","Dinner",20,"Perfect for leftover rice"],
+  ["🥘","Vegetable stir-fry with tofu","Dinner",20,"Quick, lots of veggies"],
+  ["🍱","Veggie sushi rolls","Dinner",40,"Cucumber, avocado, carrot"],
+  ["🥟","Veggie dumplings","Dinner",30,"Steamed or pan-fried"],
+  ["🍛","Chana masala","Dinner",35,"Chickpea curry with rice or roti"],
+  ["🧀","Paneer butter masala","Dinner",35,"Creamy tomato curry with paneer"],
+  ["🥬","Palak paneer","Dinner",35,"Spinach curry with paneer"],
+  ["🥔","Aloo gobi","Dinner",35,"Potato and cauliflower"],
+  ["🍛","Rajma chawal","Dinner",50,"Kidney bean curry and rice"],
+  ["🍛","Dal tadka & rice","Dinner",35,"Spiced lentils, simple and satisfying"],
+  ["🍲","Khichdi","Dinner",30,"Rice and lentils, very comforting"],
+  ["🍚","Vegetable biryani","Dinner",60,"Fragrant spiced rice"],
+  ["🍚","Vegetable pulao","Dinner",35,"Easy one-pot rice"],
+  ["🍆","Baingan bharta","Dinner",45,"Smoky roasted eggplant"],
   ["🥘","Veggie curry with naan","Dinner",35,"Use whatever veggies you have"],
   ["🍪","Chocolate chip cookies","Dessert",30,"Always a hit"],
   ["🍎","Baked apples with cinnamon","Dessert",35,"Warm and simple"],
-  ["🍮","Kheer (rice pudding)","Dessert",40,"Creamy with cardamom"],
+  ["🍮","Kheer","Dessert",40,"Rice pudding with cardamom"],
   ["🍨","Ice cream with fruit","Dessert",5,"Zero effort"],
   ["🍌","Banana bread","Dessert",65,"Uses up ripe bananas"],
   ["🍩","Gulab jamun","Dessert",45,"Sweet and syrupy"],
+  ["🍫","Brownies","Dessert",40,"Fudgy and chocolatey"],
   ["🧁","Yogurt with honey & nuts","Snack",5,"Quick bite"],
   ["🍿","Popcorn","Snack",5,"Movie night"],
   ["🥜","Apple slices with peanut butter","Snack",5,"Healthy snack"],
   ["🥟","Samosas","Snack",45,"Crispy and spicy"],
-  ["🧀","Cheese & crackers","Snack",5,"Simple plate"]
+  ["🧀","Cheese & crackers","Snack",5,"Simple plate"],
+  ["🥨","Hummus with pita & veggies","Snack",5,"Dip and crunch"],
+  ["🍟","French fries","Snack",30,"Crispy, with ketchup"]
 ].map((m,i)=>({id:"v"+i,emoji:m[0],name:m[1],meal:m[2],mins:m[3],note:m[4]}));
 
 const MEALS = ["Any","Breakfast","Lunch","Dinner","Dessert","Snack"];
@@ -306,7 +327,7 @@ function closeSheet(){ sheet.hidden=true; buildDeck(); renderDeck(); }
 function toggleFav(id){ S.favs=S.favs.includes(id)?S.favs.filter(x=>x!==id):[...S.favs,id]; save(); }
 
 document.querySelector("header nav").addEventListener("click",e=>{
-  const b=e.target.closest("button"); if(b) openSheet(b.dataset.open);
+  const b=e.target.closest("button[data-open]"); if(b) openSheet(b.dataset.open);
 });
 sheet.addEventListener("input",e=>{
   if(e.target.id==="q"){ window._q=e.target.value; const p=e.target.selectionStart; renderSheet();
@@ -327,7 +348,25 @@ sheet.addEventListener("click",e=>{
   renderSheet();
 });
 
-renderFilters(); buildDeck(); renderDeck();
+// ---- theme ----
+function isDark(){
+  const t=document.documentElement.dataset.theme;
+  return t ? t==="dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+}
+function paintTheme(){
+  const d=isDark();
+  $("#theme").textContent=d?"☀️":"🌙"; $("#theme").setAttribute("aria-label",d?"Light mode":"Dark mode");
+  const m=document.querySelector('meta[name=theme-color]'); if(m) m.content=d?"#141210":"#f97316";
+}
+$("#theme").addEventListener("click",()=>{
+  const next=isDark()?"light":"dark";
+  document.documentElement.dataset.theme=next;
+  try{ localStorage.setItem("dinnerTheme",next); }catch(e){}
+  paintTheme();
+});
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",paintTheme);
+
+paintTheme(); renderFilters(); buildDeck(); renderDeck();
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 </body>
