@@ -13,67 +13,72 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
 <style>
-  :root{
-    --bg:#fff7ed; --card:#ffffff; --ink:#292524; --muted:#78716c;
-    --accent:#ea580c; --accent-ink:#ffffff; --soft:#ffedd5; --line:#fed7aa; --good:#15803d;
-  }
-  @media (prefers-color-scheme: dark){
-    :root{ --bg:#1c1917; --card:#292524; --ink:#fafaf9; --muted:#a8a29e;
-      --accent:#fb923c; --accent-ink:#1c1917; --soft:#44302a; --line:#57413a; --good:#4ade80; }
-  }
+  :root{--bg:#fafaf9;--card:#fff;--ink:#1c1917;--muted:#78716c;--accent:#f97316;--accent-ink:#fff;
+    --soft:#f5f5f4;--line:#e7e5e4;--yes:#16a34a;--no:#ef4444;--shadow:0 10px 30px rgba(28,25,23,.12)}
+  @media (prefers-color-scheme: dark){:root{--bg:#141210;--card:#211e1b;--ink:#fafaf9;--muted:#a8a29e;
+    --accent:#fb923c;--accent-ink:#1c1917;--soft:#2c2825;--line:#3a3532;--shadow:0 10px 30px rgba(0,0,0,.5)}}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;background:var(--bg);color:var(--ink);
-    font:20px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-  body{padding:env(safe-area-inset-top) 16px calc(90px + env(safe-area-inset-bottom))}
-  main{max-width:560px;margin:0 auto}
-  h1{font-size:1.5rem;margin:18px 0 4px}
-  .sub{color:var(--muted);margin:0 0 16px;font-size:.9rem}
-  .tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);
-    border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
-  .tabs button{flex:1;border:0;background:none;color:var(--muted);padding:12px 4px;font-size:.8rem}
-  .tabs button span{display:block;font-size:1.5rem}
-  .tabs button.on{color:var(--accent);font-weight:700}
-  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 14px}
-  .chip{border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;
-    padding:8px 14px;font-size:.9rem}
-  .chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
-  .label{font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:6px}
-  .card{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:22px;text-align:center;margin:12px 0}
-  .card .emoji{font-size:4.5rem;line-height:1.1}
-  .card h2{font-size:1.7rem;margin:6px 0}
-  .card p{margin:4px 0;color:var(--muted);font-size:.95rem}
-  .meta{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0}
-  .tag{background:var(--soft);border-radius:999px;padding:4px 12px;font-size:.8rem}
-  .btn{display:block;width:100%;border:0;border-radius:18px;padding:16px;font-size:1.15rem;font-weight:700;
-    background:var(--accent);color:var(--accent-ink);margin:10px 0}
-  .btn.alt{background:var(--soft);color:var(--ink)}
-  .row{display:flex;gap:10px}
-  .row .btn{margin:6px 0}
-  .empty{color:var(--muted);text-align:center;padding:24px 0}
-  .item{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);
-    border-radius:16px;padding:12px 14px;margin:8px 0}
-  .item .e{font-size:2rem}
-  .item .t{flex:1;min-width:0}
-  .item .t b{display:block}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);overscroll-behavior:none;
+    font:18px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  body{display:flex;flex-direction:column;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 6px;max-width:520px;width:100%;margin:0 auto}
+  header h1{font-size:1.3rem;margin:0;letter-spacing:-.02em}
+  header nav{display:flex;gap:6px}
+  .ib{width:44px;height:44px;border-radius:50%;border:0;background:var(--soft);font-size:1.2rem;color:var(--ink)}
+  .filters{max-width:520px;width:100%;margin:0 auto;padding:6px 18px 0}
+  .scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:4px 0}
+  .scroll::-webkit-scrollbar{display:none}
+  .chip{flex:none;border:0;background:var(--soft);color:var(--muted);border-radius:999px;padding:9px 16px;font-size:.9rem}
+  .chip.on{background:var(--ink);color:var(--bg);font-weight:600}
+  .chip.t.on{background:var(--accent);color:var(--accent-ink)}
+  #stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 18px 18px;min-height:0}
+  .deck{position:relative;width:100%;max-width:380px;aspect-ratio:3/4;max-height:100%}
+  .card{position:absolute;inset:0;background:var(--card);border-radius:32px;box-shadow:var(--shadow);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;
+    touch-action:pan-y;user-select:none;will-change:transform}
+  .card.back{transform:scale(.94) translateY(14px);opacity:.6;box-shadow:none;pointer-events:none}
+  .blob{width:min(52vw,210px);aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:min(26vw,110px);background:radial-gradient(circle at 30% 25%,#ffedd5,#fed7aa);margin-bottom:22px}
+  @media (prefers-color-scheme: dark){.blob{background:radial-gradient(circle at 30% 25%,#5a3a24,#3a2518)}}
+  .card h2{margin:0;font-size:1.75rem;letter-spacing:-.02em;line-height:1.15}
+  .card .note{color:var(--muted);margin:8px 0 14px;font-size:.95rem}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .tag{background:var(--soft);color:var(--muted);border-radius:999px;padding:5px 12px;font-size:.8rem}
+  .heart{position:absolute;top:16px;right:16px;border:0;background:var(--soft);width:44px;height:44px;border-radius:50%;font-size:1.3rem;color:var(--muted)}
+  .heart.on{color:#ef4444}
+  .stamp{position:absolute;top:26px;padding:6px 14px;border:3px solid;border-radius:12px;font-weight:800;font-size:1.3rem;
+    letter-spacing:.05em;opacity:0;pointer-events:none;transform:rotate(-12deg)}
+  .stamp.yes{left:22px;color:var(--yes)} .stamp.no{right:22px;color:var(--no);transform:rotate(12deg)}
+  .actions{display:flex;gap:28px;margin-top:18px}
+  .round{width:68px;height:68px;border-radius:50%;border:0;background:var(--card);box-shadow:var(--shadow);font-size:1.7rem}
+  .round.yes{background:var(--yes);color:#fff}
+  .hintline{color:var(--muted);font-size:.8rem;margin-top:10px;text-align:center}
+  .empty{text-align:center;color:var(--muted);padding:30px 10px}
+  .empty .big{font-size:4rem}
+  .sheet{position:fixed;inset:0;background:var(--bg);z-index:10;overflow-y:auto;padding:env(safe-area-inset-top) 18px 40px}
+  .sheet .in{max-width:520px;margin:0 auto}
+  .sheet .top{display:flex;align-items:center;gap:12px;padding:14px 0 10px}
+  .sheet h1{margin:0;font-size:1.5rem}
+  .item{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:18px;padding:12px 14px;margin:8px 0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .item .e{font-size:1.9rem}.item .t{flex:1;min-width:0}.item .t b{display:block;font-size:1rem}
   .item .t small{color:var(--muted)}
-  .icon{border:0;background:none;font-size:1.5rem;padding:6px}
-  input,select{width:100%;font:inherit;padding:12px;border-radius:12px;border:2px solid var(--line);
-    background:var(--card);color:var(--ink);margin:6px 0 12px}
-  .hint{color:var(--muted);font-size:.8rem}
-  .spin{animation:pop .35s ease}
-  @keyframes pop{0%{transform:scale(.9);opacity:.3}100%{transform:scale(1);opacity:1}}
-  .good{color:var(--good);font-weight:700}
+  .icon{border:0;background:none;font-size:1.3rem;padding:6px;color:var(--muted)}.icon.on{color:#ef4444}
+  input,select{width:100%;font:inherit;padding:13px 14px;border-radius:14px;border:0;background:var(--soft);color:var(--ink);margin:6px 0 14px}
+  label{font-size:.85rem;color:var(--muted)}
+  .btn{display:block;width:100%;border:0;border-radius:16px;padding:15px;font-size:1.05rem;font-weight:700;background:var(--accent);color:var(--accent-ink);margin:10px 0}
+  .btn.alt{background:var(--soft);color:var(--ink)}
+  .sub{color:var(--muted);margin:0 0 12px;font-size:.9rem}
+  .toast{position:fixed;left:50%;bottom:90px;width:max-content;max-width:88vw;text-align:center;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);
+    padding:12px 20px;border-radius:999px;opacity:0;transition:.3s;z-index:20;font-size:.95rem;pointer-events:none}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
 </style>
 </head>
 <body>
-<main id="app"></main>
-<nav class="tabs">
-  <button data-tab="pick"><span>🎲</span>Pick</button>
-  <button data-tab="list"><span>📋</span>All Ideas</button>
-  <button data-tab="favs"><span>⭐</span>Favorites</button>
-  <button data-tab="add"><span>➕</span>Add</button>
-</nav>
-
+<header><h1>🍽️ Dinner ideas</h1><nav><button class="ib" data-open="favs" aria-label="Favorites">♥</button><button class="ib" data-open="list" aria-label="All ideas">☰</button><button class="ib" data-open="add" aria-label="Add">＋</button></nav></header>
+<div class="filters" id="filters"></div>
+<div id="stage"></div>
+<div class="sheet" id="sheet" hidden></div>
+<div class="toast" id="toast"></div>
 <script>
 const BUILTIN = [
   // [emoji, name, meal, minutes, note]
@@ -147,136 +152,164 @@ function pool(){
   return all().filter(m => (S.mealF==="Any"||m.meal===S.mealF) && m.mins<=max);
 }
 
-// prefer things not made recently; never-made counts as oldest
-function suggest(){
-  const p = pool();
-  if(!p.length){ S.current=null; return save(); }
-  const others = p.filter(m=>m.id!==S.current);
-  const src = others.length ? others : p;
-  const w = src.map(m => {
-    const days = S.made[m.id] ? (Date.now()-S.made[m.id])/864e5 : 60;
-    return 1 + Math.min(days,60);
-  });
-  let r = Math.random()*w.reduce((a,b)=>a+b,0), i=0;
-  while((r-=w[i])>0 && i<src.length-1) i++;
-  S.current = src[i].id; save();
-}
-
 // ---- views ----
-let tab = "pick", animate = false;
-const app = document.getElementById("app");
+const $ = s => document.querySelector(s);
+const stage = $("#stage"), filters = $("#filters"), sheet = $("#sheet");
+let deckIds = [];
 
-function chips(items, isOn, attr){
-  return `<div class="chips">${items.map((x,i)=>`<button class="chip ${isOn(i)?"on":""}" ${attr}="${i}">${esc(Array.isArray(x)?x[0]:x)}</button>`).join("")}</div>`;
+function toast(msg){
+  const t=$("#toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(toast.h); toast.h=setTimeout(()=>t.classList.remove("show"),1800);
 }
 
-function pickView(){
-  const m = S.current && find(S.current);
-  const fav = m && S.favs.includes(m.id);
-  const a = m && ago(m.id);
-  return `
-  <h1>What should we make?</h1>
-  <p class="sub">Tap the big button and let the app decide.</p>
-  <div class="label">Meal</div>${chips(MEALS,i=>MEALS[i]===S.mealF,"data-meal")}
-  <div class="label">How much time?</div>${chips(EFFORT,i=>i===S.effortF,"data-effort")}
-  ${m ? `<div class="card ${animate?"spin":""}">
-      <div class="emoji">${m.emoji}</div>
-      <h2>${esc(m.name)}</h2>
-      <div class="meta"><span class="tag">${esc(m.meal)}</span><span class="tag">⏱ ${mins(m)}</span>${a?`<span class="tag">Made ${a}</span>`:""}</div>
-      <p>${esc(m.note||"")}</p>
-    </div>
-    <div class="row">
-      <button class="btn alt" data-act="fav">${fav?"⭐ Saved":"☆ Save"}</button>
-      <button class="btn alt" data-act="skip">🚫 Never show</button>
-    </div>
-    <button class="btn" data-act="made">✅ We're making this!</button>
-    <button class="btn alt" data-act="next">🎲 Show me another</button>`
-   : `<div class="card"><div class="emoji">🤔</div>
-      <h2>Ready when you are</h2><p>Pick a meal type above, then tap the button.</p></div>
-      <button class="btn" data-act="next">🎲 Surprise me!</button>`}
-  ${pool().length===0?`<p class="empty">Nothing matches those choices. Try "Any" or add your own ideas.</p>`:""}`;
+function buildDeck(){
+  const p = pool();
+  // shuffle, weighted toward meals not made recently
+  deckIds = p.map(m=>{
+    const days = S.made[m.id] ? (Date.now()-S.made[m.id])/864e5 : 60;
+    return [m.id, Math.random()*(1+Math.min(days,60))];
+  }).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+}
+function topMeal(){ while(deckIds.length && !find(deckIds[0])) deckIds.shift(); return deckIds[0] && find(deckIds[0]); }
+
+function cardHTML(m, back){
+  const a = ago(m.id);
+  return `<div class="card ${back?"back":""}" ${back?"":'id="top"'}>
+    ${back?"":`<button class="heart ${S.favs.includes(m.id)?"on":""}" id="heart" aria-label="Favorite">${S.favs.includes(m.id)?"♥":"♡"}</button>
+    <div class="stamp yes">YES!</div><div class="stamp no">NOPE</div>`}
+    <div class="blob">${m.emoji}</div>
+    <h2>${esc(m.name)}</h2>
+    <div class="note">${esc(m.note||"")}</div>
+    <div class="meta"><span class="tag">${esc(m.meal)}</span><span class="tag">⏱ ${mins(m)}</span>${a?`<span class="tag">Made ${a}</span>`:""}</div>
+  </div>`;
 }
 
+function renderFilters(){
+  filters.innerHTML = `<div class="scroll">${MEALS.map(x=>`<button class="chip ${x===S.mealF?"on":""}" data-meal="${x}">${x}</button>`).join("")}</div>
+  <div class="scroll">${EFFORT.map((x,i)=>`<button class="chip t ${i===S.effortF?"on":""}" data-effort="${i}">${i?"⏱ ":""}${x[0].replace(" (under 30 min)"," · 30 min")}</button>`).join("")}</div>`;
+}
+
+function renderDeck(){
+  const m = topMeal();
+  if(!m){
+    stage.innerHTML = `<div class="empty"><div class="big">${pool().length?"🎉":"🤔"}</div>
+      <p>${pool().length?"You've seen everything here!":"Nothing matches those filters."}</p>
+      <button class="btn" id="again">${pool().length?"Start over":"Show all meals"}</button></div>`;
+    return;
+  }
+  const next = deckIds[1] && find(deckIds[1]);
+  stage.innerHTML = `<div class="deck">${next?cardHTML(next,true):""}${cardHTML(m,false)}</div>
+    <div class="actions">
+      <button class="round" id="no" aria-label="Skip">✕</button>
+      <button class="round yes" id="yes" aria-label="Make this">✓</button>
+    </div>
+    <div class="hintline">Swipe right to pick · left to skip</div>`;
+  attachSwipe();
+}
+
+function decide(yes){
+  const el=$("#top"); const m=topMeal(); if(!el||!m) return;
+  el.style.transition="transform .3s, opacity .3s";
+  el.style.transform=`translateX(${yes?500:-500}px) rotate(${yes?25:-25}deg)`; el.style.opacity=0;
+  setTimeout(()=>{
+    deckIds.shift();
+    if(yes){ S.made[m.id]=Date.now(); save(); toast(`Great choice! Enjoy the ${m.name.toLowerCase()} 🍽️`); }
+    renderDeck();
+  },260);
+}
+
+function attachSwipe(){
+  const el=$("#top"); if(!el) return;
+  let sx=0, dx=0, drag=false, moved=false;
+  const yes=el.querySelector(".stamp.yes"), no=el.querySelector(".stamp.no");
+  el.addEventListener("pointerdown",e=>{ if(e.target.closest("#heart")) return; drag=true; moved=false; sx=e.clientX; el.setPointerCapture(e.pointerId); el.style.transition="none"; });
+  el.addEventListener("pointermove",e=>{ if(!drag) return; dx=e.clientX-sx; if(Math.abs(dx)>6) moved=true;
+    el.style.transform=`translateX(${dx}px) rotate(${dx/18}deg)`;
+    yes.style.opacity=Math.max(0,dx/110); no.style.opacity=Math.max(0,-dx/110); });
+  const end=()=>{ if(!drag) return; drag=false;
+    if(dx>110) decide(true); else if(dx<-110) decide(false);
+    else { el.style.transition="transform .25s"; el.style.transform=""; yes.style.opacity=no.style.opacity=0; }
+    dx=0; };
+  el.addEventListener("pointerup",end); el.addEventListener("pointercancel",end);
+}
+
+stage.addEventListener("click",e=>{
+  const t=e.target.closest("button"); if(!t) return;
+  if(t.id==="yes") decide(true);
+  else if(t.id==="no") decide(false);
+  else if(t.id==="heart"){ const m=topMeal(); toggleFav(m.id); t.classList.toggle("on"); t.textContent=S.favs.includes(m.id)?"♥":"♡"; }
+  else if(t.id==="again"){ if(!pool().length){ S.mealF="Any"; S.effortF=0; save(); renderFilters(); } buildDeck(); renderDeck(); }
+});
+
+filters.addEventListener("click",e=>{
+  const t=e.target.closest("button"); if(!t) return;
+  if(t.dataset.meal) S.mealF=t.dataset.meal;
+  else if(t.dataset.effort) S.effortF=+t.dataset.effort; else return;
+  save(); renderFilters(); buildDeck(); renderDeck();
+});
+
+// ---- sheets ----
 function itemRow(m, actions){
   const a = ago(m.id);
   return `<div class="item"><div class="e">${m.emoji}</div>
     <div class="t"><b>${esc(m.name)}</b><small>${esc(m.meal)} · ${mins(m)}${a?" · made "+a:""}</small></div>${actions}</div>`;
 }
+const favBtn = id => `<button class="icon ${S.favs.includes(id)?"on":""}" data-fav="${id}">${S.favs.includes(id)?"♥":"♡"}</button>`;
+let sheetName = null;
 
-function listView(){
-  const q = (window._q||"").toLowerCase();
-  const items = all().filter(m=>!q||m.name.toLowerCase().includes(q)||m.meal.toLowerCase().includes(q));
-  return `<h1>All ideas</h1><p class="sub">${all().length} meals. Tap ⭐ to save a favorite.</p>
-    <input id="q" type="search" placeholder="Search…" value="${esc(window._q||"")}">
-    ${items.map(m=>itemRow(m,`<button class="icon" data-fav="${m.id}">${S.favs.includes(m.id)?"⭐":"☆"}</button>`)).join("")||'<p class="empty">No matches.</p>'}
-    ${S.hidden.length?`<button class="btn alt" data-act="unhide">Bring back ${S.hidden.length} hidden meal${S.hidden.length>1?"s":""}</button>`:""}`;
-}
-
-function favsView(){
-  const items = S.favs.map(find).filter(m=>m && !S.hidden.includes(m.id));
-  return `<h1>Favorites</h1><p class="sub">Meals you love.</p>
-    ${items.map(m=>itemRow(m,`<button class="icon" data-fav="${m.id}">⭐</button>`)).join("")
-      ||'<p class="empty">No favorites yet. Tap ⭐ on any meal to save it here.</p>'}`;
-}
-
-function addView(){
-  return `<h1>Add your own</h1><p class="sub">Family recipes and favorites go here.</p>
+function sheetBody(){
+  if(sheetName==="list"){
+    const q=(window._q||"").toLowerCase();
+    const items=all().filter(m=>!q||m.name.toLowerCase().includes(q)||m.meal.toLowerCase().includes(q));
+    return `<h1>All ideas</h1><p class="sub">${all().length} meals</p>
+      <input id="q" type="search" placeholder="Search…" value="${esc(window._q||"")}">
+      ${items.map(m=>itemRow(m,favBtn(m.id)+`<button class="icon" data-hide="${m.id}" aria-label="Hide">🚫</button>`)).join("")||'<p class="empty">No matches.</p>'}
+      ${S.hidden.length?`<button class="btn alt" data-act="unhide">Bring back ${S.hidden.length} hidden</button>`:""}`;
+  }
+  if(sheetName==="favs"){
+    const items=S.favs.map(find).filter(m=>m&&!S.hidden.includes(m.id));
+    return `<h1>Favorites</h1><p class="sub">Meals you love</p>`+
+      (items.map(m=>itemRow(m,favBtn(m.id))).join("")||'<p class="empty"><span class="big">♡</span><br>Tap the heart on any card to save it here.</p>');
+  }
+  return `<h1>Add your own</h1><p class="sub">Family recipes and favorites</p>
     <label>Meal name</label><input id="n" placeholder="e.g. Grandma's rice and beans">
     <label>Type</label><select id="m">${MEALS.slice(1).map(x=>`<option ${x==="Dinner"?"selected":""}>${x}</option>`).join("")}</select>
     <label>Minutes to make</label><input id="t" type="number" inputmode="numeric" min="1" value="30">
-    <label>Note (optional)</label><input id="o" placeholder="e.g. needs to marinate overnight">
+    <label>Note (optional)</label><input id="o" placeholder="e.g. marinate overnight">
     <button class="btn" data-act="add">Add this meal</button>
-    ${S.custom.length?`<div class="label">Your meals</div>`+S.custom.map(m=>itemRow(m,`<button class="icon" data-del="${m.id}">🗑</button>`)).join(""):""}`;
+    ${S.custom.length?`<p class="sub" style="margin-top:20px">Your meals</p>`+S.custom.map(m=>itemRow(m,`<button class="icon" data-del="${m.id}">🗑</button>`)).join(""):""}`;
 }
-
-function render(){
-  document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===tab));
-  app.innerHTML = {pick:pickView,list:listView,favs:favsView,add:addView}[tab]();
-  animate = false;
+function openSheet(n){ sheetName=n; renderSheet(); sheet.hidden=false; sheet.scrollTop=0; }
+function renderSheet(){
+  sheet.innerHTML=`<div class="in"><div class="top"><button class="ib" data-close aria-label="Back">←</button></div>${sheetBody()}</div>`;
 }
+function closeSheet(){ sheet.hidden=true; buildDeck(); renderDeck(); }
 
-// ---- events ----
-function toggleFav(id){
-  S.favs = S.favs.includes(id) ? S.favs.filter(x=>x!==id) : [...S.favs,id]; save();
-}
+function toggleFav(id){ S.favs=S.favs.includes(id)?S.favs.filter(x=>x!==id):[...S.favs,id]; save(); }
 
-document.querySelector(".tabs").addEventListener("click",e=>{
-  const b=e.target.closest("button"); if(!b) return;
-  tab=b.dataset.tab; render(); window.scrollTo(0,0);
+document.querySelector("header nav").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(b) openSheet(b.dataset.open);
 });
-
-app.addEventListener("input",e=>{
-  if(e.target.id==="q"){ window._q=e.target.value; const pos=e.target.selectionStart; render();
-    const q=document.getElementById("q"); q.focus(); q.setSelectionRange(pos,pos); }
+sheet.addEventListener("input",e=>{
+  if(e.target.id==="q"){ window._q=e.target.value; const p=e.target.selectionStart; renderSheet();
+    const q=$("#q"); q.focus(); q.setSelectionRange(p,p); }
 });
-
-app.addEventListener("click",e=>{
-  const t=e.target.closest("button"); if(!t) return;
-  const d=t.dataset;
-  if(d.meal!==undefined){ S.mealF=MEALS[d.meal]; S.current=null; save(); }
-  else if(d.effort!==undefined){ S.effortF=+d.effort; S.current=null; save(); }
-  else if(d.fav){ toggleFav(d.fav); }
-  else if(d.del){ if(!confirm("Delete this meal?")) return;
-    S.custom=S.custom.filter(m=>m.id!==d.del); S.favs=S.favs.filter(x=>x!==d.del); save(); }
-  else if(d.act==="next"){ suggest(); animate=true; }
-  else if(d.act==="fav" && S.current){ toggleFav(S.current); }
-  else if(d.act==="skip" && S.current){
-    if(!confirm("Never suggest this meal again? You can bring it back from All Ideas.")) return;
-    S.hidden.push(S.current); S.current=null; save(); suggest(); animate=true; }
-  else if(d.act==="made" && S.current){ S.made[S.current]=Date.now(); save(); alert("Great choice! Enjoy! 🍽️"); }
+sheet.addEventListener("click",e=>{
+  const t=e.target.closest("button"); if(!t) return; const d=t.dataset;
+  if(d.close!==undefined) return closeSheet();
+  if(d.fav) toggleFav(d.fav);
+  else if(d.hide){ S.hidden.push(d.hide); save(); toast("Hidden. Bring it back anytime."); }
+  else if(d.del){ if(!confirm("Delete this meal?")) return; S.custom=S.custom.filter(m=>m.id!==d.del); S.favs=S.favs.filter(x=>x!==d.del); save(); }
   else if(d.act==="unhide"){ S.hidden=[]; save(); }
   else if(d.act==="add"){
-    const name=document.getElementById("n").value.trim();
-    if(!name){ alert("Please type a meal name."); return; }
-    const m={id:"c"+Date.now(),emoji:"🍽️",name,meal:document.getElementById("m").value,
-      mins:Math.max(1,parseInt(document.getElementById("t").value)||30),note:document.getElementById("o").value.trim()};
-    S.custom.push(m); S.favs.push(m.id); save(); alert("Added! It's in your favorites too. ⭐");
-  }
-  else return;
-  render();
+    const name=$("#n").value.trim(); if(!name){ toast("Please type a meal name"); return; }
+    const m={id:"c"+Date.now(),emoji:"🍽️",name,meal:$("#m").value,mins:Math.max(1,parseInt($("#t").value)||30),note:$("#o").value.trim()};
+    S.custom.push(m); S.favs.push(m.id); save(); toast("Added! ♥ Saved to favorites");
+  } else return;
+  renderSheet();
 });
 
-render();
+renderFilters(); buildDeck(); renderDeck();
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 </body>
