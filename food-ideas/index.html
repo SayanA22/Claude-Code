@@ -119,6 +119,13 @@
   .res{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:18px;padding:12px 14px;margin:8px 0;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.06)}
   .res .e{font-size:1.9rem}.res .t{flex:1;min-width:0}.res b{display:block}.res small{color:var(--muted)}
   .res .go{color:var(--muted);font-size:1.2rem}.ok{color:var(--yes);font-weight:600}
+  .blob.ph{background-size:cover;background-position:center;border-radius:32%;font-size:0;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+  .cam{position:absolute;top:16px;left:16px;width:44px;height:44px;border-radius:50%;background:var(--soft);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:1.25rem;cursor:pointer;user-select:none}
+  .th{width:46px;height:46px;border-radius:12px;background-size:cover;background-position:center;font-size:0;flex:none}
+  .phbig{width:100%;aspect-ratio:4/3;border-radius:22px;background-size:cover;background-position:center;margin:8px 0 14px;box-shadow:var(--shadow)}
+  .row{display:flex;gap:10px}.row .btn{margin:6px 0}
+  .pbtn{flex:1;width:auto;min-width:0;text-align:center;font-size:.95rem;padding:12px 8px;cursor:pointer}
+  .pprev{margin:6px 0 4px}.pprev .phbig{aspect-ratio:16/10;margin:6px 0 8px}
   .stickybtn{position:sticky;bottom:14px;box-shadow:var(--shadow);z-index:2}
   h2.sec{font-size:1.05rem;margin:22px 0 4px}
   .toast{position:fixed;left:50%;bottom:90px;width:max-content;max-width:88vw;text-align:center;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);
@@ -476,6 +483,70 @@ function fridgeMatches(){
   return out;
 }
 
+// ---- photos: taken with the camera (or picked from the gallery), kept on this phone ----
+const photos = {};           // meal id -> object URL for display
+let pendingPhoto = null, pendingURL = null;   // photo chosen in the "Add your own" form before saving: Blob | "remove" | null
+let _db = null;
+function photoDB(){
+  return _db || (_db = new Promise((res,rej)=>{
+    try{ const r=indexedDB.open("dinnerPhotos",1); r.onupgradeneeded=()=>r.result.createObjectStore("photos"); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }
+    catch(e){ rej(e); }
+  }));
+}
+async function photoTx(mode, fn){
+  const d=await photoDB();
+  return new Promise((res,rej)=>{ const t=d.transaction("photos",mode); fn(t.objectStore("photos")); t.oncomplete=()=>res(); t.onerror=()=>rej(t.error); t.onabort=()=>rej(t.error); });
+}
+async function loadPhotos(){
+  try{
+    const d=await photoDB();
+    await new Promise((res,rej)=>{ const req=d.transaction("photos").objectStore("photos").openCursor();
+      req.onsuccess=()=>{ const c=req.result; if(c){ photos[c.key]=URL.createObjectURL(c.value); c.continue(); } else res(); }; req.onerror=()=>rej(req.error); });
+  }catch(e){}
+  try{ navigator.storage && navigator.storage.persist && navigator.storage.persist(); }catch(e){}
+}
+function showPhoto(id,blob){ if(photos[id]) URL.revokeObjectURL(photos[id]); photos[id]=URL.createObjectURL(blob); }
+async function putPhoto(id,blob){ showPhoto(id,blob); await photoTx("readwrite",st=>st.put(blob,id)); }
+async function deletePhoto(id){
+  if(photos[id]){ URL.revokeObjectURL(photos[id]); delete photos[id]; }
+  try{ await photoTx("readwrite",st=>st.delete(id)); }catch(e){}
+}
+// shrink big camera photos (often 3000+ px) so they stay small and quick
+async function shrinkPhoto(file, max=900){
+  const url=URL.createObjectURL(file);
+  try{
+    const img=await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=()=>rej(new Error("bad image")); i.src=url; });
+    const k=Math.min(1, max/Math.max(img.naturalWidth,img.naturalHeight));
+    const c=document.createElement("canvas"); c.width=Math.max(1,Math.round(img.naturalWidth*k)); c.height=Math.max(1,Math.round(img.naturalHeight*k));
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+    return await new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(new Error("encode failed")),"image/jpeg",0.82));
+  } finally { URL.revokeObjectURL(url); }
+}
+const bgImg = id => photos[id] ? `style="background-image:url('${photos[id]}')"` : "";
+const pic = m => photos[m.id] ? `<div class="blob ph" ${bgImg(m.id)} role="img" aria-label="Photo of ${esc(m.name)}"></div>` : `<div class="blob">${m.emoji}</div>`;
+const thumb = m => photos[m.id] ? `<div class="e th" ${bgImg(m.id)}></div>` : `<div class="e">${m.emoji}</div>`;
+const photoButtons = (id,has) => `<div class="row"><label class="btn alt pbtn">📷 ${has?"Retake":"Take a photo"}<input type="file" accept="image/*" capture="environment" hidden data-photo-for="${id}"></label><label class="btn alt pbtn">🖼 From gallery<input type="file" accept="image/*" hidden data-photo-for="${id}"></label></div>`;
+function formPhotoHTML(e){
+  const url = pendingPhoto==="remove" ? null : (pendingURL || (e&&e.id&&photos[e.id]));
+  return url ? `<div class="phbig" style="background-image:url('${url}')"></div><button type="button" class="chip" data-act="fprem">Remove photo</button>` : "";
+}
+async function handlePhoto(input){
+  const id=input.dataset.photoFor, file=input.files && input.files[0]; input.value="";
+  if(!file) return;
+  let blob;
+  try{ blob=await shrinkPhoto(file); }catch(err){ toast("Sorry, I couldn't read that photo"); return; }
+  if(id==="form"){
+    if(pendingURL) URL.revokeObjectURL(pendingURL);
+    pendingPhoto=blob; pendingURL=URL.createObjectURL(blob);
+    const el=$("#pprev"); if(el) el.innerHTML=formPhotoHTML(S.custom.find(x=>x.id===editId));
+    toast("Photo added 📷"); return;
+  }
+  try{ await putPhoto(id,blob); toast("Photo saved 📷"); }
+  catch(err){ toast("Showing the photo, but it couldn't be saved on this device"); }
+  if(!sheet.hidden) renderSheet(); else renderDeck();
+}
+document.addEventListener("change",e=>{ if(e.target.matches && e.target.matches("input[data-photo-for]")) handlePhoto(e.target); });
+
 // ---- views ----
 const $ = s => document.querySelector(s);
 const stage = $("#stage"), filters = $("#filters"), sheet = $("#sheet");
@@ -500,8 +571,9 @@ function cardHTML(m, back){
   const a = ago(m.id);
   return `<div class="card ${back?"back":""}" ${back?"":'id="top"'}>
     ${back?"":`<button class="heart ${S.favs.includes(m.id)?"on":""}" id="heart" aria-label="Favorite">${S.favs.includes(m.id)?"♥":"♡"}</button>
+    <label class="cam" aria-label="Take a photo of this meal">📷<input type="file" accept="image/*" capture="environment" hidden data-photo-for="${m.id}"></label>
     <div class="stamp yes">YES!</div><div class="stamp no">NOPE</div>`}
-    <div class="blob">${m.emoji}</div>
+    ${pic(m)}
     <h2>${esc(m.name)}</h2>
     <div class="note">${esc(m.note||"")}</div>
     <div class="meta"><span class="tag">${esc(m.meal)}${m.cuisine&&m.cuisine!=="Other"?" · "+esc(m.cuisine):""}</span><span class="tag">⏱ ${mins(m)}</span>${(m.tags||[]).map(t=>`<span class="tag food">${TAG_ICON[t]||""} ${esc(t)}</span>`).join("")}${a?`<span class="tag">Made ${a}</span>`:""}</div>
@@ -555,7 +627,7 @@ function attachSwipe(){
   const el=$("#top"); if(!el) return;
   let sx=0, dx=0, drag=false, moved=false;
   const yes=el.querySelector(".stamp.yes"), no=el.querySelector(".stamp.no");
-  el.addEventListener("pointerdown",e=>{ if(e.target.closest("#heart")) return; drag=true; moved=false; sx=e.clientX; el.setPointerCapture(e.pointerId); el.style.transition="none"; });
+  el.addEventListener("pointerdown",e=>{ if(e.target.closest("#heart,.cam")) return; drag=true; moved=false; sx=e.clientX; el.setPointerCapture(e.pointerId); el.style.transition="none"; });
   el.addEventListener("pointermove",e=>{ if(!drag) return; dx=e.clientX-sx; if(Math.abs(dx)>6) moved=true;
     el.style.transform=`translateX(${dx}px) rotate(${dx/18}deg)`;
     yes.style.opacity=Math.max(0,dx/110); no.style.opacity=Math.max(0,-dx/110); });
@@ -588,7 +660,7 @@ filters.addEventListener("click",e=>{
 // ---- sheets ----
 function itemRow(m, actions){
   const a = ago(m.id);
-  return `<div class="item"><div class="e">${m.emoji}</div>
+  return `<div class="item">${thumb(m)}
     <div class="t" ${hasRecipe(m)?`data-view="${m.id}"`:""}><b>${esc(m.name)}${hasRecipe(m)?" 📝":""}</b><small>${esc(m.meal)}${m.cuisine&&m.cuisine!=="Other"?" · "+esc(m.cuisine):""} · ${mins(m)}${a?" · made "+a:""}</small></div>${actions}</div>`;
 }
 const favBtn = id => `<button class="icon ${S.favs.includes(id)?"on":""}" data-fav="${id}">${S.favs.includes(id)?"♥":"♡"}</button>`;
@@ -610,7 +682,7 @@ function sheetBody(){
   }
   if(sheetName==="fridge"){
     const res=fridgeMatches(), ready=res.filter(r=>!r.missing.length), almost=res.filter(r=>r.missing.length>=1&&r.missing.length<=2), few=res.filter(r=>r.missing.length>=3&&r.missing.length<=4&&r.have>=2);
-    const row=r=>`<div class="res" data-view="${r.m.id}"><div class="e">${r.m.emoji}</div><div class="t"><b>${esc(r.m.name)}</b>${r.missing.length?`<small>Still need: ${r.missing.map(esc).join(", ")}</small>`:`<small class="ok">✅ You have everything</small>`}<small> · ${mins(r.m)}${!r.missing.length&&r.nice.length?` · nice to have: ${r.nice.slice(0,3).map(esc).join(", ")}`:""}</small></div><span class="go">›</span></div>`;
+    const row=r=>`<div class="res" data-view="${r.m.id}">${thumb(r.m)}<div class="t"><b>${esc(r.m.name)}</b>${r.missing.length?`<small>Still need: ${r.missing.map(esc).join(", ")}</small>`:`<small class="ok">✅ You have everything</small>`}<small> · ${mins(r.m)}${!r.missing.length&&r.nice.length?` · nice to have: ${r.nice.slice(0,3).map(esc).join(", ")}`:""}</small></div><span class="go">›</span></div>`;
     const sec=(title,list,cap)=>list.length?`<h2 class="sec">${title}</h2>`+list.slice(0,cap).map(row).join("")+(list.length>cap?`<p class="sub">+ ${list.length-cap} more</p>`:""):"";
     const n=S.fridge.length+S.fridgeOther.length;
     return `<h1>What's in your fridge?</h1><p class="sub">Tap what you have, or type it in. I'll show what you can make.</p>
@@ -642,10 +714,11 @@ function sheetBody(){
   if(sheetName==="detail"){
     const m=find(detailId); if(!m) return "";
     const ing=lines(m.ingredients), st=lines(m.steps);
-    return `<div class="detail"><div class="blob">${m.emoji}</div><h1>${esc(m.name)}</h1>
+    return `<div class="detail">${photos[m.id]?`<div class="phbig" ${bgImg(m.id)} role="img" aria-label="Photo of ${esc(m.name)}"></div>`:`<div class="blob">${m.emoji}</div>`}<h1>${esc(m.name)}</h1>
       <div class="sub">${esc(m.note||"")}</div>
       <div class="meta"><span class="tag">${esc(m.meal)}${m.cuisine&&m.cuisine!=="Other"?" · "+esc(m.cuisine):""}</span><span class="tag">⏱ ${mins(m)}</span>${m.serves?`<span class="tag">🍽 Serves ${m.serves}</span>`:""}${(m.tags||[]).map(t=>`<span class="tag food">${TAG_ICON[t]||""} ${esc(t)}</span>`).join("")}</div>
       <button class="btn" data-make="${m.id}">✅ We're making this!</button>
+      ${photoButtons(m.id,!!photos[m.id])}${photos[m.id]?`<button class="chip" data-delphoto="${m.id}">Remove photo</button>`:""}
       ${ing.length?`<div class="box"><h3>Ingredients</h3><ul>${ing.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}
       ${st.length?`<div class="box"><h3>How to make it</h3><ol>${st.map(x=>`<li>${esc(x)}</li>`).join("")}</ol></div>`:""}
       ${String(m.id).startsWith("c")?`<button class="btn alt" data-edit="${m.id}">✏️ Edit this recipe</button>`:""}</div>`;
@@ -661,13 +734,14 @@ function sheetBody(){
     <label style="display:block;margin-top:6px">Ingredients (one per line)</label><textarea id="ing" placeholder="2 cups rice&#10;1 can chickpeas&#10;1 onion">${esc(e.ingredients||"")}</textarea>
     <label>Steps (one per line, optional)</label><textarea id="stp" placeholder="Rinse the rice&#10;Cook the onion…">${esc(e.steps||"")}</textarea>
     <label>Note (optional)</label><input id="o" placeholder="e.g. marinate overnight" value="${esc(e.note||"")}">
+    <label style="display:block">Photo (optional)</label><div class="pprev" id="pprev">${formPhotoHTML(e)}</div>${photoButtons("form",false)}
     <button class="btn" data-act="add">${e.id?"Save changes":"Add this meal"}</button>
     ${e.id?`<button class="btn alt" data-act="cancel">Cancel</button>`:""}
     ${S.custom.length?`<p class="sub" style="margin-top:20px">Your meals</p>`+S.custom.map(m=>itemRow(m,`<button class="icon" data-edit="${m.id}" aria-label="Edit">✏️</button><button class="icon" data-del="${m.id}" aria-label="Delete">🗑</button>`)).join(""):""}`;
 }
 function openSheet(n,id){
   if(n==="detail"){ prevSheet = sheet.hidden ? null : sheetName; detailId=id; }
-  else { prevSheet=null; if(n==="add" && id===undefined) editId=null; }
+  else { prevSheet=null; if(n==="add" && id===undefined){ editId=null; pendingPhoto=null; pendingURL=null; } }
   sheetName=n; renderSheet(); sheet.hidden=false; sheet.scrollTop=0;
 }
 function renderSheet(){
@@ -678,7 +752,7 @@ function closeSheet(){
     if(prevSheet){ const p=prevSheet; prevSheet=null; sheetName=p; renderSheet(); return; }
     sheet.hidden=true; return;   // opened from the card: keep the deck as it was
   }
-  sheet.hidden=true; editId=null; buildDeck(); renderDeck();
+  sheet.hidden=true; editId=null; pendingPhoto=null; pendingURL=null; buildDeck(); renderDeck();
 }
 
 function addFridgeText(){
@@ -711,7 +785,9 @@ sheet.addEventListener("click",e=>{
   if(d.act==="fjump"){ const r=$("#fres"); if(r) sheet.scrollTo({top:r.offsetTop-12,behavior:"smooth"}); return; }
   if(d.act==="ftop"){ sheet.scrollTo({top:0,behavior:"smooth"}); return; }
   if(d.ftag){ t.classList.toggle("on"); return; }
-  if(d.edit){ editId=d.edit; sheetName="add"; prevSheet=null; renderSheet(); sheet.scrollTop=0; return; }
+  if(d.act==="fprem"){ pendingPhoto="remove"; if(pendingURL){ URL.revokeObjectURL(pendingURL); pendingURL=null; } $("#pprev").innerHTML=""; return; }
+  if(d.delphoto){ deletePhoto(d.delphoto).then(()=>{ renderSheet(); toast("Photo removed"); }); return; }
+  if(d.edit){ editId=d.edit; pendingPhoto=null; pendingURL=null; sheetName="add"; prevSheet=null; renderSheet(); sheet.scrollTop=0; return; }
   if(d.fav) toggleFav(d.fav);
   else if(d.fk){ S.fridge = S.fridge.includes(d.fk) ? S.fridge.filter(x=>x!==d.fk) : [...S.fridge,d.fk]; save(); }
   else if(d.fx!==undefined){ S.fridgeOther.splice(+d.fx,1); save(); }
@@ -723,7 +799,7 @@ sheet.addEventListener("click",e=>{
   else if(d.mode){ setMode(d.mode); }
   else if(d.icon){ setIcon(d.icon); }
   else if(d.hide){ S.hidden.push(d.hide); save(); toast("Hidden. Bring it back anytime."); }
-  else if(d.del){ if(!confirm("Delete this meal?")) return; if(editId===d.del) editId=null; S.custom=S.custom.filter(m=>m.id!==d.del); S.favs=S.favs.filter(x=>x!==d.del); save(); }
+  else if(d.del){ if(!confirm("Delete this meal?")) return; if(editId===d.del) editId=null; S.custom=S.custom.filter(m=>m.id!==d.del); S.favs=S.favs.filter(x=>x!==d.del); deletePhoto(d.del); save(); }
   else if(d.act==="unhide"){ S.hidden=[]; save(); }
   else if(d.act==="add"){
     const name=$("#n").value.trim(); if(!name){ toast("Please type a meal name"); return; }
@@ -731,11 +807,15 @@ sheet.addEventListener("click",e=>{
       ingredients:$("#ing").value.trim(),steps:$("#stp").value.trim(),
       tags:[...document.querySelectorAll(".chip.tg.on")].map(x=>x.dataset.ftag)};
     const old=S.custom.find(x=>x.id===editId);
-    if(old){ Object.assign(old,fields); save(); editId=null; toast("Saved ✓"); }
-    else { const m={id:"c"+Date.now(),emoji:"🍽️",...fields}; S.custom.push(m); S.favs.push(m.id); save(); toast("Added! ♥ Saved to favorites"); }
+    let pid;
+    if(old){ Object.assign(old,fields); save(); pid=old.id; editId=null; toast("Saved ✓"); }
+    else { const m={id:"c"+Date.now(),emoji:"🍽️",...fields}; S.custom.push(m); S.favs.push(m.id); save(); pid=m.id; toast("Added! ♥ Saved to favorites"); }
+    if(pendingPhoto instanceof Blob){ putPhoto(pid,pendingPhoto).then(()=>{ if(!sheet.hidden) renderSheet(); }).catch(()=>toast("Couldn't save the photo on this device")); }
+    else if(pendingPhoto==="remove") deletePhoto(pid);
+    if(pendingURL) URL.revokeObjectURL(pendingURL); pendingPhoto=null; pendingURL=null;
     sheet.scrollTop=0;
   }
-  else if(d.act==="cancel"){ editId=null; }
+  else if(d.act==="cancel"){ editId=null; pendingPhoto=null; pendingURL=null; }
   else return;
   renderSheet();
   if(d.act==="fadd"){ const f=$("#fi"); if(f) f.focus(); }
@@ -798,6 +878,7 @@ function setMode(m){
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change",applyBranding);
 
 applyBranding(); renderFilters(); buildDeck(); renderDeck();
+loadPhotos().then(()=>{ if(Object.keys(photos).length && sheet.hidden) renderDeck(); });
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 </body>
