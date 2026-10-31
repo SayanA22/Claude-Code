@@ -1,0 +1,86 @@
+/*
+ * styles.css — shared look for the popup and the results window.
+ * Senior-friendly rules: nothing smaller than 20px, high contrast,
+ * big buttons, and color is never the ONLY clue (we also use words + emoji).
+ */
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 20px;          /* the minimum size anywhere in the extension */
+  line-height: 1.5;
+  color: #111111;
+  background: #ffffff;
+  margin: 0;
+  padding: 16px;
+}
+
+body.popup  { width: 440px; }
+body.window { max-width: 520px; }
+
+h1 { font-size: 28px; margin: 0 0 12px; }
+h2 { font-size: 22px; margin: 16px 0 6px; }
+
+label { display: block; font-weight: bold; margin-bottom: 6px; }
+
+textarea {
+  box-sizing: border-box;
+  width: 100%;
+  font-size: 20px;
+  font-family: inherit;
+  padding: 10px;
+  border: 3px solid #111111;
+  border-radius: 8px;
+}
+
+.buttons { display: flex; gap: 12px; margin: 12px 0; }
+
+button {
+  font-size: 24px;
+  font-weight: bold;
+  font-family: inherit;
+  padding: 12px 24px;
+  min-height: 56px;
+  color: #ffffff;
+  background: #0b3d91;      /* dark blue on white = strong contrast */
+  border: 3px solid #0b3d91;
+  border-radius: 8px;
+  cursor: pointer;
+}
+button.secondary { color: #0b3d91; background: #ffffff; }
+button:hover { filter: brightness(1.2); }
+
+/* A thick outline so keyboard users can always see where they are */
+button:focus, textarea:focus { outline: 4px solid #ff8f00; outline-offset: 2px; }
+
+/* ----- The result ----- */
+
+.headline {
+  font-size: 36px;
+  font-weight: bold;
+  padding: 14px 16px;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+.headline.scam    { background: #b00020; color: #ffffff; }  /* red    */
+.headline.careful { background: #ffd54f; color: #111111; }  /* yellow */
+.headline.okay    { background: #1b5e20; color: #ffffff; }  /* green  */
+
+ul { padding-left: 28px; margin: 6px 0; }
+li { margin-bottom: 10px; }
+
+.footer {
+  font-weight: bold;
+  border-top: 3px solid #111111;
+  padding-top: 12px;
+  margin-top: 16px;
+}
+
+.nudge { font-weight: bold; margin-top: 8px; }
+
+.checked {
+  background: #eeeeee;
+  padding: 10px;
+  border-radius: 8px;
+  word-break: break-all;    /* long links shouldn't stretch the window */
+  white-space: pre-wrap;
+}
