@@ -1,60 +1,120 @@
 /*
  * styles.css — shared look for the popup and the results window.
- * Navy and white theme. Senior-friendly rules still apply: nothing smaller
- * than 20px, high contrast, big buttons, and color is never the ONLY clue
- * (we also use words + emoji).
+ *
+ * Two looks, both navy and white:
+ *   LIGHT: white background, navy bars/buttons/headings.
+ *   DARK:  navy background, white bars/buttons/headings (colors swapped).
+ * Chrome picks one automatically from the computer's light/dark setting.
+ *
+ * Senior-friendly rules apply to both: nothing smaller than 20px, high
+ * contrast, big buttons, and color is never the ONLY clue (we also use words
+ * and emoji). The red / yellow / green answers keep their colors in both
+ * looks because the color is part of the message.
  */
 
+/* ---------- 1. The color "slots" (LIGHT look) ---------- */
 :root {
-  --navy: #0b5394;        /* main brand color: white text on it is ~7.5:1 contrast */
-  --navy-dark: #073763;   /* hover / pressed */
-  --navy-light: #e6eef7;  /* pale navy tint for quiet backgrounds */
+  --navy: #0b5394;
+  --navy-dark: #073763;
+  --navy-light: #e6eef7;
   --white: #ffffff;
-  --text: #0b1b33;        /* very dark navy for body text */
+
+  --page-bg: var(--white);        /* the whole window            */
+  --page-text: #0b1b33;           /* normal text                 */
+  --heading: var(--navy);         /* headings and labels         */
+  --bar-bg: var(--navy);          /* title bar                   */
+  --bar-text: var(--white);
+  --button-bg: var(--navy);       /* main button (Check, Close)  */
+  --button-text: var(--white);
+  --button-border: var(--navy);
+  --button-hover: var(--navy-dark);
+  --button2-bg: var(--white);     /* quieter button (Start over) */
+  --button2-text: var(--navy);
+  --button2-border: var(--navy);
+  --button2-hover: var(--navy-light);
+  --input-bg: var(--white);       /* the text box                */
+  --input-text: #0b1b33;
+  --input-border: var(--navy);
+  --advice-bg: var(--navy);       /* "When in doubt..." box      */
+  --advice-text: var(--white);
+  --box-bg: var(--navy-light);    /* "What we checked" box       */
+  --box-text: #0b1b33;
+  --result-border: transparent;   /* outline around the answer   */
+  --focus: #ff8f00;               /* keyboard focus ring         */
+  color-scheme: light;
 }
+
+/* ---------- 2. DARK look: swap navy and white ---------- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page-bg: var(--navy);
+    --page-text: var(--white);
+    --heading: var(--white);
+    --bar-bg: var(--white);
+    --bar-text: var(--navy);
+    --button-bg: var(--white);
+    --button-text: var(--navy);
+    --button-border: var(--white);
+    --button-hover: var(--navy-light);
+    --button2-bg: var(--navy);
+    --button2-text: var(--white);
+    --button2-border: var(--white);
+    --button2-hover: var(--navy-dark);
+    --input-bg: var(--navy);
+    --input-text: var(--white);
+    --input-border: var(--white);
+    --advice-bg: var(--white);
+    --advice-text: var(--navy);
+    --box-bg: var(--navy-dark);
+    --box-text: var(--white);
+    --result-border: var(--white);  /* white outline so red/green stand out on navy */
+    --focus: #ffb74d;
+    color-scheme: dark;
+  }
+}
+
+/* ---------- 3. Layout (uses the slots above, never raw colors) ---------- */
 
 body {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 20px;          /* the minimum size anywhere in the extension */
   line-height: 1.5;
-  color: var(--text);
-  background: var(--white);
+  color: var(--page-text);
+  background: var(--page-bg);
   margin: 0;
 }
 
 body.popup  { width: 440px; }
 body.window { max-width: 520px; }
 
-/* ----- Navy title bar at the top ----- */
-
+/* Title bar at the top */
 .app-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: var(--navy);
-  color: var(--white);
+  background: var(--bar-bg);
+  color: var(--bar-text);
   padding: 14px 16px;
 }
 /* white ring so the blue icon stands out against the navy bar */
 .app-header img { width: 40px; height: 40px; padding: 3px; border-radius: 50%; background: var(--white); }
-.app-header h1 { font-size: 28px; margin: 0; color: var(--white); }
-
-/* ----- Everything under the title bar ----- */
+.app-header h1 { font-size: 28px; margin: 0; color: var(--bar-text); }
 
 .content { padding: 16px; }
 
-h2 { font-size: 22px; margin: 16px 0 6px; color: var(--navy); }
+h2 { font-size: 22px; margin: 16px 0 6px; color: var(--heading); }
 
-label { display: block; font-weight: bold; margin-bottom: 6px; color: var(--navy); }
+label { display: block; font-weight: bold; margin-bottom: 6px; color: var(--heading); }
 
 textarea {
   box-sizing: border-box;
   width: 100%;
   font-size: 20px;
   font-family: inherit;
-  color: var(--text);
+  color: var(--input-text);
+  background: var(--input-bg);
   padding: 10px;
-  border: 3px solid var(--navy);
+  border: 3px solid var(--input-border);
   border-radius: 8px;
 }
 
@@ -66,27 +126,32 @@ button {
   font-family: inherit;
   padding: 12px 24px;
   min-height: 56px;
-  color: var(--white);
-  background: var(--navy);
-  border: 3px solid var(--navy);
+  color: var(--button-text);
+  background: var(--button-bg);
+  border: 3px solid var(--button-border);
   border-radius: 8px;
   cursor: pointer;
 }
-button.secondary { color: var(--navy); background: var(--white); }
-button:hover { background: var(--navy-dark); border-color: var(--navy-dark); color: var(--white); }
-button.secondary:hover { background: var(--navy-light); color: var(--navy); border-color: var(--navy); }
+button:hover { background: var(--button-hover); }
+
+button.secondary {
+  color: var(--button2-text);
+  background: var(--button2-bg);
+  border-color: var(--button2-border);
+}
+button.secondary:hover { background: var(--button2-hover); }
 
 /* A thick outline so keyboard users can always see where they are */
-button:focus, textarea:focus { outline: 4px solid #ff8f00; outline-offset: 2px; }
+button:focus, textarea:focus { outline: 4px solid var(--focus); outline-offset: 2px; }
 
 /* ----- The result ----- */
 
-/* Red / yellow / green keep their meaning, so they stay as they are. */
 .headline {
   font-size: 36px;
   font-weight: bold;
   padding: 14px 16px;
   border-radius: 8px;
+  border: 3px solid var(--result-border);
   margin-top: 8px;
   line-height: 1.2;
 }
@@ -97,21 +162,21 @@ button:focus, textarea:focus { outline: 4px solid #ff8f00; outline-offset: 2px; 
 ul { padding-left: 28px; margin: 6px 0; }
 li { margin-bottom: 10px; }
 
-/* The advice always sits in a navy box so it is the last thing people read */
+/* The advice always sits in its own box so it is the last thing people read */
 .footer {
   font-weight: bold;
-  background: var(--navy);
-  color: var(--white);
+  background: var(--advice-bg);
+  color: var(--advice-text);
   border-radius: 8px;
   padding: 14px 16px;
   margin: 16px 0 0;
 }
 
-.nudge { font-weight: bold; margin-top: 8px; color: var(--navy); }
+.nudge { font-weight: bold; margin-top: 8px; color: var(--heading); }
 
 .checked {
-  background: var(--navy-light);
-  color: var(--text);
+  background: var(--box-bg);
+  color: var(--box-text);
   padding: 10px;
   border-radius: 8px;
   word-break: break-all;    /* long links shouldn't stretch the window */
