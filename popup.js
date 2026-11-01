@@ -27,3 +27,13 @@ document.getElementById("clear").addEventListener("click", () => {
   resultBox.className = "";
   input.focus();
 });
+
+// Make it quick: the cursor starts in the box, and pressing Enter checks.
+// (Shift+Enter still starts a new line.)
+input.focus();
+input.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    document.getElementById("check").click();
+  }
+});

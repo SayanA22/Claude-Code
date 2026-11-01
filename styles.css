@@ -171,6 +171,7 @@ button.secondary {
 button.secondary:hover { background: var(--button2-hover); }
 
 /* A thick outline so keyboard users can always see where they are */
+textarea::placeholder { color: var(--muted); opacity: 1; }
 button:focus-visible, textarea:focus { outline: 4px solid var(--focus); outline-offset: 2px; }
 
 /* ----- The result: one card with the answer, the reasons, and the advice ----- */

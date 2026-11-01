@@ -211,7 +211,7 @@
     "https?:\\/\\/[^\\s<>\"']+" +
     "|www\\.[^\\s<>\"']+" +
     "|\\b(?:" + SHORTENERS.map(escapeForRegex).join("|") + ")(?:\\/[^\\s<>\"']*)?" +
-    "|\\b(?:[a-z0-9-]+\\.)+(?:" + BARE_TLDS.join("|") + ")\\b(?:[\\/?#][^\\s<>\"']*)?",
+    "|(?<![a-z0-9\\u0080-\\uffff-])(?:[a-z0-9\\u0080-\\uffff-]+\\.)+(?:" + BARE_TLDS.join("|") + ")\\b(?:[\\/?#][^\\s<>\"']*)?",
     "gi"
   );
 
@@ -250,6 +250,23 @@
     };
   }
 
+  // Letters from other alphabets that look just like English letters (the Russian
+  // "а" looks like our "a"). Scammers use them to fake brand names: "аpple.com".
+  var CONFUSABLES = { "а": "a", "е": "e", "о": "o", "р": "p", "с": "c", "х": "x", "у": "y",
+    "і": "i", "ј": "j", "ѕ": "s", "ԁ": "d", "ԛ": "q", "ԝ": "w", "һ": "h", "ӏ": "l",
+    "ο": "o", "α": "a", "ν": "v", "ρ": "p", "ι": "i", "ı": "i", "ɡ": "g" };
+
+  function foldConfusables(s) {
+    return s.replace(/[^\x00-\x7f]/g, function (ch) { return CONFUSABLES[ch] || ch; });
+  }
+
+  // The address exactly as it was typed, before the browser turns accents and
+  // foreign letters into "xn--" codes.
+  function typedHost(raw) {
+    var s = raw.replace(/^[a-z][a-z0-9+.-]*:\/\//i, "").split(/[\/?#]/)[0];
+    return s.replace(/^.*@/, "").replace(/:\d+$/, "").toLowerCase().replace(/^www\./, "");
+  }
+
   // ---------------------------------------------------------------------
   // 5. LINK flags (rules 1-5). Returns a list of {id, level, text}.
   // ---------------------------------------------------------------------
@@ -265,12 +282,18 @@
     var words = wordsInHost(host);
     if (link.userInfo) words = words.concat(wordsInHost(link.userInfo + ".x"));
 
+    // The same address with look-alike foreign letters turned back into English
+    // ones. If that spells a brand, it is a fake.
+    var typed = typedHost(raw), foldedWords = [];
+    if (/[^\x00-\x7f]/.test(typed)) foldedWords = wordsInHost(foldConfusables(typed));
+
     BRANDS.forEach(function (brand) {
       if (isOfficial(host, brand)) return; // the real site, nothing to flag
 
       var lookalike = false;
       var mentioned = false;
       brand.words.forEach(function (bw) {
+        foldedWords.forEach(function (w) { if (containsBrandWord(w, bw)) lookalike = true; });
         words.forEach(function (w) {
           if (isLookalike(w, bw)) lookalike = true;
           else if (containsBrandWord(w, bw)) mentioned = true;
@@ -386,6 +409,10 @@
       id: "secrecy", level: "high",
       text: "Scammers want you to keep secrets. Talk to family first.",
       test: function (t) {
+        // A surprise party or birthday is not a scam, unless money or accounts come up too.
+        var innocent = /\b(surprise|birthday|anniversary|party)\b/.test(t);
+        var money = /\b(pay|money|bank|gift ?cards?|wire|send|account|password|codes?|ssn|irs|cash|crypto|bitcoin)\b|\$\d/.test(t);
+        if (innocent && !money) return false;
         return /(don't|do not|dont) (tell|mention|say anything to) (anyone|anybody|your|mom|dad|grandma|grandpa|family|the bank)|keep (this|it) (a )?(secret|between us|confidential|private|quiet)|between (us|you and me)|tell no one|tell nobody|our little secret/.test(t);
       }
     },

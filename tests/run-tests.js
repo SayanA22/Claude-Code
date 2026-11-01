@@ -65,6 +65,11 @@ const TESTS = [
   { name: "Refund scam",                      input: "We refunded you too much by mistake. Please send back the difference.", expect: "scam", flags: ["refund"] },
   { name: "Grandchild-in-jail scam",          input: "Grandma it's me, I'm in jail and need bail money. Send a wire transfer and don't tell mom.", expect: "scam", flags: ["payment", "secrecy"] },
   { name: "Delivery scam with fake USPS link",input: "USPS: Your package could not be delivered. Update your address and pay a $2 fee: http://usps-redelivery.top/x", expect: "scam", flags: ["fakebrand", "delivery"] },
+  { name: "Surprise party secret is fine",    input: "Don't tell grandma, we're planning her surprise birthday party on Saturday!", expect: "okay" },
+  { name: "Secret plus money is still a scam", input: "Don't tell anyone, just send the money today", expect: "scam", flags: ["secrecy"] },
+  { name: "Russian 'a' in apple.com",         input: "https://\u0430pple.com/id/verify", expect: "scam", flags: ["lookalike"] },
+  { name: "Russian 'a' in paypal, bare",      input: "Log in at p\u0430ypal.com now", expect: "scam", flags: ["lookalike"] },
+  { name: "Real accented address is only odd", input: "m\u00fcnchen.de", expect: "careful", flags: ["oddaddress"] },
   { name: "3 medium flags add up",            input: "Act now! Your package is on hold, click bit.ly/abc or visit http://example.top", expect: "scam" }
 ];
 
