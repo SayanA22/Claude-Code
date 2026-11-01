@@ -2,28 +2,36 @@
  * styles.css — shared look for the popup and the results window.
  *
  * Two looks, both navy and white:
- *   LIGHT: white background, navy bars/buttons/headings.
- *   DARK:  navy background, white bars/buttons/headings (colors swapped).
+ *   LIGHT: soft white-blue background, white cards, deep navy bar and buttons.
+ *   DARK:  navy background, white bar and buttons (navy and white swapped).
  * Chrome picks one automatically from the computer's light/dark setting.
  *
  * Senior-friendly rules apply to both: nothing smaller than 20px, high
  * contrast, big buttons, and color is never the ONLY clue (we also use words
  * and emoji). The red / yellow / green answers keep their colors in both
  * looks because the color is part of the message.
+ *
+ * To change a color, change it in the "slots" below, not further down.
  */
 
 /* ---------- 1. The color "slots" (LIGHT look) ---------- */
 :root {
-  --navy: #0b5394;
-  --navy-dark: #073763;
-  --navy-light: #e6eef7;
+  --navy: #0a3f73;                /* main brand color (white on it = ~10.6:1) */
+  --navy-dark: #062b52;
+  --navy-light: #e3ebf4;
   --white: #ffffff;
 
-  --page-bg: var(--white);        /* the whole window            */
+  --page-bg: #f3f6fa;             /* the window behind the cards */
   --page-text: #0b1b33;           /* normal text                 */
+  --muted: #3a526b;               /* quieter text                */
   --heading: var(--navy);         /* headings and labels         */
   --bar-bg: var(--navy);          /* title bar                   */
   --bar-text: var(--white);
+  --bar-sub: #cfe0f2;             /* small line under the title  */
+  --badge-bg: var(--white);       /* white tile behind the icon  */
+  --card-bg: var(--white);        /* the answer card             */
+  --card-border: #d3dfec;
+  --divider: #dfe7f0;             /* lines between reasons       */
   --button-bg: var(--navy);       /* main button (Check, Close)  */
   --button-text: var(--white);
   --button-border: var(--navy);
@@ -34,12 +42,13 @@
   --button2-hover: var(--navy-light);
   --input-bg: var(--white);       /* the text box                */
   --input-text: #0b1b33;
-  --input-border: var(--navy);
+  --input-border: #7c97b3;
   --advice-bg: var(--navy);       /* "When in doubt..." box      */
   --advice-text: var(--white);
   --box-bg: var(--navy-light);    /* "What we checked" box       */
   --box-text: #0b1b33;
   --result-border: transparent;   /* outline around the answer   */
+  --shadow: 0 2px 6px rgba(6, 43, 82, 0.25);
   --focus: #ff8f00;               /* keyboard focus ring         */
   color-scheme: light;
 }
@@ -49,9 +58,15 @@
   :root {
     --page-bg: var(--navy);
     --page-text: var(--white);
+    --muted: #cfe0f2;
     --heading: var(--white);
     --bar-bg: var(--white);
     --bar-text: var(--navy);
+    --bar-sub: #3a526b;
+    --badge-bg: var(--navy-light);
+    --card-bg: var(--navy-dark);
+    --card-border: rgba(255, 255, 255, 0.35);
+    --divider: rgba(255, 255, 255, 0.25);
     --button-bg: var(--white);
     --button-text: var(--navy);
     --button-border: var(--white);
@@ -60,7 +75,7 @@
     --button2-text: var(--white);
     --button2-border: var(--white);
     --button2-hover: var(--navy-dark);
-    --input-bg: var(--navy);
+    --input-bg: var(--navy-dark);
     --input-text: var(--white);
     --input-border: var(--white);
     --advice-bg: var(--white);
@@ -68,6 +83,7 @@
     --box-bg: var(--navy-dark);
     --box-text: var(--white);
     --result-border: var(--white);  /* white outline so red/green stand out on navy */
+    --shadow: none;
     --focus: #ffb74d;
     color-scheme: dark;
   }
@@ -76,7 +92,7 @@
 /* ---------- 3. Layout (uses the slots above, never raw colors) ---------- */
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
   font-size: 20px;          /* the minimum size anywhere in the extension */
   line-height: 1.5;
   color: var(--page-text);
@@ -87,98 +103,123 @@ body {
 body.popup  { width: 440px; }
 body.window { max-width: 520px; }
 
-/* Title bar at the top */
+/* Title bar at the top: icon, name, and a friendly one-line question */
 .app-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   background: var(--bar-bg);
   color: var(--bar-text);
-  padding: 14px 16px;
+  padding: 14px 18px;
 }
-/* white ring so the blue icon stands out against the navy bar */
-.app-header img { width: 40px; height: 40px; padding: 3px; border-radius: 50%; background: var(--white); }
-.app-header h1 { font-size: 28px; margin: 0; color: var(--bar-text); }
+.badge {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  flex: none;
+  background: var(--badge-bg);
+  border-radius: 14px;
+}
+.badge img { width: 40px; height: 40px; display: block; }
+.app-header h1 { font-size: 28px; line-height: 1.15; margin: 0; color: var(--bar-text); }
+.tagline { margin: 2px 0 0; font-size: 20px; line-height: 1.2; color: var(--bar-sub); }
 
-.content { padding: 16px; }
+.content { padding: 18px; }
 
-h2 { font-size: 22px; margin: 16px 0 6px; color: var(--heading); }
+h2 { font-size: 22px; margin: 18px 0 6px; color: var(--heading); }
 
-label { display: block; font-weight: bold; margin-bottom: 6px; color: var(--heading); }
+label { display: block; font-weight: 700; margin-bottom: 8px; color: var(--heading); }
 
 textarea {
   box-sizing: border-box;
   width: 100%;
   font-size: 20px;
   font-family: inherit;
+  line-height: 1.4;
   color: var(--input-text);
   background: var(--input-bg);
-  padding: 10px;
-  border: 3px solid var(--input-border);
-  border-radius: 8px;
+  padding: 12px;
+  border: 2px solid var(--input-border);
+  border-radius: 12px;
 }
 
-.buttons { display: flex; gap: 12px; margin: 12px 0; }
+.buttons { display: flex; gap: 12px; margin: 14px 0; }
 
 button {
-  font-size: 24px;
-  font-weight: bold;
+  font-size: 22px;
+  font-weight: 700;
   font-family: inherit;
-  padding: 12px 24px;
+  padding: 12px 22px;
   min-height: 56px;
   color: var(--button-text);
   background: var(--button-bg);
-  border: 3px solid var(--button-border);
-  border-radius: 8px;
+  border: 2px solid var(--button-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
   cursor: pointer;
 }
 button:hover { background: var(--button-hover); }
+.buttons #check { flex: 1; }   /* Check is the main action, so it is the widest */
 
 button.secondary {
   color: var(--button2-text);
   background: var(--button2-bg);
   border-color: var(--button2-border);
+  box-shadow: none;
 }
 button.secondary:hover { background: var(--button2-hover); }
 
 /* A thick outline so keyboard users can always see where they are */
-button:focus, textarea:focus { outline: 4px solid var(--focus); outline-offset: 2px; }
+button:focus-visible, textarea:focus { outline: 4px solid var(--focus); outline-offset: 2px; }
 
-/* ----- The result ----- */
+/* ----- The result: one card with the answer, the reasons, and the advice ----- */
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.card-body { padding: 4px 18px 18px; }
 
 .headline {
   font-size: 36px;
-  font-weight: bold;
-  padding: 14px 16px;
-  border-radius: 8px;
+  font-weight: 700;
+  padding: 16px 18px;
   border: 3px solid var(--result-border);
-  margin-top: 8px;
+  border-radius: 16px 16px 0 0;
   line-height: 1.2;
 }
 .headline.scam    { background: #b00020; color: #ffffff; }  /* red    */
 .headline.careful { background: #ffd54f; color: #111111; }  /* yellow */
 .headline.okay    { background: #1b5e20; color: #ffffff; }  /* green  */
 
-ul { padding-left: 28px; margin: 6px 0; }
-li { margin-bottom: 10px; }
+ul { list-style: none; padding: 0; margin: 0; }
+li { padding: 12px 0; }
+li + li { border-top: 1px solid var(--divider); }
 
 /* The advice always sits in its own box so it is the last thing people read */
 .footer {
-  font-weight: bold;
+  font-weight: 700;
   background: var(--advice-bg);
   color: var(--advice-text);
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 14px 16px;
-  margin: 16px 0 0;
+  margin: 8px 0 0;
 }
 
-.nudge { font-weight: bold; margin-top: 8px; color: var(--heading); }
+.nudge { font-weight: 700; margin-top: 8px; color: var(--heading); }
 
 .checked {
   background: var(--box-bg);
   color: var(--box-text);
-  padding: 10px;
-  border-radius: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  margin: 0;
   word-break: break-all;    /* long links shouldn't stretch the window */
   white-space: pre-wrap;
 }
+
+.privacy { margin: 16px 0 0; text-align: center; color: var(--muted); }

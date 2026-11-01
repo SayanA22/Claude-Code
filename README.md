@@ -34,9 +34,18 @@ Every answer lists *why*, one short sentence per red flag, and ends with:
 | `popup.html` / `popup.js` | The window that opens from the toolbar icon. |
 | `results.html` / `results.js` | The window opened by the right-click menu. |
 | `ui.js` | Draws a result on screen (shared by both windows). |
-| `styles.css` | Big text, high contrast, large buttons. |
-| `icons/` | Toolbar icons. |
+| `styles.css` | Navy and white look with a dark mode. Big text, high contrast, large buttons. Colors are named "slots" at the top, so they are easy to change. |
+| `icons/` | Toolbar and store icons. |
 | `tests/run-tests.js` | Example messages and links with their expected results. |
+| `PRIVACY.md` | The privacy policy (the Chrome Web Store requires one). |
+| `STORE_LISTING.md` | Ready-to-paste text for the store listing. |
+| `SHARING.md` | How to share it: zip file, GitHub release, or the Chrome Web Store. |
+| `store/` | 1280 x 800 screenshots for the store listing. |
+| `dist/` | The ready-to-share zip file. |
+
+## Share it
+
+See [`SHARING.md`](SHARING.md). The short version: send `dist/scam-spotter-1.0.0.zip` to someone, or publish it on the Chrome Web Store.
 
 ## Run the tests
 

@@ -2,14 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Is this a scam?</title>
+  <title>Scam Spotter</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="window">
-  <!-- Navy title bar -->
+  <!-- Title bar -->
   <header class="app-header">
-    <img src="icons/icon48.png" alt="">
-    <h1>Is this a scam?</h1>
+    <span class="badge"><img src="icons/icon48.png" alt=""></span>
+    <div>
+      <h1>Scam Spotter</h1>
+      <p class="tagline">Is this a scam?</p>
+    </div>
   </header>
 
   <div class="content">
@@ -18,7 +21,11 @@
     <h2>What we checked:</h2>
     <p id="checked" class="checked"></p>
 
-    <button id="close" type="button">Close</button>
+    <div class="buttons">
+      <button id="close" type="button">Close</button>
+    </div>
+
+    <p class="privacy">🔒 Private: nothing leaves your computer.</p>
   </div>
 
   <script src="rules.js"></script>

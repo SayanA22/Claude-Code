@@ -2,18 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Is this a scam?</title>
+  <title>Scam Spotter</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="popup">
-  <!-- Navy title bar -->
+  <!-- Title bar -->
   <header class="app-header">
-    <img src="icons/icon48.png" alt="">
-    <h1>Is this a scam?</h1>
+    <span class="badge"><img src="icons/icon48.png" alt=""></span>
+    <div>
+      <h1>Scam Spotter</h1>
+      <p class="tagline">Is this a scam?</p>
+    </div>
   </header>
 
   <div class="content">
-    <label for="input">Paste the message or link here:</label>
+    <label for="input">Paste a message or link here:</label>
     <textarea id="input" rows="5"></textarea>
 
     <div class="buttons">
@@ -23,6 +26,8 @@
 
     <!-- The answer appears here. aria-live lets screen readers announce it. -->
     <div id="result" aria-live="polite"></div>
+
+    <p class="privacy">🔒 Private: nothing leaves your computer.</p>
   </div>
 
   <!-- Extension pages can't use inline scripts, so each script is its own file. -->
