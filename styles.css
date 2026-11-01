@@ -1,34 +1,60 @@
 /*
  * styles.css — shared look for the popup and the results window.
- * Senior-friendly rules: nothing smaller than 20px, high contrast,
- * big buttons, and color is never the ONLY clue (we also use words + emoji).
+ * Navy and white theme. Senior-friendly rules still apply: nothing smaller
+ * than 20px, high contrast, big buttons, and color is never the ONLY clue
+ * (we also use words + emoji).
  */
+
+:root {
+  --navy: #0b5394;        /* main brand color: white text on it is ~7.5:1 contrast */
+  --navy-dark: #073763;   /* hover / pressed */
+  --navy-light: #e6eef7;  /* pale navy tint for quiet backgrounds */
+  --white: #ffffff;
+  --text: #0b1b33;        /* very dark navy for body text */
+}
 
 body {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 20px;          /* the minimum size anywhere in the extension */
   line-height: 1.5;
-  color: #111111;
-  background: #ffffff;
+  color: var(--text);
+  background: var(--white);
   margin: 0;
-  padding: 16px;
 }
 
 body.popup  { width: 440px; }
 body.window { max-width: 520px; }
 
-h1 { font-size: 28px; margin: 0 0 12px; }
-h2 { font-size: 22px; margin: 16px 0 6px; }
+/* ----- Navy title bar at the top ----- */
 
-label { display: block; font-weight: bold; margin-bottom: 6px; }
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--navy);
+  color: var(--white);
+  padding: 14px 16px;
+}
+/* white ring so the blue icon stands out against the navy bar */
+.app-header img { width: 40px; height: 40px; padding: 3px; border-radius: 50%; background: var(--white); }
+.app-header h1 { font-size: 28px; margin: 0; color: var(--white); }
+
+/* ----- Everything under the title bar ----- */
+
+.content { padding: 16px; }
+
+h2 { font-size: 22px; margin: 16px 0 6px; color: var(--navy); }
+
+label { display: block; font-weight: bold; margin-bottom: 6px; color: var(--navy); }
 
 textarea {
   box-sizing: border-box;
   width: 100%;
   font-size: 20px;
   font-family: inherit;
+  color: var(--text);
   padding: 10px;
-  border: 3px solid #111111;
+  border: 3px solid var(--navy);
   border-radius: 8px;
 }
 
@@ -40,26 +66,29 @@ button {
   font-family: inherit;
   padding: 12px 24px;
   min-height: 56px;
-  color: #ffffff;
-  background: #0b3d91;      /* dark blue on white = strong contrast */
-  border: 3px solid #0b3d91;
+  color: var(--white);
+  background: var(--navy);
+  border: 3px solid var(--navy);
   border-radius: 8px;
   cursor: pointer;
 }
-button.secondary { color: #0b3d91; background: #ffffff; }
-button:hover { filter: brightness(1.2); }
+button.secondary { color: var(--navy); background: var(--white); }
+button:hover { background: var(--navy-dark); border-color: var(--navy-dark); color: var(--white); }
+button.secondary:hover { background: var(--navy-light); color: var(--navy); border-color: var(--navy); }
 
 /* A thick outline so keyboard users can always see where they are */
 button:focus, textarea:focus { outline: 4px solid #ff8f00; outline-offset: 2px; }
 
 /* ----- The result ----- */
 
+/* Red / yellow / green keep their meaning, so they stay as they are. */
 .headline {
   font-size: 36px;
   font-weight: bold;
   padding: 14px 16px;
   border-radius: 8px;
   margin-top: 8px;
+  line-height: 1.2;
 }
 .headline.scam    { background: #b00020; color: #ffffff; }  /* red    */
 .headline.careful { background: #ffd54f; color: #111111; }  /* yellow */
@@ -68,17 +97,21 @@ button:focus, textarea:focus { outline: 4px solid #ff8f00; outline-offset: 2px; 
 ul { padding-left: 28px; margin: 6px 0; }
 li { margin-bottom: 10px; }
 
+/* The advice always sits in a navy box so it is the last thing people read */
 .footer {
   font-weight: bold;
-  border-top: 3px solid #111111;
-  padding-top: 12px;
-  margin-top: 16px;
+  background: var(--navy);
+  color: var(--white);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin: 16px 0 0;
 }
 
-.nudge { font-weight: bold; margin-top: 8px; }
+.nudge { font-weight: bold; margin-top: 8px; color: var(--navy); }
 
 .checked {
-  background: #eeeeee;
+  background: var(--navy-light);
+  color: var(--text);
   padding: 10px;
   border-radius: 8px;
   word-break: break-all;    /* long links shouldn't stretch the window */

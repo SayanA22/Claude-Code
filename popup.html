@@ -6,18 +6,24 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="popup">
-  <h1>Is this a scam?</h1>
+  <!-- Navy title bar -->
+  <header class="app-header">
+    <img src="icons/icon48.png" alt="">
+    <h1>Is this a scam?</h1>
+  </header>
 
-  <label for="input">Paste the message or link here:</label>
-  <textarea id="input" rows="5"></textarea>
+  <div class="content">
+    <label for="input">Paste the message or link here:</label>
+    <textarea id="input" rows="5"></textarea>
 
-  <div class="buttons">
-    <button id="check" type="button">Check</button>
-    <button id="clear" type="button" class="secondary">Start over</button>
+    <div class="buttons">
+      <button id="check" type="button">Check</button>
+      <button id="clear" type="button" class="secondary">Start over</button>
+    </div>
+
+    <!-- The answer appears here. aria-live lets screen readers announce it. -->
+    <div id="result" aria-live="polite"></div>
   </div>
-
-  <!-- The answer appears here. aria-live lets screen readers announce it. -->
-  <div id="result" aria-live="polite"></div>
 
   <!-- Extension pages can't use inline scripts, so each script is its own file. -->
   <script src="rules.js"></script>

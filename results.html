@@ -6,14 +6,20 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="window">
-  <h1>Is this a scam?</h1>
+  <!-- Navy title bar -->
+  <header class="app-header">
+    <img src="icons/icon48.png" alt="">
+    <h1>Is this a scam?</h1>
+  </header>
 
-  <div id="result" aria-live="polite"></div>
+  <div class="content">
+    <div id="result" aria-live="polite"></div>
 
-  <h2>What we checked:</h2>
-  <p id="checked" class="checked"></p>
+    <h2>What we checked:</h2>
+    <p id="checked" class="checked"></p>
 
-  <button id="close" type="button">Close</button>
+    <button id="close" type="button">Close</button>
+  </div>
 
   <script src="rules.js"></script>
   <script src="ui.js"></script>
