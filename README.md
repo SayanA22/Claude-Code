@@ -37,6 +37,7 @@ Every answer lists *why*, one short sentence per red flag, and ends with:
 | `styles.css` | Navy and white look with a dark mode. Big text, high contrast, large buttons. Colors are named "slots" at the top, so they are easy to change. |
 | `icons/` | Toolbar and store icons. |
 | `tests/run-tests.js` | Example messages and links with their expected results. |
+| `web/index.html` | The web version for phones and any browser. Reuses the same `rules.js`, `ui.js`, `popup.js` and `styles.css`. |
 | `PRIVACY.md` | The privacy policy (the Chrome Web Store requires one). |
 | `STORE_LISTING.md` | Ready-to-paste text for the store listing. |
 | `SHARING.md` | How to share it: zip file, GitHub release, or the Chrome Web Store. |

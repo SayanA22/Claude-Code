@@ -40,6 +40,19 @@ People install with one click and get automatic updates. No developer-mode warni
 
 **Microsoft Edge Add-ons** is free to join and uses the same zip: <https://partner.microsoft.com/dashboard/microsoftedge>
 
+## Option 4: The web version (works on phones, free)
+
+Many scams arrive as texts on a phone, and phone Chrome cannot run extensions. `web/index.html` is a version that runs in any browser on any device. It uses the same `rules.js`, so it always gives the same answers as the extension.
+
+To put it online for free with GitHub Pages (after the branch is merged into `main`):
+
+1. On GitHub, open the repo, then **Settings → Pages**.
+2. Under **Build and deployment**, choose **Deploy from a branch**, pick `main` and the `/ (root)` folder, and press **Save**.
+3. After a minute, your page is live at `https://sayana22.github.io/Claude-Code/web/`.
+4. Share that link or turn it into a QR code. On a phone, people can use **Share → Add to Home Screen** to get an icon.
+
+Nothing is sent anywhere: the page makes no network requests after it loads.
+
 ## Before you share widely
 
 - Test with a few real older adults and a few of your own spam emails.

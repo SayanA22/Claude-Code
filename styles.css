@@ -102,6 +102,9 @@ body {
 
 body.popup  { width: 440px; }
 body.window { max-width: 520px; }
+/* The web version (web/index.html): a centered column that fits any phone or screen */
+body.web { max-width: 560px; margin: 0 auto; min-height: 100vh; }
+html:has(body.web) { background: var(--page-bg); }
 
 /* Title bar at the top: icon, name, and a friendly one-line question */
 .app-header {
