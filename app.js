@@ -43,6 +43,20 @@ const ScamApp = (function () {
     brand.appendChild(mark);
     brand.appendChild(el("span", "brand-name", ScamUI.APP_NAME));
     top.appendChild(brand);
+    // The larger-text switch. Remembered for next time.
+    var textBtn = el("button", "text-btn"); textBtn.type = "button";
+    textBtn.setAttribute("aria-label", "Larger text");
+    textBtn.appendChild(document.createTextNode("A")); textBtn.appendChild(el("small", null, "a"));
+    function setLarge(on, save) {
+      document.documentElement.classList.toggle("large", on);
+      textBtn.setAttribute("aria-pressed", String(on));
+      if (save) { try { localStorage.setItem("scamspotter-large", on ? "1" : "0"); } catch (e) { /* fine: just not remembered */ } }
+    }
+    var wasLarge = false;
+    try { wasLarge = localStorage.getItem("scamspotter-large") === "1"; } catch (e) { /* ignore */ }
+    setLarge(wasLarge, false);
+    textBtn.addEventListener("click", function () { setLarge(!document.documentElement.classList.contains("large"), true); });
+    top.appendChild(textBtn);
     app.appendChild(top);
 
     var page = el("main", "page");
@@ -146,6 +160,7 @@ const ScamApp = (function () {
       msgCard.appendChild(el("h3", "msg-label", "Your message"));
       var msgBody = el("div", "msg-body");
       msgBody.appendChild(ann.node);
+      if (result.text.length < text.length) msgBody.appendChild(el("p", "msg-note", "Only the first " + result.text.length.toLocaleString() + " characters were checked."));
       msgBody.appendChild(el("div", "scanbar"));
       msgCard.appendChild(msgBody);
 
@@ -153,10 +168,22 @@ const ScamApp = (function () {
       var restInner = el("div", "reveal-inner");
       restInner.appendChild(ScamUI.reasons(result));
       restInner.appendChild(ScamUI.advice(result));
+      var stepsBox = ScamUI.steps(result);
+      if (stepsBox) restInner.appendChild(stepsBox);
       var again = el("button", "btn primary again", "Check another"); again.type = "button";
       again.appendChild(ScamUI.icon("arrow", "btn-ico"));
       again.addEventListener("click", showHome);
       restInner.appendChild(again);
+      var copyBtn = el("button", "btn quiet copy", ""); copyBtn.type = "button";
+      var copyIco = ScamUI.icon("copy", "btn-ico"); var copyLabel = el("span", null, "Copy a note for family");
+      copyBtn.appendChild(copyIco); copyBtn.appendChild(copyLabel);
+      copyBtn.addEventListener("click", function () {
+        copyText(ScamUI.familyNote(result), function (ok) {
+          copyLabel.textContent = ok ? "Copied. Paste it into a message." : "Couldn\u2019t copy. Try selecting the text instead.";
+          setTimeout(function () { copyLabel.textContent = "Copy a note for family"; }, 3500);
+        });
+      });
+      restInner.appendChild(copyBtn);
       restSlot.appendChild(restInner);
 
       resultView.appendChild(status);
@@ -206,6 +233,22 @@ const ScamApp = (function () {
     else if (options.autofocus !== false) input.focus();
 
     return { run: run, home: showHome, root: app };
+  }
+
+  // Copy to the clipboard (works from a button press; falls back for older setups)
+  function copyText(text, done) {
+    function fallback() {
+      try {
+        var t = document.createElement("textarea");
+        t.value = text; t.setAttribute("readonly", ""); t.style.position = "fixed"; t.style.opacity = "0";
+        document.body.appendChild(t); t.select();
+        var ok = document.execCommand("copy");
+        document.body.removeChild(t);
+        done(ok);
+      } catch (e) { done(false); }
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { done(true); }, fallback);
+    else fallback();
   }
 
   // The small mark next to the name. (Path is relative to whichever page loads us.)

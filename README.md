@@ -46,6 +46,12 @@ Every answer lists *why*, one short sentence per red flag, and ends with:
 | `store/` | 1280 x 800 screenshots for the store listing. |
 | `dist/` | The ready-to-share zip file. |
 
+## Helpful extras
+
+- **What should I do now?** An expandable list of calm next steps under a scam or "be careful" answer (don't click, contact the company on a number you know, call your bank if you already paid, and how to report it in the U.S.). The wording lives in `STEPS` in `ui.js`.
+- **Copy a note for family:** one tap copies a short summary (the verdict, the reasons and the message) to paste into a text or email, so a family member can take a look.
+- **Larger text:** the **Aa** switch in the top corner makes all text bigger and remembers your choice (only that on/off choice is saved, on your own computer).
+
 ## Share it
 
 See [`SHARING.md`](SHARING.md). The short version: send `dist/scam-spotter-1.0.0.zip` to someone, or publish it on the Chrome Web Store.

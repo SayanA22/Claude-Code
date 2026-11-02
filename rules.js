@@ -480,8 +480,8 @@
     innocent: /\b(surprise|birthday|anniversary|party)\b/,
 
     // "Grandma, it's me, I'm in trouble": family emergency + money
-    famEmergency: /\b(?:i'm|i am|im) (?:in )?(?:jail|trouble|custody)\b|\b(?:i'm|i am|im) (?:in )?(?:the|a) hospital\b|\b(?:i was|i got|i've been|i have been|i just got) (?:arrested|in an accident|in a car accident|in a crash|in a wreck)\b|\bneed (?:bail|a lawyer)\b|\bbail (?:money|me)\b|\bpublic defender\b/,
-    famMoney: /\b(?:bail|wire|money|cash|gift ?cards?|western union|venmo|zelle|cash ?app|bitcoin|funds|retainer)\b|\bsend (?:me |us )?(?:\$\d|money|cash)/,
+    famEmergency: /\b(?:i'm|i am|im) (?:in )?(?:jail|trouble|custody)\b|\b(?:i'm|i am|im) (?:in )?(?:the|a) hospital\b|\b(?:i was|i got|i've been|i have been|i just got) (?:arrested|in an accident|in a car accident|in a crash|in a wreck)\b|\bneed (?:bail|a lawyer)\b|\b(?:your|you're) (?:grandson|granddaughter|grandchild|son|daughter|nephew|niece)\b[^.!?]{0,40}\b(?:arrested|in jail|in an accident|in a car accident|in the hospital|in trouble|injured|hurt)\b|\bbail (?:money|me)\b|\bpublic defender\b/,
+    famMoney: /\b(?:bail|wire|money|cash|gift ?cards?|western union|venmo|zelle|cash ?app|bitcoin|funds|retainer)\b|\bsend (?:me |us )?(?:\$\d|money|cash)|\bneeds? \$\d/,
     // a "friend" or "love" you have only met online, who needs money
     romWords: /\b(?:i love you|my love|sweetheart|darling|my dear|my darling|soulmate|my queen|my king)\b/,
     romStory: /\b(?:overseas|deployed|oil rig|stranded|abroad|inheritance|customs|military|widow(?:er)?|peacekeeping|on a ship|offshore)\b/,
@@ -529,8 +529,15 @@
     newNumMoney: /\b(?:gift ?cards?|western union|zelle|venmo|cash ?app|bitcoin|wire|bail)\b|\bsend (?:me |us )?(?:\$\d|money|cash)|\bfriend'?s (?:account|card)\b|\b(?:pay|cover) (?:a|an|my|this|the) (?:bill|invoice|fee|payment)\b/,
     // easy-money job offers
     earn: /\b(?:earn|make) \$?\d[\d,]*(?:\.\d+)? ?(?:a|per|\/) ?(?:day|week|hour)\b|\bno experience (?:needed|required|necessary)\b|\bwork from home\b[^.!?]{0,40}\b(?:earn|make|income|\$)/,
+    // "I accidentally sent you money, please send it back"
+    accSent: /\b(?:accidentally|mistakenly|by mistake|in error)\b[^.!?]{0,40}\b(?:sent|transferred|deposited|paid)\b[^.!?]{0,40}\$\d|\b(?:sent|transferred|deposited) (?:you )?\$\d[\d,.]*[^.!?]{0,30}\b(?:by mistake|in error|accidentally|mistakenly)\b/,
+    // "you're pre-approved, just pay a fee first"
+    loanOffer: /\b(?:pre-?approved|guaranteed approval|you(?:'re| are) approved|you(?:'ve| have) been approved)\b[^.!?]{0,60}\b(?:loan|credit|grant|card)\b/,
+    loanFee: /\b(?:processing fee|application fee|upfront|up-front|advance fee|release fee|insurance fee|pay (?:a|an|the) \$?\d[\d,]* ?(?:fee|deposit)?|(?:fee|deposit) (?:to|before))\b/,
+    // "your computer has errors, call us"
+    compIssue: /\b(?:your (?:computer|pc|laptop|windows)|windows)\b[^.!?]{0,50}\b(?:errors?|problems?|issues?|expired|blocked|hacked|infected|attack)\b/,
     // "you have inherited millions" (a stranger offering a fortune)
-    advance: /\b(?:unclaimed (?:funds|assets|inheritance|money)|dormant account|lottery commission|barrister|diplomat|next of kin|beneficiary of)\b|\b(?:inheritance|fortune|funds)\b[^.!?]{0,40}(?:million|\$\d{1,3}(?:,\d{3}){2,})/,
+    advance: /\b(?:unclaimed (?:funds|assets|inheritance|money)|dormant account|lottery commission|barrister|diplomat|next of kin|beneficiary of)\b|\b(?:inheritance|fortune|funds)\b[^.!?]{0,40}(?:million|\$\d{1,3}(?:,\d{3}){2,})|\$\d[\d.,]* million\b/,
     advAsk: /\b(?:fee|processing|transfer fee|tax|release|claim|reply|contact|provide|bank (?:details|account))\b/
   };
 
@@ -550,8 +557,8 @@
     { // Rule 7: fake virus / tech-support warnings
       id: "techsupport", level: "high",
       text: "Your computer is fine. Do NOT call this number.",
-      test: function (t) { return (R.virus.test(t) && (R.alarm.test(t) || PHONE.test(t))) || R.support.test(t); },
-      marks: [R.virus, PHONE, R.support]
+      test: function (t) { return (R.virus.test(t) && (R.alarm.test(t) || PHONE.test(t))) || R.support.test(t) || (R.compIssue.test(t) && PHONE.test(t)); },
+      marks: [R.virus, PHONE, R.support, R.compIssue]
     },
     { // Rule 8: prizes and lotteries
       id: "prize", level: "high",
@@ -562,7 +569,7 @@
     { // Rule 9: government impersonation asking for money / info
       id: "government", level: "high",
       text: "Government agencies don't contact you this way.",
-      test: function (t) { return R.gov.test(t) && R.govAsk.test(t); },
+      test: function (t) { return R.gov.test(t) && R.govAsk.test(t.replace(new RegExp(R.gov.source, "g"), " ")); },   // "social security NUMBER" alone is not a demand
       marks: [R.gov, R.govAsk]
     },
     { // Rule 10: asking for passwords, codes, SSN, bank info
@@ -676,6 +683,18 @@
       text: "Real investments never promise guaranteed profits.",
       test: function (t) { return R.invest.test(t); },
       marks: [R.invest]
+    },
+    { // "I accidentally sent you money, please send it back"
+      id: "overpay", level: "high",
+      text: "Someone who says they sent you money by mistake and wants it back is running a common scam.",
+      test: function (t) { return R.accSent.test(t) && R.sendBack.test(t); },
+      marks: [R.accSent, R.sendBack]
+    },
+    { // A "pre-approved" loan that needs a fee first
+      id: "loanfee", level: "high",
+      text: "Real lenders never ask for a fee before they give you a loan.",
+      test: function (t) { return R.loanOffer.test(t) && R.loanFee.test(t); },
+      marks: [R.loanOffer, R.loanFee]
     },
     { // Easy-money job offers
       id: "jobscam", level: "medium",

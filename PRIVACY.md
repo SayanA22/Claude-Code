@@ -9,6 +9,7 @@
 - When you paste text, highlight text, or right-click a link and choose "Is this a scam?", the extension checks it using rules that are built into the extension itself.
 - The text you check is **never sent anywhere**. The extension makes **no network requests** at all.
 - Nothing you check is saved. When you close the window, it is gone.
+- The only thing the extension remembers is whether you switched on **larger text**. That on/off choice is kept in your own browser, on your own computer, and is never sent anywhere.
 
 ## What the extension does NOT do
 

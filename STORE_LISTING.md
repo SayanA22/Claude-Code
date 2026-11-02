@@ -44,6 +44,9 @@ Every answer ends with the same advice: when in doubt, ask a family member befor
 BUILT FOR EVERYONE
 • Big text, high contrast, and large buttons
 • Warning signs are highlighted inside your message, with numbered reasons that match
+• "What should I do now?" gives calm next steps
+• "Copy a note for family" makes it easy to ask someone you trust
+• A larger-text switch that remembers your choice
 • Light and dark looks, using your computer's setting
 • No jargon
 

@@ -26,6 +26,21 @@ const ScamUI = (function () {
   var RISK_LABEL = { okay: "Low risk", careful: "Medium risk", scam: "High risk" };
   var SEVERITY = { high: "Serious", medium: "Worth a look" };
 
+  // What to do next. Plain, calm, and the same few steps every time.
+  var STEPS = {
+    scam: [
+      "Don\u2019t click any links, call any numbers, or reply.",
+      "Delete the message, or block the sender.",
+      "If you already paid or shared a password or code, call your bank or card company right away, using the number on the back of your card.",
+      "In the U.S., you can report it: forward scam texts to 7726 (SPAM), or go to reportfraud.ftc.gov."
+    ],
+    careful: [
+      "Don\u2019t click or reply yet.",
+      "Contact the company using a phone number or website you already know, not the one in the message.",
+      "Ask a family member to take a look with you."
+    ]
+  };
+
   function el(tag, cls, text) {
     var e = document.createElement(tag);
     if (cls) e.className = cls;
@@ -47,7 +62,9 @@ const ScamUI = (function () {
     box:     P + '<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></svg>',
     link:    P + '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>',
     chat:    P + '<path d="M20 15a2 2 0 0 1-2 2H8l-4 4V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/></svg>',
-    check:   P + '<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16.5 9.5"/></svg>'
+    check:   P + '<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16.5 9.5"/></svg>',
+    copy:    P + '<rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H15"/></svg>',
+    steps:   P + '<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6.5l1 1 2-2M4 12.5l1 1 2-2M4 18.5l1 1 2-2"/></svg>'
   };
 
   function icon(name, cls) {
@@ -260,6 +277,36 @@ const ScamUI = (function () {
     return sec;
   }
 
+  // "What should I do now?" -- a closed-by-default list, only for scam / careful
+  function steps(result) {
+    var list = STEPS[result.level];
+    if (!list) return null;
+    var d = el("details", "steps");
+    var sum = el("summary");
+    var ico = el("span", "steps-ico"); ico.appendChild(icon("steps"));
+    sum.appendChild(ico);
+    sum.appendChild(el("span", "steps-label", "What should I do now?"));
+    sum.appendChild(icon("down", "steps-chev"));
+    d.appendChild(sum);
+    var ul = el("ul", "steps-list");
+    list.forEach(function (t) { ul.appendChild(el("li", null, t)); });
+    d.appendChild(ul);
+    return d;
+  }
+
+  // A short note a person can paste into a text or email to a family member
+  function familyNote(result) {
+    var lines = ["I checked a message with " + APP_NAME + " and it says: " + result.title + ".", ""];
+    if (result.evidence.length) {
+      lines.push("Why:");
+      result.evidence.forEach(function (e, i) { lines.push((i + 1) + ". " + e.text); });
+      lines.push("");
+    }
+    var msg = result.text.length > 400 ? result.text.slice(0, 400) + "\u2026" : result.text;
+    lines.push("The message:", "\u201C" + msg + "\u201D", "", "Can you take a look with me before I click or pay anything?");
+    return lines.join("\n");
+  }
+
   function advice(result) {
     var a = el("div", "advice");
     a.appendChild(icon("people", "advice-ico"));
@@ -270,6 +317,6 @@ const ScamUI = (function () {
   return {
     APP_NAME: APP_NAME,
     el: el, icon: icon, owl: owl,
-    annotate: annotate, verdict: verdict, reasons: reasons, advice: advice
+    annotate: annotate, verdict: verdict, reasons: reasons, advice: advice, steps: steps, familyNote: familyNote
   };
 })();

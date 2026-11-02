@@ -105,6 +105,14 @@ const TESTS = [
 
   { name: "Unclaimed package + fee + odd link", input: "You have 1 unclaimed package. Pay the $1.50 shipping fee here: post-office-track.top/pay", expect: "scam", flags: ["delivery", "oddaddress"] },
 
+  { name: "Sent you money by mistake (Cash App)", input: "I accidentally sent you $300 on Cash App. Please send it back to me.", expect: "scam", flags: ["overpay"] },
+  { name: "Pre-approved loan needs a fee",       input: "Congrats! You're pre-approved for a $50,000 loan. Pay a $500 processing fee to release it.", expect: "scam", flags: ["loanfee"] },
+  { name: "Fake computer-error alert",           input: "Your computer is sending errors to Microsoft. Call 1-800-555-0100 now.", expect: "scam", flags: ["techsupport"] },
+  { name: "Millions to transfer",                input: "Dear friend, I am Dr. Williams from Nigeria. I have $10.5 million to transfer. Reply for details.", expect: "scam", flags: ["advance"] },
+  { name: "Grandson in an accident (3rd person)", input: "Your grandson was in an accident. Call this attorney now at 555-0100, he needs $9,000.", expect: "scam", flags: ["familyemergency"] },
+  { name: "Medicare number verify call",         input: "Hello, I'm calling from Medicare. We need to verify your Medicare number for your new card.", expect: "scam", flags: ["government"] },
+  { name: "Venmo imposter site",                 input: "Venmo: You received $500 by mistake. Send it back to avoid account suspension: venmo-refund-help.com", expect: "scam", flags: ["fakebrand"] },
+
   // ---------- Normal messages that must NOT be flagged (no crying wolf) ----------
   { name: "Normal: airport pickup",            input: "Grandma, I'm at the airport, can you pick me up at 5?", expect: "okay" },
   { name: "Normal: hospital waiting room",     input: "I'm in the hospital waiting room with Dad. Call me when you can.", expect: "okay" },
@@ -135,6 +143,11 @@ const TESTS = [
   { name: "Normal: I work from home",           input: "I work from home on Fridays, so come by for lunch.", expect: "okay" },
   { name: "Normal: Social Security deposit",   input: "Your Social Security payment of $1,812 will be deposited on the 3rd.", expect: "okay" },
   { name: "Normal: IRS refund timing",          input: "The IRS website says refunds take up to 21 days. Did yours arrive?", expect: "okay" },
+  { name: "Normal: bring your SSN to the DMV",  input: "Please bring your Social Security number and photo ID to the DMV appointment.", expect: "okay" },
+  { name: "Normal: bank PIN warning",            input: "Your bank will never ask for your PIN by phone or text. Stay safe.", expect: "okay" },
+  { name: "Normal: one-time code",               input: "Wells Fargo: Your one-time code is 482931. Never share this code with anyone.", expect: "okay" },
+  { name: "Normal: Venmo payment done",          input: "Your Venmo payment of $15 to Jim was completed.", expect: "okay" },
+  { name: "Normal: account used at gas station", input: "I got an alert that my account was used at the gas station. It was me, no worries.", expect: "okay" },
   { name: "Normal: news with a brand word",    input: "https://www.bbc.com/news/amazon-layoffs", expect: "okay" },
   { name: "3 medium flags add up",            input: "Act now! Your package is on hold, click bit.ly/abc or visit http://example.top", expect: "scam" }
 ];
