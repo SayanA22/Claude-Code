@@ -32,7 +32,12 @@ Every answer lists exactly why, one short sentence per warning sign, such as:
 • Government impersonation (IRS, Social Security, Medicare)
 • Requests for passwords or verification codes
 • Pressure to keep it a secret or act right now
-• Fake delivery fees and refund tricks
+• Fake delivery fees, toll and DMV texts, and refund tricks
+• "Grandma, I'm in trouble" and "Hi Mom, this is my new number" money requests
+• Fake bills and surprise charges with a number to call
+• "Move your money to a safe account" and couriers who collect cash
+• Romance, job, investment, and check-deposit scams
+• Links that say one website but really go to another
 
 Every answer ends with the same advice: when in doubt, ask a family member before clicking or paying.
 

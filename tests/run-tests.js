@@ -39,7 +39,7 @@ const TESTS = [
   { name: "Raw IP address over http",         input: "http://192.168.1.1/login", expect: "careful", flags: ["oddaddress", "nothttps"] },
   { name: "Just a deadline",                  input: "Please respond within 24 hours", expect: "careful", flags: ["urgency"] },
   { name: "Account suspended threat",         input: "Your account has been suspended. Act now.", expect: "careful", flags: ["urgency"] },
-  { name: "Delivery fee with short link",     input: "Your package is on hold. Pay a $1.99 fee at tinyurl.com/abc", expect: "careful", flags: ["delivery", "shortener"] },
+  { name: "Delivery fee with short link",     input: "Your package is on hold. Pay a $1.99 fee at tinyurl.com/abc", expect: "scam", flags: ["delivery", "shortener"] },   // a pushy message plus a hidden link
 
   // ---------- Look-alike and fake-brand links -> scam ----------
   { name: "amaz0n (zero for o)",              input: "amaz0n.com", expect: "scam", flags: ["lookalike"] },
@@ -70,6 +70,72 @@ const TESTS = [
   { name: "Russian 'a' in apple.com",         input: "https://\u0430pple.com/id/verify", expect: "scam", flags: ["lookalike"] },
   { name: "Russian 'a' in paypal, bare",      input: "Log in at p\u0430ypal.com now", expect: "scam", flags: ["lookalike"] },
   { name: "Real accented address is only odd", input: "m\u00fcnchen.de", expect: "careful", flags: ["oddaddress"] },
+
+  // ---------- More scams that target older adults ----------
+  { name: "Grandchild emergency (bail)",       input: "Grandpa, it's me. I was arrested and I need bail money right now.", expect: "scam", flags: ["familyemergency"] },
+  { name: "Hospital + wire money",             input: "Grandma it's me, I'm in the hospital after a car accident. Please wire money, don't tell mom.", expect: "scam", flags: ["familyemergency", "secrecy"] },
+  { name: "Online romance asks for money",     input: "My love, I am deployed overseas and need money for a plane ticket to come see you.", expect: "scam", flags: ["romance"] },
+  { name: "Check scam (mystery shopper)",      input: "Mystery shopper job! Deposit this check and send back the difference with gift cards.", expect: "scam", flags: ["checkscam", "payment"] },
+  { name: "Move money to a safe account",      input: "This is your bank's fraud department. Move your money to a safe account right now.", expect: "scam", flags: ["safeacct"] },
+  { name: "Courier picks up cash",             input: "A courier will come to your home to pick up the cash for bail.", expect: "scam", flags: ["courier"] },
+  { name: "Do not hang up (fake officer)",     input: "Do not hang up the phone. The officer needs to verify your account.", expect: "scam", flags: ["stayline"] },
+  { name: "Unpaid toll text with link",        input: "FastTrak: You have an unpaid toll balance. Pay now at fastrak-pay.com/ticket", expect: "scam", flags: ["toll"] },
+  { name: "Fortune from a stranger",           input: "I am a barrister handling an inheritance of $12,500,000. Reply with your bank details and a small processing fee.", expect: "scam", flags: ["advance"] },
+  { name: "Fake Geek Squad invoice",           input: "Geek Squad: Your invoice for $399.99 was processed. To dispute call 1-888-555-0123.", expect: "scam", flags: ["fakeinvoice", "surprisecharge"] },
+  { name: "Prepaid cards for a fine",          input: "Pay the fine with prepaid cards or you will be arrested.", expect: "scam", flags: ["payment", "urgency"] },
+  { name: "Pushy message + short link",        input: "Act now or your account will be closed: bit.ly/3xYz", expect: "scam", flags: ["urgency", "shortener"] },
+  { name: "Brand in the path of a login page", input: "https://sites.example.com/paypal/login", expect: "scam", flags: ["fakebrand"] },
+  { name: "Look-alike hidden in a redirect",   input: "https://www.google.com/url?q=https://paypa1.com/login&sa=D", expect: "scam", flags: ["lookalike"] },
+  { name: "New brand: Geico imposter",         input: "https://www.geico-claims-update.com", expect: "scam", flags: ["fakebrand"] },
+  { name: "Link says one site, goes to another", input: "paypal.com\nhttps://evil-login.example.net/x", opts: { realLink: "https://evil-login.example.net/x" }, expect: "scam", flags: ["linkmismatch"] },
+  { name: "Link text matches the real site",   input: "amazon.com\nhttps://www.amazon.com/orders", opts: { realLink: "https://www.amazon.com/orders" }, expect: "okay" },
+  // medium-level warnings alone -> be careful
+  { name: "Get-rich promise",                  input: "Guaranteed 20% weekly returns with our crypto trading platform", expect: "careful", flags: ["invest"] },
+  { name: "Utility shut-off threat",           input: "Your electric service will be shut off today unless you pay your past due bill.", expect: "careful", flags: ["utility"] },
+  { name: "Verify your account (click)",       input: "Please verify your account by clicking the link below.", expect: "careful", flags: ["verifyacct"] },
+  { name: "QR code to claim a refund",         input: "Scan this QR code to claim your refund", expect: "careful", flags: ["qr"] },
+  { name: "Friendly wrong number",             input: "Sorry, wrong number! But you seem nice, nice to meet you. Want to chat on WhatsApp?", expect: "careful", flags: ["wrongnum"] },
+  { name: "Surprise charge, call to cancel",   input: "Your subscription renewed for $9.99. To cancel call 1-800-555-0123", expect: "careful", flags: ["surprisecharge"] },
+  { name: "Suspended account, call us",        input: "Your account has been suspended. Call us at 1-800-555-0199.", expect: "careful", flags: ["callnumber", "urgency"] },
+  { name: "Address stuffed with login words",  input: "https://secure-login-verify-account.xyz/", expect: "careful", flags: ["wordy", "oddaddress"] },
+
+  { name: "New number, send money (Hi Mom)",   input: "Hi Mom, this is my new number. I dropped my phone in the lake. Can you send $500 to my friend's account?", expect: "scam", flags: ["newnumber"] },
+  { name: "Fake PayPal charge alert",           input: "Your PayPal account was charged $499.99 for Bitcoin. If this wasn't you, call 1-888-555-0145 to cancel.", expect: "scam", flags: ["fakeinvoice"] },
+  { name: "Easy-money job offer",               input: "Work from home and earn $500 a day! No experience needed. Reply YES to start.", expect: "careful", flags: ["jobscam"] },
+
+  { name: "Unclaimed package + fee + odd link", input: "You have 1 unclaimed package. Pay the $1.50 shipping fee here: post-office-track.top/pay", expect: "scam", flags: ["delivery", "oddaddress"] },
+
+  // ---------- Normal messages that must NOT be flagged (no crying wolf) ----------
+  { name: "Normal: airport pickup",            input: "Grandma, I'm at the airport, can you pick me up at 5?", expect: "okay" },
+  { name: "Normal: hospital waiting room",     input: "I'm in the hospital waiting room with Dad. Call me when you can.", expect: "okay" },
+  { name: "Normal: love + flight",             input: "I love you! My flight from overseas lands at 6.", expect: "okay" },
+  { name: "Normal: 401k news",                 input: "My 401k returned 7% this year.", expect: "okay" },
+  { name: "Normal: pay you back for dinner",   input: "I'll deposit the check tomorrow and pay you back for dinner.", expect: "okay" },
+  { name: "Normal: QR code at the table",      input: "Scan the QR code at the table to see the menu.", expect: "okay" },
+  { name: "Normal: electric bill reminder",    input: "Your electric bill is due on the 15th. Autopay is on.", expect: "okay" },
+  { name: "Normal: Verizon bill ready",        input: "Verizon: your bill is ready. Log in at verizon.com to view it.", expect: "okay" },
+  { name: "Normal: bank link (real domain)",   input: "Please review your account statement at https://www.chase.com/statements", expect: "okay" },
+  { name: "Normal: delivered",                 input: "Your package from Amazon was delivered to the front door.", expect: "okay" },
+  { name: "Normal: birthday",                  input: "Happy birthday grandma! We love you so much, see you Sunday.", expect: "okay" },
+  { name: "Normal: toll already paid",         input: "The toll on the bridge was $6, I paid already.", expect: "okay" },
+  { name: "Normal: doctor reminder",           input: "Doctor's office: your appointment is confirmed for Tuesday at 10.", expect: "okay" },
+  { name: "Normal: wrong number, no pitch",    input: "Wrong number? I'm texting Dave about the game.", expect: "okay" },
+  { name: "Normal: Netflix renewed (no phone)", input: "Your Netflix subscription renewed for $15.49 today.", expect: "okay" },
+  { name: "Normal: call me when you land",     input: "Call me at 555-123-4567 when you land, your flight arrives at 6.", expect: "okay" },
+  { name: "Normal: conference call",           input: "Reminder: dial 555-123-4567 for the conference call at 3pm. Do not hang up before the host joins.", expect: "okay" },
+  { name: "Normal: need money for lunch",      input: "Can you send me $20 for pizza?", expect: "okay" },
+  { name: "Normal: stuck in traffic",          input: "Honey, I'm stuck in traffic, can you send the address again?", expect: "okay" },
+  { name: "Normal: legal help",                input: "We inherited a house overseas from my uncle, I need a lawyer to help.", expect: "okay" },
+  { name: "Normal: Apple account page",        input: "https://account.apple.com/sign-in", expect: "okay" },
+  { name: "Normal: Google redirect to news",   input: "https://www.google.com/url?q=https://www.nytimes.com/article&sa=D", expect: "okay" },
+  { name: "Normal: new number, no money",      input: "Hey it's Mike. New number, my old phone broke. Save this one!", expect: "okay" },
+  { name: "Normal: wire transfer received",     input: "Wire transfer received: $200 from your daughter. Thanks for your help!", expect: "okay" },
+  { name: "Normal: last chance (club trip)",    input: "Last chance to sign up for the senior center trip to the botanical gardens!", expect: "okay" },
+  { name: "Normal: Chase purchase alert",       input: "Chase: A $45.20 purchase was made at TARGET with your card ending 4821. Reply STOP to opt out.", expect: "okay" },
+  { name: "Normal: I work from home",           input: "I work from home on Fridays, so come by for lunch.", expect: "okay" },
+  { name: "Normal: Social Security deposit",   input: "Your Social Security payment of $1,812 will be deposited on the 3rd.", expect: "okay" },
+  { name: "Normal: IRS refund timing",          input: "The IRS website says refunds take up to 21 days. Did yours arrive?", expect: "okay" },
+  { name: "Normal: news with a brand word",    input: "https://www.bbc.com/news/amazon-layoffs", expect: "okay" },
   { name: "3 medium flags add up",            input: "Act now! Your package is on hold, click bit.ly/abc or visit http://example.top", expect: "scam" }
 ];
 
@@ -78,7 +144,7 @@ const TESTS = [
 let failed = 0;
 
 TESTS.forEach((test, number) => {
-  const result = checkText(test.input);
+  const result = checkText(test.input, test.opts);
   const ids = result.flags.map((f) => f.id);
   const missing = (test.flags || []).filter((id) => ids.indexOf(id) === -1);
 
@@ -99,7 +165,7 @@ TESTS.forEach((test, number) => {
 
 // The highlights: every span must sit inside the message and point at real words
 TESTS.forEach((test) => {
-  const r = checkText(test.input);
+  const r = checkText(test.input, test.opts);
   r.evidence.forEach((e) => e.spans.forEach((s) => {
     const piece = r.text.slice(s.start, s.end);
     if (!(s.start >= 0 && s.end <= r.text.length && s.end > s.start && piece.trim())) {
@@ -123,7 +189,8 @@ if (!sample.footer.endsWith("ask a family member before clicking or paying.")) {
   failed++;
   console.log("FAIL  footer text is missing");
 }
-const allText = TESTS.map((t) => JSON.stringify(checkText(t.input))).join(" ").toLowerCase();
+// Only OUR wording is checked (a scam message may itself say "safe account")
+const allText = TESTS.map((t) => { const r = checkText(t.input, t.opts); return [r.title, r.footer].concat(r.reasons).join(" "); }).join(" ").toLowerCase();
 if (/\bsafe\b/.test(allText)) {
   failed++;
   console.log('FAIL  a result contains the word "safe" (we say "Looks okay")');

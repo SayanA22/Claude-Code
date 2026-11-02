@@ -27,7 +27,7 @@ const ScamApp = (function () {
 
   var reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  // Build the screen inside `root`. options: { initialText, autofocus, markSrc }
+  // Build the screen inside `root`. options: { initialText, realLink, autofocus, markSrc }
   function mount(root, options) {
     options = options || {};
     var uid = "scam-input-" + (++counter);
@@ -102,7 +102,7 @@ const ScamApp = (function () {
     }
 
     // ---------- the check itself ----------
-    function run(rawText) {
+    function run(rawText, extra) {
       var text = String(rawText || "").trim();
       if (!text) {
         nudge.textContent = "Paste a message or link first, then press Check.";
@@ -113,7 +113,7 @@ const ScamApp = (function () {
       nudge.hidden = true;
       clearTimers();
 
-      var result = ScamRules.checkText(text);
+      var result = ScamRules.checkText(text, extra);
       var ann = ScamUI.annotate(result.text, result.evidence);
 
       // Build the result view once. Pieces are hidden until their moment.
@@ -189,7 +189,7 @@ const ScamApp = (function () {
     });
 
     // ---------- start ----------
-    if (options.initialText) { input.value = options.initialText; run(options.initialText); }
+    if (options.initialText) { input.value = options.initialText; run(options.initialText, { realLink: options.realLink }); }
     else if (options.autofocus !== false) input.focus();
 
     return { run: run, home: showHome, root: app };
@@ -206,7 +206,8 @@ const ScamApp = (function () {
     if (!root || window.SCAM_NO_AUTOSTART) return;
     document.title = ScamUI.APP_NAME;
     var fromLink = new URLSearchParams(location.search).get("text");   // the right-click window passes the text this way
-    mount(root, { initialText: fromLink ? fromLink.trim() : "" });
+    var real = new URLSearchParams(location.search).get("real");       // the link's true address, if there was one
+    mount(root, { initialText: fromLink ? fromLink.trim() : "", realLink: real || "" });
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", autoStart);
   else autoStart();

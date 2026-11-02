@@ -62,10 +62,19 @@ node tests/run-tests.js
 
 - Any **1 high** flag → 🔴 Likely scam
 - **3 or more medium** flags → 🔴 Likely scam
-- **1–2 medium** flags → 🟡 Be careful
+- A **pushy message AND a suspicious link** together (for example "act now" plus a shortened link) → 🔴 Likely scam, even with only two medium flags
+- **1–2 other medium** flags → 🟡 Be careful
 - Nothing found → 🟢 Looks okay
 
 Each *kind* of flag counts once, so five shortened links is still one "shortened link" flag.
+
+## What it checks
+
+**Links:** look-alike spellings (`amaz0n.com`, foreign letters like a Russian "а"), a real brand's name in a different site's address or in a login page's path, brand names hidden inside redirect links, shortened links, unusual endings and raw IP addresses, `http://` instead of `https://`, addresses stuffed with "secure/login/verify" words, and (from the right-click menu) a link whose words name one website while it really goes to another. It knows about about 80 commonly impersonated companies.
+
+**Messages:** gift card / crypto / prepaid card / wire requests, fake virus and tech-support warnings, prize claims, government impersonation, requests for passwords or codes, secrecy, remote-access software, refund scams, urgency and threats, delivery fees, **and these scams that often target older adults:** "Grandma, I'm in trouble" family emergencies, "Hi Mom, this is my new number" texts, romance scams, check-deposit scams, "move your money to a safe account", couriers collecting cash, "don't hang up", unpaid toll and DMV texts, fake invoices and surprise charges with a number to call, fortunes from strangers, get-rich and easy-money offers, utility shut-off threats, "verify your account" links, QR-code tricks, and "wrong number" openers.
+
+Every rule is tested against both scams and ordinary messages, so it should not cry wolf on normal texts.
 
 ## How to add a new red flag
 
@@ -98,5 +107,5 @@ When the flag fires, the phrases in `marks` light up inside the person's message
 ## Known limitations (Version 1)
 
 - It is a set of keyword rules, so it can be fooled by new wording and can sometimes be wrong. Treat it as a second opinion, not a guarantee.
-- "Don't tell anyone" in an innocent message (like a surprise party) will be flagged.
 - English only.
+- It can't see pictures, hear calls, or know who really sent a message. A scam with brand-new wording can slip through, so keep teaching people the basics.

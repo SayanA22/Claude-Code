@@ -82,7 +82,49 @@
     { name: "Comcast Xfinity", words: ["comcast", "xfinity"], domains: ["comcast.com", "xfinity.com"] },
     { name: "Norton",          words: ["norton"],         domains: ["norton.com"] },
     { name: "McAfee",          words: ["mcafee"],         domains: ["mcafee.com"] },
-    { name: "AARP",            words: ["aarp"],           domains: ["aarp.org"] }
+    { name: "AARP",            words: ["aarp"],           domains: ["aarp.org"] },
+
+    // insurance and health
+    { name: "Geico",           words: ["geico"],          domains: ["geico.com"] },
+    { name: "State Farm",      words: ["statefarm"],      domains: ["statefarm.com"] },
+    { name: "Allstate",        words: ["allstate"],       domains: ["allstate.com"] },
+    { name: "Humana",          words: ["humana"],         domains: ["humana.com"] },
+    { name: "UnitedHealthcare",words: ["unitedhealthcare"], domains: ["unitedhealthcare.com", "uhc.com"] },
+    { name: "Aetna",           words: ["aetna"],          domains: ["aetna.com"] },
+    { name: "Cigna",           words: ["cigna"],          domains: ["cigna.com"] },
+    { name: "Blue Cross",      words: ["bluecross"],      domains: ["bcbs.com", "bluecross.com"] },
+    { name: "Kaiser Permanente", words: ["kaiserpermanente"], domains: ["kaiserpermanente.org", "kp.org"] },
+    { name: "Veterans Affairs",words: ["veteransaffairs"], domains: ["va.gov"] },
+    { name: "the FTC",         words: ["ftc"],            domains: ["ftc.gov"] },
+    // more banks and money apps
+    { name: "PNC",             words: ["pnc"],            domains: ["pnc.com"] },
+    { name: "U.S. Bank",       words: ["usbank"],         domains: ["usbank.com"] },
+    { name: "Truist",          words: ["truist"],         domains: ["truist.com"] },
+    { name: "Navy Federal",    words: ["navyfederal"],    domains: ["navyfederal.org"] },
+    { name: "Charles Schwab",  words: ["schwab"],         domains: ["schwab.com"] },
+    { name: "Robinhood",       words: ["robinhood"],      domains: ["robinhood.com"] },
+    { name: "Binance",         words: ["binance"],        domains: ["binance.com"] },
+    { name: "MetaMask",        words: ["metamask"],       domains: ["metamask.io"] },
+    { name: "Trust Wallet",    words: ["trustwallet"],    domains: ["trustwallet.com"] },
+    // phone, shopping, and tech companies
+    { name: "T-Mobile",        words: ["tmobile"],        domains: ["t-mobile.com"] },
+    { name: "Lowe's",          words: ["lowes"],          domains: ["lowes.com"] },
+    { name: "Kohl's",          words: ["kohls"],          domains: ["kohls.com"] },
+    { name: "Macy's",          words: ["macys"],          domains: ["macys.com"] },
+    { name: "Etsy",            words: ["etsy"],           domains: ["etsy.com"] },
+    { name: "Adobe",           words: ["adobe"],          domains: ["adobe.com"] },
+    { name: "Dropbox",         words: ["dropbox"],        domains: ["dropbox.com"] },
+    { name: "DocuSign",        words: ["docusign"],       domains: ["docusign.com", "docusign.net"] },
+    { name: "LinkedIn",        words: ["linkedin"],       domains: ["linkedin.com", "lnkd.in"] },
+    { name: "TurboTax",        words: ["turbotax", "intuit"], domains: ["turbotax.com", "intuit.com"] },
+    { name: "Geek Squad",      words: ["geeksquad"],      domains: ["geeksquad.com"] },
+    { name: "LifeLock",        words: ["lifelock"],       domains: ["lifelock.com"] },
+    { name: "Roku",            words: ["roku"],           domains: ["roku.com"] },
+    { name: "Hulu",            words: ["hulu"],           domains: ["hulu.com"] },
+    { name: "Spotify",         words: ["spotify"],        domains: ["spotify.com"] },
+    { name: "Uber",            words: ["uber"],           domains: ["uber.com"] },
+    { name: "TikTok",          words: ["tiktok"],         domains: ["tiktok.com"] },
+    { name: "Telegram",        words: ["telegram"],       domains: ["telegram.org", "t.me"] }
   ];
 
   // Scammers often glue these onto a short brand name: "apple-support.com"
@@ -94,13 +136,24 @@
   // Link shorteners (the real destination is hidden)
   var SHORTENERS = ["bit.ly", "tinyurl.com", "t.co", "goo.gl", "ow.ly", "is.gd",
     "buff.ly", "rebrand.ly", "cutt.ly", "shorturl.at", "tiny.cc", "t.ly",
-    "rb.gy", "bl.ink", "lnkd.in", "s.id", "v.gd"];
+    "rb.gy", "bl.ink", "lnkd.in", "s.id", "v.gd", "bit.do", "adf.ly", "clck.ru",
+    "tr.ee", "short.io", "shorte.st", "qrco.de", "1url.com", "bitly.com", "tiny.one",
+    "x.co", "u.to", "soo.gd"];
 
   // Endings (".xyz") that are cheap and popular with scammers
   var UNUSUAL_TLDS = ["xyz", "top", "click", "zip", "mov", "work", "loan", "icu",
     "buzz", "gq", "cf", "tk", "ml", "ga", "monster", "rest", "country", "kim",
     "cyou", "sbs", "vip", "cam", "men", "date", "review", "download", "racing",
-    "stream", "bid", "win", "party", "support", "link"];
+    "stream", "bid", "win", "party", "support", "link", "cfd", "bond", "quest", "fun",
+    "pw", "cc", "ws", "su"];
+
+  // Words fake login pages stuff into their addresses: "secure-login-verify.com"
+  var WORDY = ["login", "signin", "secure", "security", "verify", "verification",
+    "account", "update", "billing", "refund", "claim", "tracking", "alert", "confirm",
+    "wallet", "recovery", "unlock", "helpdesk", "payment", "invoice", "suspended",
+    "restore", "validate"];
+  // Words in the PATH of an address that say "this is a login page"
+  var LOGINISH = ["login", "signin", "verify", "account", "password", "secure", "billing", "update", "confirm"];
 
   // ---------------------------------------------------------------------
   // 3. Small helper functions
@@ -246,7 +299,15 @@
       // Only call it "http" if the person actually typed http://
       isHttp: hasScheme && url.protocol === "http:",
       // Trick: https://paypal.com@evil.com  (the real site is evil.com)
-      userInfo: decodeURIComponent(url.username || "").toLowerCase()
+      userInfo: decodeURIComponent(url.username || "").toLowerCase(),
+      // The words after the address: "/amazon/signin" -> amazon, signin
+      pathWords: (url.pathname + " " + url.search).toLowerCase().split(/[^a-z0-9]+/).filter(Boolean),
+      // Redirect links hide another address inside: google.com/url?q=https://evil.com
+      embedded: (function () {
+        var found = [];
+        url.searchParams.forEach(function (v) { if (/^https?:\/\//i.test(v)) found.push(v); });
+        return found;
+      })()
     };
   }
 
@@ -260,6 +321,14 @@
     return s.replace(/[^\x00-\x7f]/g, function (ch) { return CONFUSABLES[ch] || ch; });
   }
 
+  var TWO_PART_ENDINGS = ["co.uk", "org.uk", "com.au", "co.nz", "co.jp", "com.br", "co.in", "com.mx"];
+  function baseDomain(host) {
+    if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return host;
+    var p = host.split(".");
+    if (p.length >= 3 && TWO_PART_ENDINGS.indexOf(p.slice(-2).join(".")) !== -1) return p.slice(-3).join(".");
+    return p.slice(-2).join(".");
+  }
+
   // The address exactly as it was typed, before the browser turns accents and
   // foreign letters into "xn--" codes.
   function typedHost(raw) {
@@ -271,7 +340,7 @@
   // 5. LINK flags (rules 1-5). Returns a list of {id, level, text}.
   // ---------------------------------------------------------------------
 
-  function checkLink(raw) {
+  function checkLink(raw, nested) {
     var flags = [];
     var link = parseLink(raw);
     if (!link) return flags;
@@ -287,6 +356,7 @@
     var typed = typedHost(raw), foldedWords = [];
     if (/[^\x00-\x7f]/.test(typed)) foldedWords = wordsInHost(foldConfusables(typed));
 
+    var flagged = {};   // brands we already warned about for this link
     BRANDS.forEach(function (brand) {
       if (isOfficial(host, brand)) return; // the real site, nothing to flag
 
@@ -302,15 +372,41 @@
 
       // Rule 1 (HIGH): look-alike spelling, e.g. amaz0n.com
       if (lookalike) {
+        flagged[brand.name] = true;
         flags.push({ id: "lookalike", level: "high",
           text: "This website is pretending to be a real company." });
       }
       // Rule 2 (HIGH): real brand name inside a different address
       else if (mentioned) {
+        flagged[brand.name] = true;
         flags.push({ id: "fakebrand", level: "high",
           text: "This is not the real " + brand.name + " website." });
       }
     });
+
+    // Rule 2b (HIGH): a brand name in the PATH of a login-looking page on some other
+    // site, e.g. https://example.com/amazon/signin
+    var loginPath = link.pathWords.some(function (w) { return LOGINISH.indexOf(w) !== -1; });
+    if (loginPath) {
+      BRANDS.forEach(function (brand) {
+        if (flagged[brand.name] || isOfficial(host, brand)) return;
+        var inPath = brand.words.some(function (bw) {
+          return link.pathWords.some(function (w) { return containsBrandWord(w, bw); });
+        });
+        if (inPath) {
+          flagged[brand.name] = true;
+          flags.push({ id: "fakebrand", level: "high", text: "This is not the real " + brand.name + " website." });
+        }
+      });
+    }
+
+    // Rule 2c (MEDIUM): an address stuffed with "secure", "login", "verify"... words
+    var isOfficialAnywhere = BRANDS.some(function (b) { return isOfficial(host, b); });
+    var wordyHits = words.filter(function (w, i) { return WORDY.indexOf(w) !== -1 && words.indexOf(w) === i; });
+    if (!isOfficialAnywhere && wordyHits.length >= 2) {
+      flags.push({ id: "wordy", level: "medium",
+        text: "This address is stuffed with \u201Csecure\u201D and \u201Clogin\u201D words. Real websites keep it simple." });
+    }
 
     // Rule 3 (MEDIUM): shortened link
     var isShort = SHORTENERS.some(function (s) { return host === s || host.endsWith("." + s); });
@@ -334,11 +430,16 @@
         text: "This page isn't secure. Don't type passwords or card numbers." });
     }
 
+    // Redirect links hide another address inside. Check that one too.
+    if (!nested) {
+      link.embedded.forEach(function (inner) { flags = flags.concat(checkLink(inner, true)); });
+    }
+
     return flags;
   }
 
   // ---------------------------------------------------------------------
-  // 6. MESSAGE flags (rules 6-15)
+  // 6. MESSAGE flags (rules 6-15, and more below)
   //
   // Each rule has:
   //   id     – a short name (used for counting and in the tests)
@@ -354,14 +455,14 @@
   // The phrases each rule looks for. They live here (not inside the rules) so the
   // same phrase can be used for BOTH deciding and highlighting.
   var R = {
-    payOdd: /gift ?cards?|itunes card|google play card|steam card|bitcoin|crypto(currency)?\b|\bbtc\b|ethereum|wire (transfer|the money|money|funds)|western union|moneygram/,
+    payOdd: /gift ?cards?|itunes card|google play card|steam card|bitcoin|crypto(currency)?\b|\bbtc\b|ethereum|wire (transfer|the money|money|funds)|western union|moneygram|prepaid (?:debit |visa )?cards?|money order|cashier'?s check/,
     payAsk: /\b(pay|paying|payment|send|buy|purchase|purchasing|deposit|transfer|scratch|owe|fee|fine|bail|codes?|numbers?|pin|photo|picture|atm)\b/,
     virus: /\b(virus(es)?|malware|trojan|spyware|ransomware|hacked|infected|compromised)\b/,
     alarm: /detected|warning|alert|your (computer|pc|laptop|device|phone|ip address)|call (us|now|immediately|this number|microsoft|apple|support|tech)|toll[- ]free|helpline|do not (restart|shut|turn off|close)/,
     support: /(tech(nical)? support|microsoft support|apple support|windows (security|defender|support)).{0,80}(call|phone|dial)|(call|dial).{0,60}(tech(nical)? support|microsoft|apple support)/,
     prize: /you(?:'ve| have)? (?:been selected|won\b|are a winner)|you(?:'re| are) (?:a|the) (?:lucky )?winner|congratulations[^.!?]{0,60}(won|winner|prize|selected)|lottery (winner|prize|winning|commission|draw)|sweepstakes|claim your (prize|reward|gift|winnings)|free (iphone|gift|prize)|grand prize/,
     gov: /\b(irs|internal revenue service|social security( administration)?|ssa|medicare|medicaid|treasury|fbi|department of (justice|treasury|homeland security)|u\.?s\.? marshals?)\b/,
-    govAsk: /\b(owe|owed|pay|payment|fine|penalty|penalties|arrest|warrant|suspend\w*|verify|confirm|ssn|social security number|bank|account number|back taxes|unpaid|lawsuit|legal action|call (us|now|immediately|this number)|deposit|wire|gift cards?)\b/,
+    govAsk: /\b(owe|owed|pay (?:now|today|immediately|the|your|a|this)|fine|penalty|penalties|arrest|warrant|suspend\w*|verify|confirm|ssn|social security number|back taxes|unpaid|lawsuit|legal action|call (us|now|immediately|this number)|wire|gift cards?)\b/,
     sensThing: /\b(password|passcode|pin( number)?|verification code|security code|confirmation code|one[- ]time (code|password|passcode)|otp|6[- ]digit code|social security number|ssn|bank account( number| details| info\w*)?|routing number|card number|credit card( number| details| info\w*)?|debit card|cvv|login details|account details)\b/,
     sensAsk: /\b(send|share|give|tell|read|provide|enter|confirm|verify|reply|submit|update|forward|supply|type)\b/,
     sensSafe: /\b(?:do not|don't|dont|never)\s+(?:share|give|tell|send|reveal|disclose|provide)\b[^.!?\n]*/g,
@@ -370,13 +471,67 @@
     refund: /refund|reimburs|overpa|over-?paid|overcharg|deposited (too much|extra)/,
     mistake: /too much|extra|excess|difference|accident|mistake|in error|error/,
     sendBack: /\b(send|return|pay|wire|transfer|give)\b[^.!?]{0,40}\b(back|difference|rest|extra|excess|balance)\b/,
-    urgency: /within (the next )?\d+ ?(hours?|hrs?|minutes?|mins?)|within (a|one) (day|hour)|account (has been |is |was |will be )?(suspended|locked|closed|disabled|limited|frozen|compromised|terminated|deactivated)|arrest|warrant|act now|act immediately|(respond|reply|call|pay|act) (immediately|right away|now)|immediate (action|payment|response)|final (notice|warning)|last chance|expires? (today|tonight|soon)|legal action|before it's too late/,
+    urgency: /within (the next )?\d+ ?(hours?|hrs?|minutes?|mins?)|within (a|one) (day|hour)|account (has been |is |was |will be )?(suspended|locked|closed|disabled|limited|frozen|compromised|terminated|deactivated)|arrest|warrant|act now|act immediately|(respond|reply|call|pay|act) (immediately|right away|now)|immediate (action|payment|response)|final (notice|warning)|expires? (today|tonight|soon)|legal action|before it's too late/,
     delivery: /package|parcel|delivery|shipment|shipping|courier|usps|ups|fedex|dhl|tracking number/,
-    problem: /(could not|couldn't|can't|cannot|unable to|failed to|not) (be )?deliver|undeliverable|missed (delivery|your)|on hold|held|address (is )?(incorrect|incomplete|invalid|missing)|incomplete address|reschedule|redelivery|customs/,
+    problem: /(could not|couldn't|can't|cannot|unable to|failed to|not) (be )?deliver|undeliverable|unclaimed|shipping fee|redelivery fee|clearance fee|customs fee|postage due|pending delivery|missed (delivery|your)|on hold|held|address (is )?(incorrect|incomplete|invalid|missing)|incomplete address|reschedule|redelivery|customs/,
     deliveryAsk: /fee|pay|charge|click|tap|link|https?:|www\.|\$\d|update your|confirm|verify/,
     money: /\$\d[\d.,]*/,
     moneyWords: /\b(pay|money|bank|gift ?cards?|wire|send|account|password|codes?|ssn|irs|cash|crypto|bitcoin)\b|\$\d/,
-    innocent: /\b(surprise|birthday|anniversary|party)\b/
+    innocent: /\b(surprise|birthday|anniversary|party)\b/,
+
+    // "Grandma, it's me, I'm in trouble": family emergency + money
+    famEmergency: /\b(?:i'm|i am|im) (?:in )?(?:jail|trouble|custody)\b|\b(?:i'm|i am|im) (?:in )?(?:the|a) hospital\b|\b(?:i was|i got|i've been|i have been|i just got) (?:arrested|in an accident|in a car accident|in a crash|in a wreck)\b|\bneed (?:bail|a lawyer)\b|\bbail (?:money|me)\b|\bpublic defender\b/,
+    famMoney: /\b(?:bail|wire|money|cash|gift ?cards?|western union|venmo|zelle|cash ?app|bitcoin|funds|retainer)\b|\bsend (?:me |us )?(?:\$\d|money|cash)/,
+    // a "friend" or "love" you have only met online, who needs money
+    romWords: /\b(?:i love you|my love|sweetheart|darling|my dear|my darling|soulmate|my queen|my king)\b/,
+    romStory: /\b(?:overseas|deployed|oil rig|stranded|abroad|inheritance|customs|military|widow(?:er)?|peacekeeping|on a ship|offshore)\b/,
+    romAsk: /\b(?:money|funds|cash|gift ?cards?|wire|bitcoin|crypto|western union|invest\w*|bank (?:account|details)|plane ticket|visa fee)\b/,
+    // get-rich promises
+    invest: /\b(?:guaranteed (?:returns?|profits?|income)|risk[- ]free|double your money|(?:daily|weekly|monthly) (?:profits?|returns?|income)|investment opportunity|crypto (?:trading|investment|mining)|trading (?:platform|bot|signals)|\d+% (?:daily|weekly|monthly)|financial freedom|forex)\b/,
+    // "deposit this check and send some back"
+    depositCheck: /\b(?:deposit|cash|cashing)\b[^.!?]{0,30}\b(?:check|cheque|money order|cashier'?s check)\b/,
+    checkSendBack: /\b(?:send|wire|transfer|buy|purchase|zelle)\b[^.!?]{0,70}\b(?:back|difference|rest|remaining|balance|vendor|supplies|equipment|gift ?cards?|bitcoin)\b/,
+    jobBait: /\b(?:mystery shopper|secret shopper|work from home|payment processor|package (?:reshipping|forwarding|re-?shipping)|re-?shipping)\b/,
+    // "move your money to a safe account"
+    safeAcct1: /\b(?:move|transfer|wire) (?:your )?(?:money|funds|savings)[^.!?]{0,40}\b(?:safe|secure|protected|government|federal|treasury) account\b/,
+    safeAcct2: /\bsafe account\b|\bprotect(?:ed)? (?:account|your (?:money|funds|savings))\b/,
+    safeAcct3: /\b(?:fbi|police|treasury|fraud (?:department|team|unit)|security (?:department|team))\b[^.!?]{0,60}\b(?:move|transfer|withdraw)\b/,
+    // someone coming to your door for cash
+    courier: /\b(?:courier|driver|agent|representative|messenger|runner|officer)\b[^.!?]{0,50}\b(?:pick ?up|collect|come to (?:your )?(?:home|house|door|address))\b[^.!?]{0,40}\b(?:cash|money|envelope|funds|bail)\b|\b(?:cash|money|envelope|funds)\b[^.!?]{0,40}\b(?:pick ?up|picked up|collect(?:ed)?)\b[^.!?]{0,30}\b(?:courier|driver|agent|messenger|runner)\b/,
+    stayLine: /\b(?:don't|do not|dont) (?:hang up|end the call|disconnect)\b/,
+    stayCtx: /\b(?:officer|agent|irs|bank|police|social security|warrant|arrest|account|fraud|microsoft|apple|support|government|investigation)\b/,
+    // unpaid toll / DMV texts with a link
+    tollWord: /\b(?:toll|e-?zpass|ezdrive|fastrak|sunpass|ipass|dmv|motor vehicles?|parking (?:ticket|violation|fine)|traffic (?:ticket|violation|fine)|license (?:suspension|suspended))\b/,
+    tollPay: /\b(?:unpaid|outstanding|overdue|past due|balance|fine|penalty|late fee|pay|payment|fee)\b/,
+    hasLinkish: /https?:|www\.|\b[a-z0-9-]+\.(?:com|net|org|top|xyz|info|co|us|click|link|vip|help|cc|site|online|app)\b/,
+    // "your power will be shut off today"
+    utility: /\b(?:electric(?:ity)?|power|gas|water|utility|utilities|internet|cable)\b[^.!?]{0,50}\b(?:shut ?off|disconnect(?:ed|ion)?|cut off|terminated|turned off|suspended)\b/,
+    utilityUrgent: /\b(?:today|within|immediately|right now|hours|minutes|call|pay|payment)\b/,
+    utilityPay: /\b(?:pay|payment|bill|past due|overdue|unpaid|balance|account)\b|\$\d/,
+    // "verify your account" + a link
+    verifyAcct: /\b(?:verify|confirm|update|restore|reactivate|unlock|validate|review|secure)\b[^.!?]{0,25}\b(?:your )?(?:account|identity|log-?in|password|payment (?:method|details|info\w*)|billing (?:info\w*|details)|profile|card)\b/,
+    clickAsk: /\b(?:click(?:ing)?|tap(?:ping)?|follow(?:ing)?|visit(?:ing)?|open(?:ing)?)\b[^.!?]{0,30}\b(?:link|here|below|button)\b/,
+    // QR codes that ask for money or logins
+    qr: /\bscan (?:this|the|our|my|attached) (?:qr|code|barcode)\b|\bqr code\b[^.!?]{0,40}\b(?:pay|scan|verify|claim|log ?in|refund)\b/,
+    qrCtx: /\b(?:pay|payment|refund|claim|verify|account|log ?in|package|delivery|prize|reward|bank|crypto)\b/,
+    // a "wrong number" that turns friendly
+    wrongNum: /\b(?:wrong number|sorry,? (?:i )?(?:think )?(?:i )?(?:have|got) the wrong|did i (?:text|reach|message) the right)\b/,
+    friendly: /\b(?:nice to meet|make friends|get to know|you seem (?:nice|sweet|kind|lovely)|whatsapp|telegram|lonely|new friend|chat (?:with|sometime|more))\b/,
+    // surprise charges and fake invoices with a number to call
+    charge: /\b(?:you(?:'ve| have| were)? (?:been )?charged|has been charged|(?:was|were|been|got) charged|if (?:this|that) (?:wasn't|was not|isn't) you|charge of \$[\d,.]+|payment of \$[\d,.]+ (?:was|has been)|your (?:subscription|membership|plan|order|invoice|payment)[^!?]{0,40}(?:renew\w*|\$\d|activated|confirmed|processed)|invoice (?:no|number|#)|auto-?renew\w*|receipt for)/,
+    callWord: /\b(?:call|dispute|cancel|contact|reach)\b/,
+    bigBrand: /\b(?:geek squad|norton|mcafee|lifelock|paypal|best buy|amazon|apple|microsoft|webroot|avast|geico|coinbase|binance|cash app|venmo|zelle|walmart|costco)\b/,
+    amount: /\$\d{2,}/,
+    callCta: /\b(?:call|dial|phone|contact) (?:us|our|this|the|now|immediately|support|customer|billing|fraud|security|at)\b/,
+    acctCtx: /\byour (?:account|card|order|payment|subscription|computer|device|social security|bank|package|refund|benefits)\b|\b(?:suspended|locked|frozen|compromised|fraudulent|unauthorized|unusual activity|suspicious activity)\b/,
+    // "Hi Mom, this is my new number" + a request for money
+    newNum: /\b(?:this is my new number|my new number|new number|lost my phone|dropped my phone|broke my phone|phone (?:broke|died|fell in|got (?:stolen|broken))|old phone (?:broke|died))\b/,
+    newNumMoney: /\b(?:gift ?cards?|western union|zelle|venmo|cash ?app|bitcoin|wire|bail)\b|\bsend (?:me |us )?(?:\$\d|money|cash)|\bfriend'?s (?:account|card)\b|\b(?:pay|cover) (?:a|an|my|this|the) (?:bill|invoice|fee|payment)\b/,
+    // easy-money job offers
+    earn: /\b(?:earn|make) \$?\d[\d,]*(?:\.\d+)? ?(?:a|per|\/) ?(?:day|week|hour)\b|\bno experience (?:needed|required|necessary)\b|\bwork from home\b[^.!?]{0,40}\b(?:earn|make|income|\$)/,
+    // "you have inherited millions" (a stranger offering a fortune)
+    advance: /\b(?:unclaimed (?:funds|assets|inheritance|money)|dormant account|lottery commission|barrister|diplomat|next of kin|beneficiary of)\b|\b(?:inheritance|fortune|funds)\b[^.!?]{0,40}(?:million|\$\d{1,3}(?:,\d{3}){2,})/,
+    advAsk: /\b(?:fee|processing|transfer fee|tax|release|claim|reply|contact|provide|bank (?:details|account))\b/
   };
 
   // Each rule has:
@@ -389,7 +544,7 @@
     { // Rule 6: gift cards / crypto / wire transfers, being asked for as payment
       id: "payment", level: "high",
       text: "Real companies never ask for gift cards or crypto. This is a scam.",
-      test: function (t) { return R.payOdd.test(t) && R.payAsk.test(t); },   // only when someone also asks you to pay/send/buy
+      test: function (t) { return R.payOdd.test(t) && R.payAsk.test(t.replace(new RegExp(R.payOdd.source, "g"), " ")); },   // someone must ALSO ask you to pay/send/buy
       marks: [R.payOdd]
     },
     { // Rule 7: fake virus / tech-support warnings
@@ -453,6 +608,116 @@
       text: "Delivery companies don't text you for fees.",
       test: function (t) { return R.delivery.test(t) && R.problem.test(t) && R.deliveryAsk.test(t); },
       marks: [R.problem, R.money]
+    },
+
+    // ----- More scams that often target older adults -----
+    { // "Grandma, it's me. I'm in trouble and need money."
+      id: "familyemergency", level: "high",
+      text: "Check with your family member on a number you already know before sending anything.",
+      test: function (t) { return R.famEmergency.test(t) && R.famMoney.test(t); },
+      marks: [R.famEmergency, R.famMoney]
+    },
+    { // Someone you only know online asking for money
+      id: "romance", level: "high",
+      text: "Be very careful with someone you only know online who asks for money.",
+      test: function (t) { return R.romWords.test(t) && R.romStory.test(t) && R.romAsk.test(t); },
+      marks: [R.romWords, R.romStory, R.romAsk]
+    },
+    { // Deposit a check, then send some money back
+      id: "checkscam", level: "high",
+      text: "Real employers and buyers never ask you to deposit a check and send money back.",
+      test: function (t) { return (R.depositCheck.test(t) && R.checkSendBack.test(t)) || (R.jobBait.test(t) && R.depositCheck.test(t)); },
+      marks: [R.depositCheck, R.jobBait, R.checkSendBack]
+    },
+    { // "Move your money to a safe account"
+      id: "safeacct", level: "high",
+      text: "Your bank will never ask you to move your money to keep it protected.",
+      test: function (t) { return R.safeAcct1.test(t) || R.safeAcct2.test(t) || R.safeAcct3.test(t); },
+      marks: [R.safeAcct1, R.safeAcct2, R.safeAcct3]
+    },
+    { // A courier coming to your door to pick up cash
+      id: "courier", level: "high",
+      text: "No real company or agency sends someone to your door to collect cash.",
+      test: function (t) { return R.courier.test(t); },
+      marks: [R.courier]
+    },
+    { // "Don't hang up"
+      id: "stayline", level: "high",
+      text: "Scammers keep you on the phone so you can't think. Hang up and call back on a number you trust.",
+      test: function (t) { return R.stayLine.test(t) && R.stayCtx.test(t); },
+      marks: [R.stayLine]
+    },
+    { // Unpaid toll / DMV text with a link
+      id: "toll", level: "high",
+      text: "Toll and motor-vehicle offices don't text you links to pay.",
+      test: function (t) { return R.tollWord.test(t) && R.tollPay.test(t) && R.hasLinkish.test(t); },
+      marks: [R.tollWord, R.tollPay]
+    },
+    { // A stranger offering you a fortune
+      id: "advance", level: "high",
+      text: "A stranger offering you a fortune is a scam.",
+      test: function (t) { return R.advance.test(t) && R.advAsk.test(t); },
+      marks: [R.advance]
+    },
+    { // "Hi Mom, this is my new number" and then a request for money
+      id: "newnumber", level: "high",
+      text: "Call the person on the number you already have before sending any money.",
+      test: function (t) { return R.newNum.test(t) && R.newNumMoney.test(t); },
+      marks: [R.newNum, R.newNumMoney]
+    },
+    { // A fake bill from a big company with a number to call
+      id: "fakeinvoice", level: "high",
+      text: "That bill is fake. Don't call the number on it.",
+      test: function (t) { return R.charge.test(t) && PHONE.test(t) && R.callWord.test(t) && R.bigBrand.test(t) && R.amount.test(t); },
+      marks: [R.charge, PHONE, R.bigBrand]
+    },
+    { // Get-rich promises
+      id: "invest", level: "medium",
+      text: "Real investments never promise guaranteed profits.",
+      test: function (t) { return R.invest.test(t); },
+      marks: [R.invest]
+    },
+    { // Easy-money job offers
+      id: "jobscam", level: "medium",
+      text: "Easy-money job offers by text are almost always scams.",
+      test: function (t) { return R.earn.test(t); },
+      marks: [R.earn]
+    },
+    { // "Your power will be shut off today"
+      id: "utility", level: "medium",
+      text: "Utility companies don't threaten to cut you off by text.",
+      test: function (t) { return R.utility.test(t) && R.utilityUrgent.test(t) && R.utilityPay.test(t); },
+      marks: [R.utility]
+    },
+    { // "Confirm your account" through a link
+      id: "verifyacct", level: "medium",
+      text: "Real companies don't ask you to confirm your account through a link in a message.",
+      test: function (t) { return R.verifyAcct.test(t) && R.clickAsk.test(t); },
+      marks: [R.verifyAcct]
+    },
+    { // QR codes that ask for money or logins
+      id: "qr", level: "medium",
+      text: "Be careful with QR codes in messages. You can't see where they lead.",
+      test: function (t) { return R.qr.test(t) && R.qrCtx.test(t); },
+      marks: [R.qr]
+    },
+    { // A "wrong number" that turns friendly
+      id: "wrongnum", level: "medium",
+      text: "A \u201Cwrong number\u201D text that turns friendly is how many scams begin.",
+      test: function (t) { return R.wrongNum.test(t) && R.friendly.test(t); },
+      marks: [R.wrongNum, R.friendly]
+    },
+    { // A surprise charge with a number to call
+      id: "surprisecharge", level: "medium",
+      text: "A surprise charge with a number to call is a common scam. Look up the real number yourself.",
+      test: function (t) { return R.charge.test(t) && PHONE.test(t) && R.callWord.test(t); },
+      marks: [R.charge, PHONE]
+    },
+    { // "Call this number" about your account
+      id: "callnumber", level: "medium",
+      text: "Scammers want you to call a number they picked. Look up the real number yourself.",
+      test: function (t) { return R.callCta.test(t) && PHONE.test(t) && R.acctCtx.test(t); },
+      marks: [R.callCta, PHONE]
     }
   ];
 
@@ -505,7 +770,9 @@
     return mergeSpans(out);
   }
 
-  function checkText(input) {
+  // options.realLink: when the right-click menu knows the REAL address of a link,
+  // we can warn if the words next to it name a different website.
+  function checkText(input, options) {
     var text = String(input || "").slice(0, MAX_LENGTH);
     var flags = [];
 
@@ -515,6 +782,21 @@
       var spans = at >= 0 ? [{ start: at, end: at + link.length }] : [];
       checkLink(link).forEach(function (f) { f.spans = spans; flags.push(f); });
     });
+
+    // The link says one website but really goes to another (a classic trick)
+    if (options && options.realLink) {
+      var real = parseLink(options.realLink);
+      if (real) {
+        findLinks(text).forEach(function (link) {
+          var shown = parseLink(link);
+          if (!shown || baseDomain(shown.host) === baseDomain(real.host)) return;
+          var at = text.indexOf(link);
+          flags.push({ id: "linkmismatch", level: "high",
+            text: "The link says one website but really goes to another.",
+            spans: at >= 0 ? [{ start: at, end: at + link.length }] : [] });
+        });
+      }
+    }
 
     // Message rules: for the text itself
     var norm = normalizeWithMap(text);
@@ -533,9 +815,16 @@
     var highCount = Object.keys(highKinds).length;
     var mediumCount = Object.keys(mediumKinds).length;
 
+    // A pushy message AND a suspicious link together is a scam, even with only two
+    // medium signs (e.g. "act now" plus a shortened link).
+    var LINK_KINDS = { shortener: 1, oddaddress: 1, nothttps: 1, wordy: 1 };
+    var mediumIds = Object.keys(mediumKinds);
+    var linkAndMessage = mediumIds.some(function (id) { return LINK_KINDS[id]; }) &&
+                         mediumIds.some(function (id) { return !LINK_KINDS[id]; });
+
     // Scoring
     var level;
-    if (highCount >= 1 || mediumCount >= 3) level = "scam";
+    if (highCount >= 1 || mediumCount >= 3 || linkAndMessage) level = "scam";
     else if (mediumCount >= 1) level = "careful";
     else level = "okay";
 

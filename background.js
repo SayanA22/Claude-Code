@@ -34,8 +34,12 @@ chrome.contextMenus.onClicked.addListener((info) => {
   const text = pieces.join("\n").slice(0, 3000);
 
   // Open the results in a small window.
+  // We also pass the link's real address separately, so the checker can warn when
+  // the words you see name one website but the link really goes to another.
+  const real = info.linkUrl ? "&real=" + encodeURIComponent(info.linkUrl.slice(0, 2000)) : "";
+
   chrome.windows.create({
-    url: "results.html?text=" + encodeURIComponent(text),
+    url: "results.html?text=" + encodeURIComponent(text) + real,
     type: "popup",
     width: 540,
     height: 800
