@@ -58,59 +58,80 @@ const ScamUI = (function () {
   //   okay    – happy eyes and a wave
   // ---------------------------------------------------------------------
   function owlMarkup(mood) {
-    var O = { ink: "#0b1b33", navy: "#0a3f73", body: "#dbe6f3", wing: "#b9cde4", belly: "#f6f9fc", beak: "#ffb300" };
-    function o(w) { return ' stroke="' + O.ink + '" stroke-width="' + (w || 7) + '" stroke-linejoin="round" stroke-linecap="round"'; }
-    var tilt = mood === "careful" ? -9 : 0;
+    // Black outline on white, like the cartoon scammers: a chubby round owl with one
+    // giant eye (magnified by its glass), tiny feet, and a face for every mood.
+    var K = "#111111", W = "#ffffff";
+    function ln(w) { return ' stroke="' + K + '" stroke-width="' + (w || 8) + '" stroke-linejoin="round" stroke-linecap="round"'; }
+    var scam = mood === "scam", careful = mood === "careful", okay = mood === "okay", scan = mood === "scan";
     var s = '<svg viewBox="-70 -40 440 400" aria-hidden="true">';
 
-    // feet, body, belly feathers
-    s += '<g stroke="' + O.beak + '" stroke-width="9" stroke-linecap="round" fill="none"><path d="M118 306 l-12 16 M118 306 v18 M118 306 l12 16"/><path d="M182 306 l-12 16 M182 306 v18 M182 306 l12 16"/></g>';
-    s += '<ellipse cx="150" cy="208" rx="96" ry="108" fill="' + O.body + '"' + o(8) + '/><ellipse cx="150" cy="232" rx="62" ry="74" fill="' + O.belly + '"/>';
-    s += '<g fill="none" stroke="' + O.navy + '" stroke-width="5" stroke-linecap="round" opacity=".55"><path d="M118 214 q16 14 32 0 q16 14 32 0"/><path d="M112 244 q19 16 38 0 q19 16 38 0"/><path d="M122 274 q14 12 28 0 q14 12 28 0"/></g>';
+    // tiny stubby feet and ear tufts (behind the body)
+    s += '<ellipse cx="108" cy="338" rx="26" ry="12" fill="' + W + '"' + ln(7) + '/><ellipse cx="192" cy="338" rx="26" ry="12" fill="' + W + '"' + ln(7) + '/>';
+    s += '<path d="M92 341 v9 M108 343 v9 M124 341 v9 M176 341 v9 M192 343 v9 M208 341 v9" fill="none"' + ln(6) + '/>';
+    s += '<path d="M90 90 L66 30 L136 66 Z" fill="' + W + '"' + ln() + '/><path d="M210 90 L234 30 L164 66 Z" fill="' + W + '"' + ln() + '/>';
 
-    // wings: down, raised (alarm), or waving (okay)
-    var la = mood === "scam" ? 100 : 0;
-    var ra = mood === "scam" ? -100 : (mood === "okay" ? -125 : 0);
-    s += '<path d="M70 186 Q16 236 54 304 Q90 272 98 224 Z" fill="' + O.wing + '"' + o() + ' transform="rotate(' + la + ' 74 196)"/>';
-    s += '<path d="M230 186 Q284 236 246 304 Q210 272 202 224 Z" fill="' + O.wing + '"' + o() + ' transform="rotate(' + ra + ' 226 196)"/>';
+    // the big round body, with a belly and a few feather scallops
+    s += '<path d="M150 52 C240 52 298 122 298 208 C298 290 246 332 150 332 C54 332 2 290 2 208 C2 122 60 52 150 52 Z" fill="' + W + '"' + ln(9) + '/>';
+    s += '<path d="M84 254 Q150 314 216 254" fill="none"' + ln(7) + '/><path d="M124 272 q9 11 18 0 M158 272 q9 11 18 0 M141 292 q9 11 18 0" fill="none"' + ln(6) + '/>';
 
-    // head (tilts when unsure)
-    s += '<g transform="rotate(' + tilt + ' 150 130)">';
-    s += '<path d="M66 112 L84 42 L130 84 Z" fill="' + O.body + '"' + o() + '/><path d="M234 112 L216 42 L170 84 Z" fill="' + O.body + '"' + o() + '/>';
-    s += '<circle cx="150" cy="122" r="90" fill="' + O.body + '"' + o(8) + '/><ellipse cx="150" cy="128" rx="76" ry="62" fill="' + O.belly + '"/>';
+    // stubby wings: down, both raised (alarm), or one waving (okay)
+    var wl = scam ? ' transform="rotate(118 40 190)"' : (okay ? ' transform="rotate(135 40 190)"' : "");
+    var wr = scam ? ' transform="rotate(-118 260 190)"' : "";
+    s += '<ellipse cx="34" cy="244" rx="28" ry="56" fill="' + W + '"' + ln() + wl + '/>';
+    s += '<ellipse cx="266" cy="244" rx="28" ry="56" fill="' + W + '"' + ln() + wr + '/>';
 
-    if (mood === "okay") {
-      s += '<path d="M82 128 Q112 94 142 128" fill="none"' + o(9) + '/><path d="M158 128 Q188 94 218 128" fill="none"' + o(9) + '/>';
-      s += '<circle cx="86" cy="152" r="11" fill="#f4a3a3" opacity=".7"/><circle cx="214" cy="152" r="11" fill="#f4a3a3" opacity=".7"/>';
+    // a stray curl of feather
+    s += '<path d="M150 52 Q146 24 168 26 Q188 30 178 46 Q172 56 160 48" fill="none"' + ln(7) + '/>';
+
+    // ---- the face (tilts when unsure) ----
+    s += '<g transform="rotate(' + (careful ? -8 : 0) + ' 150 170)">';
+    if (okay) {
+      // happy closed eyes
+      s += '<path d="M72 138 Q104 98 136 138" fill="none"' + ln(10) + '/><path d="M158 132 Q200 80 242 132" fill="none"' + ln(10) + '/>';
+      s += '<circle cx="62" cy="176" r="13" fill="none"' + ln(6) + '/><circle cx="238" cy="176" r="13" fill="none"' + ln(6) + '/>';
     } else {
-      s += '<circle cx="108" cy="122" r="38" fill="#fff"' + o(7) + '/><circle cx="192" cy="122" r="38" fill="#fff"' + o(7) + '/>';
-      var r = mood === "scam" ? 9 : 14;
-      var px = mood === "careful" ? 10 : 0;
-      var py = mood === "careful" ? 4 : 0;
-      s += '<g class="pupils"><circle cx="' + (108 + px) + '" cy="' + (122 + py) + '" r="' + r + '" fill="' + O.ink + '"/><circle cx="' + (192 + px) + '" cy="' + (122 + py) + '" r="' + r + '" fill="' + O.ink + '"/>';
-      s += '<circle cx="' + (103 + px) + '" cy="' + (116 + py) + '" r="4.5" fill="#fff"/><circle cx="' + (187 + px) + '" cy="' + (116 + py) + '" r="4.5" fill="#fff"/></g>';
-      if (mood === "scam") s += '<path d="M70 76 L132 94 M230 76 L168 94" stroke="' + O.ink + '" stroke-width="9" stroke-linecap="round"/>';
-      if (mood === "careful") s += '<path d="M72 80 Q104 60 136 84" fill="none"' + o(8) + '/><path d="M164 88 L228 88" fill="none"' + o(8) + '/>';
+      s += '<circle cx="104" cy="132" r="32" fill="' + W + '"' + ln(7) + '/><circle cx="200" cy="126" r="48" fill="' + W + '"' + ln(7) + '/>';
+      var lx = 108, ly = 128, rx = 206, ry = 132, lr = 13, rr = 22;        // a lazy, slightly cross-eyed stare
+      if (scam) { lx = 104; ly = 132; rx = 200; ry = 126; lr = 7; rr = 9; }  // tiny shocked pupils
+      if (careful) { lx = 118; ly = 138; rx = 218; ry = 138; }              // side-eye
+      s += '<g class="pupils"><circle cx="' + lx + '" cy="' + ly + '" r="' + lr + '" fill="' + K + '"/><circle cx="' + rx + '" cy="' + ry + '" r="' + rr + '" fill="' + K + '"/>';
+      s += '<circle cx="' + (lx - 4) + '" cy="' + (ly - 5) + '" r="4" fill="' + W + '"/><circle cx="' + (rx - 7) + '" cy="' + (ry - 8) + '" r="6" fill="' + W + '"/></g>';
+      if (scam) s += '<path d="M64 88 L128 108" fill="none"' + ln(10) + '/><path d="M268 58 L192 78" fill="none"' + ln(10) + '/>';
+      if (careful) s += '<path d="M66 86 Q104 58 142 82" fill="none"' + ln(9) + '/>';
     }
-    s += '<path d="M135 146 L165 146 L150 176 Z" fill="' + O.beak + '"' + o(6) + '/>';
 
-    // the magnifying glass over one eye: the owl's signature
-    s += '<circle cx="192" cy="122" r="50" fill="#fff" fill-opacity=".18" stroke="' + O.navy + '" stroke-width="12"/>';
-    s += '<path d="M228 158 L268 198" stroke="' + O.navy + '" stroke-width="16" stroke-linecap="round"/>';
-    s += '<path d="M164 102 Q172 88 186 86" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".9"/>';
+    // beak and mouth
+    if (scam) {
+      s += '<path d="M130 164 L170 164 L150 212 Z" fill="' + K + '"' + ln(7) + '/><path d="M138 166 L162 166 L150 184 Z" fill="' + W + '"/>';
+    } else if (okay) {
+      s += '<path d="M138 166 L162 166 L150 190 Z" fill="' + W + '"' + ln(7) + '/><path d="M108 198 Q150 244 192 198" fill="none"' + ln(8) + '/>';
+    } else if (careful) {
+      s += '<path d="M140 168 L162 168 L154 190 Z" fill="' + W + '"' + ln(7) + '/><path d="M112 210 q10 -9 20 0 t20 0 t20 0 t20 0" fill="none"' + ln(6) + '/>';
+    } else {
+      s += '<path d="M138 166 L162 166 L150 192 Z" fill="' + W + '"' + ln(7) + '/>';
+    }
+
+    // the magnifying glass over the giant eye
+    s += '<path d="M240 168 L278 208" fill="none" stroke="' + K + '" stroke-width="20" stroke-linecap="round"/><path d="M240 168 L278 208" fill="none" stroke="' + W + '" stroke-width="8" stroke-linecap="round"/>';
+    s += '<circle cx="200" cy="126" r="58" fill="' + W + '" fill-opacity=".2" stroke="' + K + '" stroke-width="11"/>';
+    s += '<path d="M158 96 q8 -12 22 -14 M150 112 q2 -6 6 -10" fill="none"' + ln(6) + '/>';
     s += '</g>';
+    if (!scam && !okay) s += '<ellipse cx="284" cy="214" rx="22" ry="17" fill="' + W + '"' + ln(7) + ' transform="rotate(40 284 214)"/>';   // the wing gripping the handle
 
-    // little marks that show the mood
-    if (mood === "scam") {
-      s += '<g fill="#d50000"' + o(5) + '><rect x="138" y="-34" width="24" height="46" rx="10"/><circle cx="150" cy="30" r="13"/></g>';
-      s += '<g stroke="#d50000" stroke-width="7" stroke-linecap="round"><path d="M40 40 l-22 -14 M52 14 l-12 -22 M260 40 l22 -14 M248 14 l12 -22"/></g>';
+    // marks that show the mood
+    var drop = function (x, y) { return '<path d="M' + x + ' ' + y + ' Q' + (x + 18) + ' ' + (y + 30) + ' ' + x + ' ' + (y + 46) + ' Q' + (x - 18) + ' ' + (y + 30) + ' ' + x + ' ' + y + ' Z" fill="' + W + '"' + ln(6) + '/>'; };
+    var bang = function (x) { return '<rect x="' + (x - 10) + '" y="-30" width="20" height="38" rx="9" fill="' + K + '"/><circle cx="' + x + '" cy="30" r="10" fill="' + K + '"/>'; };
+    if (scam) {
+      s += bang(-34) + bang(334);
+      s += '<path d="M36 52 L14 34 M54 28 L42 4 M264 28 L276 4 M284 52 L306 34" fill="none"' + ln(7) + '/>';
     }
-    if (mood === "careful") {
-      s += '<g transform="translate(244 6)"><path d="M0 18 Q0 -6 22 -6 Q44 -6 44 14 Q44 28 26 36 Q22 40 22 52" fill="none" stroke="' + O.ink + '" stroke-width="18" stroke-linecap="round"/><path d="M0 18 Q0 -6 22 -6 Q44 -6 44 14 Q44 28 26 36 Q22 40 22 52" fill="none" stroke="#ffb300" stroke-width="8" stroke-linecap="round"/><circle cx="22" cy="72" r="10" fill="#ffb300"' + o(4) + '/></g>';
+    if (careful) {
+      s += drop(318, 120);
+      s += '<g transform="translate(306 -14)"><path d="M0 24 Q0 -6 26 -6 Q52 -6 52 18 Q52 36 30 44 Q26 48 26 62" fill="none"' + ln(14) + '/><circle cx="26" cy="86" r="11" fill="' + K + '"/></g>';
     }
-    if (mood === "okay") {
-      var star = function (x, y, rr) { return '<path d="M' + x + ' ' + (y - rr) + ' Q' + x + ' ' + y + ' ' + (x + rr) + ' ' + y + ' Q' + x + ' ' + y + ' ' + x + ' ' + (y + rr) + ' Q' + x + ' ' + y + ' ' + (x - rr) + ' ' + y + ' Q' + x + ' ' + y + ' ' + x + ' ' + (y - rr) + ' Z" fill="#7ed957"/>'; };
-      s += star(36, 36, 24) + star(268, 20, 18) + star(284, 96, 12);
+    if (okay) {
+      var star = function (x, y, r) { return '<path d="M' + x + ' ' + (y - r) + ' Q' + x + ' ' + y + ' ' + (x + r) + ' ' + y + ' Q' + x + ' ' + y + ' ' + x + ' ' + (y + r) + ' Q' + x + ' ' + y + ' ' + (x - r) + ' ' + y + ' Q' + x + ' ' + y + ' ' + x + ' ' + (y - r) + ' Z" fill="' + K + '"/>'; };
+      s += star(-22, 40, 26) + star(322, 4, 20) + star(342, 96, 13);
     }
     return s + '</svg>';
   }

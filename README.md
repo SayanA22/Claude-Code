@@ -102,7 +102,7 @@ When the flag fires, the phrases in `marks` light up inside the person's message
 
 - **The name:** change `APP_NAME` at the top of `ui.js`, and `"name"` in `manifest.json`.
 - **Colors:** they are named "slots" at the top of `styles.css` (a light set and a dark set). Change them there.
-- **The owl:** it is drawn in code in `ui.js` (`owlMarkup`). It has five moods: idle, scan, scam, careful and okay.
+- **The owl:** a chubby black-outline owl drawn in code in `ui.js` (`owlMarkup`), with a giant eye magnified by its magnifying glass. It has five moods: idle, scan, scam (arms flung up, tiny pupils), careful (one eyebrow up, wobbly mouth) and okay (a wave).
 
 ## Known limitations (Version 1)
 
