@@ -5,34 +5,13 @@
   <title>Scam Spotter</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body class="popup">
-  <!-- Title bar -->
-  <header class="app-header">
-    <span class="badge"><img src="icons/icon48.png" alt=""></span>
-    <div>
-      <h1>Scam Spotter</h1>
-      <p class="tagline">Is this a scam?</p>
-    </div>
-  </header>
-
-  <div class="content">
-    <label for="input">Paste a message or link here:</label>
-    <textarea id="input" rows="5" autofocus placeholder="Paste here, then press Enter"></textarea>
-
-    <div class="buttons">
-      <button id="check" type="button">Check</button>
-      <button id="clear" type="button" class="secondary">Start over</button>
-    </div>
-
-    <!-- The answer appears here. aria-live lets screen readers announce it. -->
-    <div id="result" aria-live="polite"></div>
-
-    <p class="privacy">🔒 Private: nothing leaves your computer.</p>
-  </div>
+<body class="popup" data-root="">
+  <!-- app.js builds everything inside this box. -->
+  <div id="app"></div>
 
   <!-- Extension pages can't use inline scripts, so each script is its own file. -->
   <script src="rules.js"></script>
   <script src="ui.js"></script>
-  <script src="popup.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

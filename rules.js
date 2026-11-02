@@ -351,108 +351,108 @@
   // A US-style phone number: 1-800-555-0199, (555) 123-4567, 555.123.4567
   var PHONE = /(?:\+?1[\s.-]?)?\(?\b\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b/;
 
+  // The phrases each rule looks for. They live here (not inside the rules) so the
+  // same phrase can be used for BOTH deciding and highlighting.
+  var R = {
+    payOdd: /gift ?cards?|itunes card|google play card|steam card|bitcoin|crypto(currency)?\b|\bbtc\b|ethereum|wire (transfer|the money|money|funds)|western union|moneygram/,
+    payAsk: /\b(pay|paying|payment|send|buy|purchase|purchasing|deposit|transfer|scratch|owe|fee|fine|bail|codes?|numbers?|pin|photo|picture|atm)\b/,
+    virus: /\b(virus(es)?|malware|trojan|spyware|ransomware|hacked|infected|compromised)\b/,
+    alarm: /detected|warning|alert|your (computer|pc|laptop|device|phone|ip address)|call (us|now|immediately|this number|microsoft|apple|support|tech)|toll[- ]free|helpline|do not (restart|shut|turn off|close)/,
+    support: /(tech(nical)? support|microsoft support|apple support|windows (security|defender|support)).{0,80}(call|phone|dial)|(call|dial).{0,60}(tech(nical)? support|microsoft|apple support)/,
+    prize: /you(?:'ve| have)? (?:been selected|won\b|are a winner)|you(?:'re| are) (?:a|the) (?:lucky )?winner|congratulations[^.!?]{0,60}(won|winner|prize|selected)|lottery (winner|prize|winning|commission|draw)|sweepstakes|claim your (prize|reward|gift|winnings)|free (iphone|gift|prize)|grand prize/,
+    gov: /\b(irs|internal revenue service|social security( administration)?|ssa|medicare|medicaid|treasury|fbi|department of (justice|treasury|homeland security)|u\.?s\.? marshals?)\b/,
+    govAsk: /\b(owe|owed|pay|payment|fine|penalty|penalties|arrest|warrant|suspend\w*|verify|confirm|ssn|social security number|bank|account number|back taxes|unpaid|lawsuit|legal action|call (us|now|immediately|this number)|deposit|wire|gift cards?)\b/,
+    sensThing: /\b(password|passcode|pin( number)?|verification code|security code|confirmation code|one[- ]time (code|password|passcode)|otp|6[- ]digit code|social security number|ssn|bank account( number| details| info\w*)?|routing number|card number|credit card( number| details| info\w*)?|debit card|cvv|login details|account details)\b/,
+    sensAsk: /\b(send|share|give|tell|read|provide|enter|confirm|verify|reply|submit|update|forward|supply|type)\b/,
+    sensSafe: /\b(?:do not|don't|dont|never)\s+(?:share|give|tell|send|reveal|disclose|provide)\b[^.!?\n]*/g,
+    secrecy: /(don't|do not|dont) (tell|mention|say anything to) (anyone|anybody|your|mom|dad|grandma|grandpa|family|the bank)|keep (this|it) (a )?(secret|between us|confidential|private|quiet)|between (us|you and me)|tell no one|tell nobody|our little secret/,
+    remote: /anydesk|teamviewer|ultraviewer|supremo|logmein|splashtop|rustdesk|screenconnect|connectwise|quick ?support|remote (access|desktop|session|support|control)|chrome remote|(give|grant|allow) (me|us) (access|control)/,
+    refund: /refund|reimburs|overpa|over-?paid|overcharg|deposited (too much|extra)/,
+    mistake: /too much|extra|excess|difference|accident|mistake|in error|error/,
+    sendBack: /\b(send|return|pay|wire|transfer|give)\b[^.!?]{0,40}\b(back|difference|rest|extra|excess|balance)\b/,
+    urgency: /within (the next )?\d+ ?(hours?|hrs?|minutes?|mins?)|within (a|one) (day|hour)|account (has been |is |was |will be )?(suspended|locked|closed|disabled|limited|frozen|compromised|terminated|deactivated)|arrest|warrant|act now|act immediately|(respond|reply|call|pay|act) (immediately|right away|now)|immediate (action|payment|response)|final (notice|warning)|last chance|expires? (today|tonight|soon)|legal action|before it's too late/,
+    delivery: /package|parcel|delivery|shipment|shipping|courier|usps|ups|fedex|dhl|tracking number/,
+    problem: /(could not|couldn't|can't|cannot|unable to|failed to|not) (be )?deliver|undeliverable|missed (delivery|your)|on hold|held|address (is )?(incorrect|incomplete|invalid|missing)|incomplete address|reschedule|redelivery|customs/,
+    deliveryAsk: /fee|pay|charge|click|tap|link|https?:|www\.|\$\d|update your|confirm|verify/,
+    money: /\$\d[\d.,]*/,
+    moneyWords: /\b(pay|money|bank|gift ?cards?|wire|send|account|password|codes?|ssn|irs|cash|crypto|bitcoin)\b|\$\d/,
+    innocent: /\b(surprise|birthday|anniversary|party)\b/
+  };
+
+  // Each rule has:
+  //   id     – a short name (used for counting and in the tests)
+  //   level  – "high" or "medium"
+  //   text   – the warning shown to the user
+  //   test   – gets the lowercase message, returns true if the red flag is present
+  //   marks  – the phrases (from R above) to HIGHLIGHT in the message when it fires
   var MESSAGE_FLAGS = [
-    {
-      // Rule 6: gift cards / crypto / wire transfers, being asked for as payment
+    { // Rule 6: gift cards / crypto / wire transfers, being asked for as payment
       id: "payment", level: "high",
       text: "Real companies never ask for gift cards or crypto. This is a scam.",
-      test: function (t) {
-        var odd = /gift ?cards?|itunes card|google play card|steam card|bitcoin|crypto(currency)?\b|\bbtc\b|ethereum|wire (transfer|the money|money|funds)|western union|moneygram/;
-        // Only flag when someone is also asking you to pay/send/buy
-        var ask = /\b(pay|paying|payment|send|buy|purchase|purchasing|deposit|transfer|scratch|owe|fee|fine|bail|codes?|numbers?|pin|photo|picture|atm)\b/;
-        return odd.test(t) && ask.test(t);
-      }
+      test: function (t) { return R.payOdd.test(t) && R.payAsk.test(t); },   // only when someone also asks you to pay/send/buy
+      marks: [R.payOdd]
     },
-    {
-      // Rule 7: fake virus / tech-support warnings
+    { // Rule 7: fake virus / tech-support warnings
       id: "techsupport", level: "high",
       text: "Your computer is fine. Do NOT call this number.",
-      test: function (t) {
-        var virus = /\b(virus(es)?|malware|trojan|spyware|ransomware|hacked|infected|compromised)\b/;
-        var alarm = /detected|warning|alert|your (computer|pc|laptop|device|phone|ip address)|call (us|now|immediately|this number|microsoft|apple|support|tech)|toll[- ]free|helpline|do not (restart|shut|turn off|close)/;
-        var support = /(tech(nical)? support|microsoft support|apple support|windows (security|defender|support)).{0,80}(call|phone|dial)|(call|dial).{0,60}(tech(nical)? support|microsoft|apple support)/;
-        return (virus.test(t) && (alarm.test(t) || PHONE.test(t))) || support.test(t);
-      }
+      test: function (t) { return (R.virus.test(t) && (R.alarm.test(t) || PHONE.test(t))) || R.support.test(t); },
+      marks: [R.virus, PHONE, R.support]
     },
-    {
-      // Rule 8: prizes and lotteries
+    { // Rule 8: prizes and lotteries
       id: "prize", level: "high",
       text: "You can't win a contest you never entered.",
-      test: function (t) {
-        return /you(?:'ve| have)? (?:been selected|won\b|are a winner)|you(?:'re| are) (?:a|the) (?:lucky )?winner|congratulations[^.!?]{0,60}(won|winner|prize|selected)|lottery (winner|prize|winning|commission|draw)|sweepstakes|claim your (prize|reward|gift|winnings)|free (iphone|gift|prize)|grand prize/.test(t);
-      }
+      test: function (t) { return R.prize.test(t); },
+      marks: [R.prize]
     },
-    {
-      // Rule 9: government impersonation asking for money / info
+    { // Rule 9: government impersonation asking for money / info
       id: "government", level: "high",
       text: "Government agencies don't contact you this way.",
-      test: function (t) {
-        var gov = /\b(irs|internal revenue service|social security( administration)?|ssa|medicare|medicaid|treasury|fbi|department of (justice|treasury|homeland security)|u\.?s\.? marshals?)\b/;
-        var ask = /\b(owe|owed|pay|payment|fine|penalty|penalties|arrest|warrant|suspend\w*|verify|confirm|ssn|social security number|bank|account number|back taxes|unpaid|lawsuit|legal action|call (us|now|immediately|this number)|deposit|wire|gift cards?)\b/;
-        return gov.test(t) && ask.test(t);
-      }
+      test: function (t) { return R.gov.test(t) && R.govAsk.test(t); },
+      marks: [R.gov, R.govAsk]
     },
-    {
-      // Rule 10: asking for passwords, codes, SSN, bank info
+    { // Rule 10: asking for passwords, codes, SSN, bank info
       id: "sensitive", level: "high",
       text: "Never share passwords or codes with anyone.",
       test: function (t) {
         // Safe advice like "never share your code" shouldn't count as a request.
-        var cleaned = t.replace(/\b(?:do not|don't|dont|never)\s+(?:share|give|tell|send|reveal|disclose|provide)\b[^.!?\n]*/g, " ");
-        var thing = /\b(password|passcode|pin( number)?|verification code|security code|confirmation code|one[- ]time (code|password|passcode)|otp|6[- ]digit code|social security number|ssn|bank account( number| details| info\w*)?|routing number|card number|credit card( number| details| info\w*)?|debit card|cvv|login details|account details)\b/;
-        var ask = /\b(send|share|give|tell|read|provide|enter|confirm|verify|reply|submit|update|forward|supply|type)\b/;
-        return thing.test(cleaned) && ask.test(cleaned);
-      }
+        var cleaned = t.replace(R.sensSafe, " ");
+        return R.sensThing.test(cleaned) && R.sensAsk.test(cleaned);
+      },
+      marks: [R.sensThing]
     },
-    {
-      // Rule 11: secrecy
+    { // Rule 11: secrecy
       id: "secrecy", level: "high",
       text: "Scammers want you to keep secrets. Talk to family first.",
       test: function (t) {
         // A surprise party or birthday is not a scam, unless money or accounts come up too.
-        var innocent = /\b(surprise|birthday|anniversary|party)\b/.test(t);
-        var money = /\b(pay|money|bank|gift ?cards?|wire|send|account|password|codes?|ssn|irs|cash|crypto|bitcoin)\b|\$\d/.test(t);
-        if (innocent && !money) return false;
-        return /(don't|do not|dont) (tell|mention|say anything to) (anyone|anybody|your|mom|dad|grandma|grandpa|family|the bank)|keep (this|it) (a )?(secret|between us|confidential|private|quiet)|between (us|you and me)|tell no one|tell nobody|our little secret/.test(t);
-      }
+        if (R.innocent.test(t) && !R.moneyWords.test(t)) return false;
+        return R.secrecy.test(t);
+      },
+      marks: [R.secrecy]
     },
-    {
-      // Rule 12: remote-access software
+    { // Rule 12: remote-access software
       id: "remote", level: "high",
       text: "Never let strangers control your computer.",
-      test: function (t) {
-        return /anydesk|teamviewer|ultraviewer|supremo|logmein|splashtop|rustdesk|screenconnect|connectwise|quick ?support|remote (access|desktop|session|support|control)|chrome remote|(give|grant|allow) (me|us) (access|control)/.test(t);
-      }
+      test: function (t) { return R.remote.test(t); },
+      marks: [R.remote]
     },
-    {
-      // Rule 13: "we refunded too much, send back the difference"
+    { // Rule 13: "we refunded too much, send back the difference"
       id: "refund", level: "high",
       text: "This is a common refund scam.",
-      test: function (t) {
-        var refund = /refund|reimburs|overpa|over-?paid|overcharg|deposited (too much|extra)/;
-        var mistake = /too much|extra|excess|difference|accident|mistake|in error|error/;
-        var sendBack = /\b(send|return|pay|wire|transfer|give)\b[^.!?]{0,40}\b(back|difference|rest|extra|excess|balance)\b/;
-        return refund.test(t) && mistake.test(t) && sendBack.test(t);
-      }
+      test: function (t) { return R.refund.test(t) && R.mistake.test(t) && R.sendBack.test(t); },
+      marks: [R.refund, R.sendBack]
     },
-    {
-      // Rule 14: urgency and threats
+    { // Rule 14: urgency and threats
       id: "urgency", level: "medium",
       text: "They're rushing you on purpose. Slow down.",
-      test: function (t) {
-        return /within (the next )?\d+ ?(hours?|hrs?|minutes?|mins?)|within (a|one) (day|hour)|account (has been |is |was |will be )?(suspended|locked|closed|disabled|limited|frozen|compromised|terminated|deactivated)|arrest|warrant|act now|act immediately|(respond|reply|call|pay|act) (immediately|right away|now)|immediate (action|payment|response)|final (notice|warning)|last chance|expires? (today|tonight|soon)|legal action|before it's too late/.test(t);
-      }
+      test: function (t) { return R.urgency.test(t); },
+      marks: [R.urgency]
     },
-    {
-      // Rule 15: delivery problem asking for a fee or link click
+    { // Rule 15: delivery problem asking for a fee or link click
       id: "delivery", level: "medium",
       text: "Delivery companies don't text you for fees.",
-      test: function (t) {
-        var delivery = /package|parcel|delivery|shipment|shipping|courier|usps|ups|fedex|dhl|tracking number/;
-        var problem = /(could not|couldn't|can't|cannot|unable to|failed to|not) (be )?deliver|undeliverable|missed (delivery|your)|on hold|held|address (is )?(incorrect|incomplete|invalid|missing)|incomplete address|reschedule|redelivery|customs/;
-        var ask = /fee|pay|charge|click|tap|link|https?:|www\.|\$\d|update your|confirm|verify/;
-        return delivery.test(t) && problem.test(t) && ask.test(t);
-      }
+      test: function (t) { return R.delivery.test(t) && R.problem.test(t) && R.deliveryAsk.test(t); },
+      marks: [R.problem, R.money]
     }
   ];
 
@@ -461,12 +461,48 @@
   // ---------------------------------------------------------------------
 
   // Make the text easier to search: lowercase, straight quotes, tidy spaces.
-  function normalize(text) {
-    return text
-      .toLowerCase()
-      .replace(/[‘’]/g, "'")
-      .replace(/[“”]/g, '"')
-      .replace(/\s+/g, " ");
+  // We also remember where each character came from, so a match in the tidy
+  // text can be pointed back at the exact words in the original message.
+  function normalizeWithMap(text) {
+    var out = [], map = [], prevSpace = false;
+    for (var i = 0; i < text.length; i++) {
+      var ch = text[i];
+      if (/\s/.test(ch)) {
+        if (!prevSpace) { out.push(" "); map.push(i); prevSpace = true; }
+        continue;
+      }
+      prevSpace = false;
+      if (ch === "‘" || ch === "’") ch = "'";
+      else if (ch === "“" || ch === "”") ch = '"';
+      var low = ch.toLowerCase();
+      for (var j = 0; j < low.length; j++) { out.push(low[j]); map.push(i); }
+    }
+    return { str: out.join(""), map: map };
+  }
+
+  // Join overlapping or touching spans: [{start,end}, ...]
+  function mergeSpans(spans) {
+    var sorted = spans.slice().sort(function (a, b) { return a.start - b.start; });
+    var out = [];
+    sorted.forEach(function (s) {
+      var last = out[out.length - 1];
+      if (last && s.start <= last.end) last.end = Math.max(last.end, s.end);
+      else out.push({ start: s.start, end: s.end });
+    });
+    return out;
+  }
+
+  // Where (in the ORIGINAL text) do these phrases appear?
+  function findSpans(regexes, norm) {
+    var out = [];
+    regexes.forEach(function (r) {
+      var g = new RegExp(r.source, "g"), m;
+      while ((m = g.exec(norm.str)) !== null) {
+        if (m[0].length === 0) { g.lastIndex++; continue; }
+        out.push({ start: norm.map[m.index], end: norm.map[m.index + m[0].length - 1] + 1 });
+      }
+    });
+    return mergeSpans(out);
   }
 
   function checkText(input) {
@@ -475,14 +511,16 @@
 
     // Link rules: for every link found in the text
     findLinks(text).forEach(function (link) {
-      flags = flags.concat(checkLink(link));
+      var at = text.indexOf(link);
+      var spans = at >= 0 ? [{ start: at, end: at + link.length }] : [];
+      checkLink(link).forEach(function (f) { f.spans = spans; flags.push(f); });
     });
 
     // Message rules: for the text itself
-    var lowered = normalize(text);
+    var norm = normalizeWithMap(text);
     MESSAGE_FLAGS.forEach(function (rule) {
-      if (rule.test(lowered)) {
-        flags.push({ id: rule.id, level: rule.level, text: rule.text });
+      if (rule.test(norm.str)) {
+        flags.push({ id: rule.id, level: rule.level, text: rule.text, spans: findSpans(rule.marks, norm) });
       }
     });
 
@@ -501,13 +539,20 @@
     else if (mediumCount >= 1) level = "careful";
     else level = "okay";
 
-    // Build the plain-English list: serious ones first, no repeats.
-    var reasons = [];
+    // The evidence: one entry per plain-English warning (serious ones first, no
+    // repeats), each with the places in the message it points at.
+    var evidence = [], byText = {};
     ["high", "medium"].forEach(function (lvl) {
       flags.forEach(function (f) {
-        if (f.level === lvl && reasons.indexOf(f.text) === -1) reasons.push(f.text);
+        if (f.level !== lvl) return;
+        var e = byText[f.text];
+        if (!e) { e = byText[f.text] = { id: f.id, level: f.level, text: f.text, spans: [] }; evidence.push(e); }
+        e.spans = e.spans.concat(f.spans || []);
       });
     });
+    evidence.forEach(function (e) { e.spans = mergeSpans(e.spans); });
+
+    var reasons = evidence.map(function (e) { return e.text; });
     if (reasons.length === 0) {
       reasons.push("We didn't spot any common warning signs.");
     }
@@ -518,6 +563,8 @@
       title: LEVELS[level].title,
       reasons: reasons,
       flags: flags,
+      evidence: evidence,   // [{id, level, text, spans:[{start,end}]}] for highlighting
+      text: text,           // the message as checked (spans point into this)
       footer: FOOTER
     };
   }

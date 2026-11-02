@@ -7,37 +7,17 @@
   <title>Scam Spotter</title>
   <!--
     The web version: works on phones, tablets and any computer, with nothing to install.
-    It reuses the SAME files as the extension (rules.js, ui.js, popup.js, styles.css), so
-    the detection rules only ever live in one place. Nothing is sent anywhere: the page
-    makes no network requests after it loads.
+    It runs the SAME files as the extension (rules.js, ui.js, app.js, styles.css), so the
+    detection rules only ever live in one place. Nothing is sent anywhere: the page makes
+    no network requests after it loads.
   -->
   <link rel="stylesheet" href="../styles.css">
 </head>
-<body class="web">
-  <header class="app-header">
-    <span class="badge"><img src="../icons/icon48.png" alt=""></span>
-    <div>
-      <h1>Scam Spotter</h1>
-      <p class="tagline">Is this a scam?</p>
-    </div>
-  </header>
-
-  <main class="content">
-    <label for="input">Paste a message or link here:</label>
-    <textarea id="input" rows="6" placeholder="Paste here, then press Check"></textarea>
-
-    <div class="buttons">
-      <button id="check" type="button">Check</button>
-      <button id="clear" type="button" class="secondary">Start over</button>
-    </div>
-
-    <div id="result" aria-live="polite"></div>
-
-    <p class="privacy">🔒 Private: nothing leaves your device.</p>
-  </main>
+<body class="web" data-root="../">
+  <div id="app"></div>
 
   <script src="../rules.js"></script>
   <script src="../ui.js"></script>
-  <script src="../popup.js"></script>
+  <script src="../app.js"></script>
 </body>
 </html>

@@ -65,12 +65,12 @@ Zip the extension files, not the `tests`, `store`, or `dist` folders.
 
 **Windows (PowerShell), from the project folder:**
 ```
-Compress-Archive -Force -DestinationPath dist\scam-spotter-1.0.0.zip -Path manifest.json,rules.js,background.js,popup.html,popup.js,results.html,results.js,ui.js,styles.css,icons
+Compress-Archive -Force -DestinationPath dist\scam-spotter-1.0.0.zip -Path manifest.json,rules.js,background.js,popup.html,results.html,app.js,ui.js,styles.css,icons,fonts
 ```
 
 **Mac / Linux:**
 ```
-zip -r dist/scam-spotter-1.0.0.zip manifest.json rules.js background.js popup.html popup.js results.html results.js ui.js styles.css icons
+zip -r dist/scam-spotter-1.0.0.zip manifest.json rules.js background.js popup.html results.html app.js ui.js styles.css icons fonts
 ```
 
 If you publish an update to the store, raise `"version"` in `manifest.json` first (for example to `1.0.1`).

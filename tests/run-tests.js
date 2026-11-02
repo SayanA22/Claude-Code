@@ -97,6 +97,26 @@ TESTS.forEach((test, number) => {
   }
 });
 
+// The highlights: every span must sit inside the message and point at real words
+TESTS.forEach((test) => {
+  const r = checkText(test.input);
+  r.evidence.forEach((e) => e.spans.forEach((s) => {
+    const piece = r.text.slice(s.start, s.end);
+    if (!(s.start >= 0 && s.end <= r.text.length && s.end > s.start && piece.trim())) {
+      failed++;
+      console.log(`FAIL  bad highlight in "${test.name}": ${JSON.stringify(s)}`);
+    }
+  }));
+});
+const msg = "Don\u2019t TELL   anyone,\n pay with gift cards";
+const hit = checkText(msg).evidence.map((e) => ({ id: e.id, words: e.spans.map((s) => msg.slice(s.start, s.end)) }));
+const want = { secrecy: "Don\u2019t TELL   anyone", payment: "gift cards" };
+hit.forEach((h) => {
+  if (want[h.id] && h.words[0] !== want[h.id]) { failed++; console.log(`FAIL  highlight for ${h.id}: got ${JSON.stringify(h.words)}`); }
+});
+console.log(hit.length >= 2 ? "PASS  highlights point at the right words (odd spacing and curly quotes too)" : "FAIL  highlights missing");
+if (hit.length < 2) failed++;
+
 // Rules that must hold for EVERY result
 const sample = checkText("Hey, dinner at 6?");
 if (!sample.footer.endsWith("ask a family member before clicking or paying.")) {

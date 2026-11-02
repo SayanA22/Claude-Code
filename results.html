@@ -5,31 +5,13 @@
   <title>Scam Spotter</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body class="window">
-  <!-- Title bar -->
-  <header class="app-header">
-    <span class="badge"><img src="icons/icon48.png" alt=""></span>
-    <div>
-      <h1>Scam Spotter</h1>
-      <p class="tagline">Is this a scam?</p>
-    </div>
-  </header>
-
-  <div class="content">
-    <div id="result" aria-live="polite"></div>
-
-    <h2>What we checked:</h2>
-    <p id="checked" class="checked"></p>
-
-    <div class="buttons">
-      <button id="close" type="button">Close</button>
-    </div>
-
-    <p class="privacy">🔒 Private: nothing leaves your computer.</p>
-  </div>
+<body class="window" data-root="">
+  <!-- The right-click menu opens this page with the text in the address (?text=...),
+       and app.js checks it straight away. -->
+  <div id="app"></div>
 
   <script src="rules.js"></script>
   <script src="ui.js"></script>
-  <script src="results.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
