@@ -1,13 +1,13 @@
 /*
- * ui.js — the "pieces" of the screen: the owl mascot, the highlighted message,
- * the verdict, the meter, the reasons list, and the advice box.
+ * ui.js — the "pieces" of the screen: the owl mascot, line icons, the highlighted
+ * message, the verdict card, the risk bar, the reasons list, and the advice callout.
  *
- * It only draws things. All the thinking is in rules.js, and the flow (what
- * happens when you press Check) is in app.js.
+ * It only draws things. All the thinking is in rules.js, and the flow (what happens
+ * when you press Check) is in app.js.
  *
- * Safety note: messages are always put on the page with textContent (never
- * innerHTML), so nothing inside a scammer's message can ever run as code.
- * The only innerHTML below is our OWN drawings (the owl and a few icons).
+ * Safety note: messages are always put on the page with textContent (never innerHTML),
+ * so nothing inside a scammer's message can ever run as code. The only innerHTML below
+ * is our OWN drawings (the owl and the icons).
  *
  * To rename the app, change APP_NAME here (and "name" in manifest.json).
  */
@@ -16,15 +16,15 @@ const ScamUI = (function () {
 
   var APP_NAME = "Scam Spotter";
 
-  // One friendly line under each verdict. (We never say "safe": the best answer
-  // is "Looks okay", and the okay line says plainly that it is not a promise.)
+  // One calm line under each verdict. (We never say "safe": the best answer is
+  // "Looks okay", and that line says plainly it is not a promise.)
   var VERDICT_LINE = {
     scam: "Please don't click, call, or pay.",
     careful: "Slow down and double-check before you do anything.",
     okay: "Nothing stood out to us. That isn't a promise, so stay alert."
   };
-
-  var LEVEL_WORD = { high: "Serious", medium: "Heads up" };
+  var RISK_LABEL = { okay: "Low risk", careful: "Medium risk", scam: "High risk" };
+  var SEVERITY = { high: "Serious", medium: "Worth a look" };
 
   function el(tag, cls, text) {
     var e = document.createElement(tag);
@@ -34,13 +34,20 @@ const ScamUI = (function () {
   }
 
   // ---------------------------------------------------------------------
-  // Little drawn icons (no emoji anywhere)
+  // One consistent set of line icons (24x24, 2px rounded strokes)
   // ---------------------------------------------------------------------
+  var P = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
   var ICONS = {
-    lock: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="3" fill="currentColor"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
-    people: '<svg viewBox="0 0 32 24" aria-hidden="true"><circle cx="11" cy="7" r="4.5" fill="currentColor"/><path d="M2.5 21c0-5 3.6-8 8.5-8s8.5 3 8.5 8z" fill="currentColor"/><circle cx="23" cy="9" r="3.6" fill="currentColor" opacity=".7"/><path d="M19 14.2c4.8-1.2 10 1 10 6.8h-7.6c0-2.9-.9-5-2.4-6.8z" fill="currentColor" opacity=".7"/></svg>',
-    tick: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M6.8 12.4l3.6 3.6 7-7.4" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-    arrow: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6.5L18.5 12 13 17.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    arrow:   P + '<path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+    chevron: P + '<path d="M9 6l6 6-6 6"/></svg>',
+    down:    P + '<path d="M6 9l6 6 6-6"/></svg>',
+    up:      P + '<path d="M6 15l6-6 6 6"/></svg>',
+    lock:    P + '<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+    people:  P + '<circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.6 2.7-6 6-6s6 2.4 6 6"/><circle cx="17.2" cy="9" r="2.8"/><path d="M16.6 14.3c2.9.3 4.8 2.3 4.8 5.2"/></svg>',
+    box:     P + '<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></svg>',
+    link:    P + '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>',
+    chat:    P + '<path d="M20 15a2 2 0 0 1-2 2H8l-4 4V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/></svg>',
+    check:   P + '<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.8 2.8L16.5 9.5"/></svg>'
   };
 
   function icon(name, cls) {
@@ -50,88 +57,85 @@ const ScamUI = (function () {
   }
 
   // ---------------------------------------------------------------------
-  // The owl. One owl, five moods:
+  // The owl. A round, friendly line-drawing in navy with a few warm accents.
+  // It always wears its magnifying glass, which makes one eye comically big.
+  // Five moods:
   //   idle    – attentive, waiting for you to paste something
-  //   scan    – reading the message (its eyes move side to side)
-  //   scam    – alarmed, wings up
+  //   scan    – reading the message (its eyes sweep from side to side)
+  //   scam    – alarmed: arms flung up, tiny pupils
   //   careful – head tilt, one eyebrow raised
   //   okay    – happy eyes and a wave
   // ---------------------------------------------------------------------
   function owlMarkup(mood) {
-    // Black outline on white, like the cartoon scammers: a chubby round owl with one
-    // giant eye (magnified by its glass), tiny feet, and a face for every mood.
-    var K = "#111111", W = "#ffffff";
-    function ln(w) { return ' stroke="' + K + '" stroke-width="' + (w || 8) + '" stroke-linejoin="round" stroke-linecap="round"'; }
-    var scam = mood === "scam", careful = mood === "careful", okay = mood === "okay", scan = mood === "scan";
-    var s = '<svg viewBox="-70 -40 440 400" aria-hidden="true">';
+    var C = { line: "#0B2A4A", white: "#FFFFFF", tint: "#E3EDF9", scal: "#A9C2E3", beak: "#F5A524", cheek: "#FFC4BA", glass: "#D6E8FF" };
+    function L(w) { return ' stroke="' + C.line + '" stroke-width="' + (w || 5) + '" stroke-linejoin="round" stroke-linecap="round"'; }
+    var scam = mood === "scam", careful = mood === "careful", okay = mood === "okay";
+    var s = '<svg viewBox="-34 -14 268 226" aria-hidden="true">';
 
-    // tiny stubby feet and ear tufts (behind the body)
-    s += '<ellipse cx="108" cy="338" rx="26" ry="12" fill="' + W + '"' + ln(7) + '/><ellipse cx="192" cy="338" rx="26" ry="12" fill="' + W + '"' + ln(7) + '/>';
-    s += '<path d="M92 341 v9 M108 343 v9 M124 341 v9 M176 341 v9 M192 343 v9 M208 341 v9" fill="none"' + ln(6) + '/>';
-    s += '<path d="M90 90 L66 30 L136 66 Z" fill="' + W + '"' + ln() + '/><path d="M210 90 L234 30 L164 66 Z" fill="' + W + '"' + ln() + '/>';
+    // feet and ear tufts sit behind the body
+    s += '<ellipse cx="82" cy="193" rx="13" ry="7" fill="' + C.beak + '"' + L(4) + '/><ellipse cx="118" cy="193" rx="13" ry="7" fill="' + C.beak + '"' + L(4) + '/>';
+    s += '<path d="M48 62 L36 24 L80 44 Z" fill="' + C.white + '"' + L() + '/><path d="M152 62 L164 24 L120 44 Z" fill="' + C.white + '"' + L() + '/>';
 
-    // the big round body, with a belly and a few feather scallops
-    s += '<path d="M150 52 C240 52 298 122 298 208 C298 290 246 332 150 332 C54 332 2 290 2 208 C2 122 60 52 150 52 Z" fill="' + W + '"' + ln(9) + '/>';
-    s += '<path d="M84 254 Q150 314 216 254" fill="none"' + ln(7) + '/><path d="M124 272 q9 11 18 0 M158 272 q9 11 18 0 M141 292 q9 11 18 0" fill="none"' + ln(6) + '/>';
+    // the round body, belly and a few feather scallops
+    s += '<path d="M100 26 C154 26 186 66 186 114 C186 162 154 192 100 192 C46 192 14 162 14 114 C14 66 46 26 100 26 Z" fill="' + C.white + '"' + L(5.5) + '/>';
+    s += '<ellipse cx="100" cy="152" rx="46" ry="31" fill="' + C.tint + '"/>';
+    s += '<path d="M84 150 v10 M100 146 v14 M116 150 v10" fill="none" stroke="' + C.scal + '" stroke-width="4" stroke-linecap="round"/>';
 
-    // stubby wings: down, both raised (alarm), or one waving (okay)
-    var wl = scam ? ' transform="rotate(118 40 190)"' : (okay ? ' transform="rotate(135 40 190)"' : "");
-    var wr = scam ? ' transform="rotate(-118 260 190)"' : "";
-    s += '<ellipse cx="34" cy="244" rx="28" ry="56" fill="' + W + '"' + ln() + wl + '/>';
-    s += '<ellipse cx="266" cy="244" rx="28" ry="56" fill="' + W + '"' + ln() + wr + '/>';
+    // stubby wings: down, both flung up (alarm), or the left one waving (okay)
+    var wl = scam ? ' transform="rotate(122 26 112)"' : (okay ? ' transform="rotate(138 26 112)"' : "");
+    var wr = scam ? ' transform="rotate(-122 174 112)"' : "";
+    s += '<ellipse cx="22" cy="140" rx="13" ry="30" fill="' + C.white + '"' + L() + wl + '/>';
+    s += '<ellipse cx="178" cy="140" rx="13" ry="30" fill="' + C.white + '"' + L() + wr + '/>';
 
-    // a stray curl of feather
-    s += '<path d="M150 52 Q146 24 168 26 Q188 30 178 46 Q172 56 160 48" fill="none"' + ln(7) + '/>';
+    // a cheeky curl of feather
+    s += '<path d="M100 27 q-4 -17 9 -17 q12 2 4 14" fill="none"' + L(4.5) + '/>';
 
     // ---- the face (tilts when unsure) ----
-    s += '<g transform="rotate(' + (careful ? -8 : 0) + ' 150 170)">';
+    s += '<g transform="rotate(' + (careful ? -7 : 0) + ' 100 100)">';
     if (okay) {
-      // happy closed eyes
-      s += '<path d="M72 138 Q104 98 136 138" fill="none"' + ln(10) + '/><path d="M158 132 Q200 80 242 132" fill="none"' + ln(10) + '/>';
-      s += '<circle cx="62" cy="176" r="13" fill="none"' + ln(6) + '/><circle cx="238" cy="176" r="13" fill="none"' + ln(6) + '/>';
+      s += '<path d="M46 98 Q68 74 90 98" fill="none"' + L(6) + '/><path d="M104 94 Q132 60 160 94" fill="none"' + L(6) + '/>';
+      s += '<circle cx="42" cy="122" r="9" fill="' + C.cheek + '"/><circle cx="158" cy="122" r="9" fill="' + C.cheek + '"/>';
     } else {
-      s += '<circle cx="104" cy="132" r="32" fill="' + W + '"' + ln(7) + '/><circle cx="200" cy="126" r="48" fill="' + W + '"' + ln(7) + '/>';
-      var lx = 108, ly = 128, rx = 206, ry = 132, lr = 13, rr = 22;        // a lazy, slightly cross-eyed stare
-      if (scam) { lx = 104; ly = 132; rx = 200; ry = 126; lr = 7; rr = 9; }  // tiny shocked pupils
-      if (careful) { lx = 118; ly = 138; rx = 218; ry = 138; }              // side-eye
-      s += '<g class="pupils"><circle cx="' + lx + '" cy="' + ly + '" r="' + lr + '" fill="' + K + '"/><circle cx="' + rx + '" cy="' + ry + '" r="' + rr + '" fill="' + K + '"/>';
-      s += '<circle cx="' + (lx - 4) + '" cy="' + (ly - 5) + '" r="4" fill="' + W + '"/><circle cx="' + (rx - 7) + '" cy="' + (ry - 8) + '" r="6" fill="' + W + '"/></g>';
-      if (scam) s += '<path d="M64 88 L128 108" fill="none"' + ln(10) + '/><path d="M268 58 L192 78" fill="none"' + ln(10) + '/>';
-      if (careful) s += '<path d="M66 86 Q104 58 142 82" fill="none"' + ln(9) + '/>';
+      s += '<circle cx="68" cy="92" r="24" fill="' + C.white + '"' + L() + '/><circle cx="134" cy="90" r="28" fill="' + C.white + '"' + L() + '/>';
+      var lx = 70, ly = 90, rx = 138, ry = 92, lr = 10, rr = 14;           // a lazy, slightly cross-eyed stare
+      if (scam) { lx = 68; ly = 92; rx = 134; ry = 90; lr = 5.5; rr = 7; }  // tiny shocked pupils
+      if (careful) { lx = 78; ly = 96; rx = 146; ry = 98; }                 // side-eye
+      s += '<g class="pupils"><circle cx="' + lx + '" cy="' + ly + '" r="' + lr + '" fill="' + C.line + '"/><circle cx="' + rx + '" cy="' + ry + '" r="' + rr + '" fill="' + C.line + '"/>';
+      s += '<circle cx="' + (lx - 3) + '" cy="' + (ly - 4) + '" r="3" fill="#fff"/><circle cx="' + (rx - 5) + '" cy="' + (ry - 6) + '" r="4.5" fill="#fff"/></g>';
+      if (scam) s += '<path d="M42 66 L88 80" fill="none"' + L(7) + '/><path d="M178 52 L124 66" fill="none"' + L(7) + '/>';
+      if (careful) s += '<path d="M44 66 Q68 48 94 64" fill="none"' + L(6) + '/>';
     }
 
-    // beak and mouth
+    // the magnifying glass
+    s += '<path d="M162 118 L188 146" fill="none" stroke="' + C.line + '" stroke-width="13" stroke-linecap="round"/>';
+    s += '<circle cx="134" cy="90" r="38" fill="' + C.glass + '" fill-opacity=".28" stroke="' + C.line + '" stroke-width="7"/>';
+    s += '<path d="M110 70 q7 -10 18 -12" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".95"/>';
+    // beak and mouth (drawn after the glass so it is never hidden)
     if (scam) {
-      s += '<path d="M130 164 L170 164 L150 212 Z" fill="' + K + '"' + ln(7) + '/><path d="M138 166 L162 166 L150 184 Z" fill="' + W + '"/>';
+      s += '<path d="M84 110 L112 110 L98 144 Z" fill="' + C.line + '"' + L(4) + '/><path d="M89 111 L107 111 L98 124 Z" fill="' + C.beak + '"/>';
     } else if (okay) {
-      s += '<path d="M138 166 L162 166 L150 190 Z" fill="' + W + '"' + ln(7) + '/><path d="M108 198 Q150 244 192 198" fill="none"' + ln(8) + '/>';
+      s += '<path d="M88 112 Q98 107 108 112 L98 130 Z" fill="' + C.beak + '"' + L(4) + '/><path d="M78 136 Q98 158 118 136" fill="none"' + L(5) + '/>';
     } else if (careful) {
-      s += '<path d="M140 168 L162 168 L154 190 Z" fill="' + W + '"' + ln(7) + '/><path d="M112 210 q10 -9 20 0 t20 0 t20 0 t20 0" fill="none"' + ln(6) + '/>';
+      s += '<path d="M89 112 Q99 107 109 112 L101 130 Z" fill="' + C.beak + '"' + L(4) + '/><path d="M76 146 q7 -7 14 0 t14 0 t14 0" fill="none"' + L(4.5) + '/>';
     } else {
-      s += '<path d="M138 166 L162 166 L150 192 Z" fill="' + W + '"' + ln(7) + '/>';
+      s += '<path d="M88 112 Q98 107 108 112 L98 132 Z" fill="' + C.beak + '"' + L(4) + '/>';
     }
 
-    // the magnifying glass over the giant eye
-    s += '<path d="M240 168 L278 208" fill="none" stroke="' + K + '" stroke-width="20" stroke-linecap="round"/><path d="M240 168 L278 208" fill="none" stroke="' + W + '" stroke-width="8" stroke-linecap="round"/>';
-    s += '<circle cx="200" cy="126" r="58" fill="' + W + '" fill-opacity=".2" stroke="' + K + '" stroke-width="11"/>';
-    s += '<path d="M158 96 q8 -12 22 -14 M150 112 q2 -6 6 -10" fill="none"' + ln(6) + '/>';
     s += '</g>';
-    if (!scam && !okay) s += '<ellipse cx="284" cy="214" rx="22" ry="17" fill="' + W + '"' + ln(7) + ' transform="rotate(40 284 214)"/>';   // the wing gripping the handle
+    if (!scam) s += '<ellipse cx="192" cy="152" rx="15" ry="12" fill="' + C.white + '"' + L() + ' transform="rotate(42 192 152)"/>';   // the wing gripping the handle
 
     // marks that show the mood
-    var drop = function (x, y) { return '<path d="M' + x + ' ' + y + ' Q' + (x + 18) + ' ' + (y + 30) + ' ' + x + ' ' + (y + 46) + ' Q' + (x - 18) + ' ' + (y + 30) + ' ' + x + ' ' + y + ' Z" fill="' + W + '"' + ln(6) + '/>'; };
-    var bang = function (x) { return '<rect x="' + (x - 10) + '" y="-30" width="20" height="38" rx="9" fill="' + K + '"/><circle cx="' + x + '" cy="30" r="10" fill="' + K + '"/>'; };
+    var bang = function (x) { return '<rect x="' + (x - 6) + '" y="2" width="12" height="28" rx="6" fill="' + C.line + '"/><circle cx="' + x + '" cy="42" r="6.5" fill="' + C.line + '"/>'; };
     if (scam) {
-      s += bang(-34) + bang(334);
-      s += '<path d="M36 52 L14 34 M54 28 L42 4 M264 28 L276 4 M284 52 L306 34" fill="none"' + ln(7) + '/>';
+      s += bang(-18) + bang(218);
+      s += '<path d="M22 44 L8 32 M36 22 L28 6 M178 22 L186 6 M192 44 L206 32" fill="none"' + L(5) + '/>';
     }
     if (careful) {
-      s += drop(318, 120);
-      s += '<g transform="translate(306 -14)"><path d="M0 24 Q0 -6 26 -6 Q52 -6 52 18 Q52 36 30 44 Q26 48 26 62" fill="none"' + ln(14) + '/><circle cx="26" cy="86" r="11" fill="' + K + '"/></g>';
+      s += '<g transform="translate(204 -6)"><path d="M0 16 Q0 -4 16 -4 Q32 -4 32 12 Q32 24 18 30 Q16 32 16 42" fill="none" stroke="' + C.line + '" stroke-width="9" stroke-linecap="round"/><circle cx="16" cy="60" r="6.5" fill="' + C.line + '"/></g>';
     }
     if (okay) {
-      var star = function (x, y, r) { return '<path d="M' + x + ' ' + (y - r) + ' Q' + x + ' ' + y + ' ' + (x + r) + ' ' + y + ' Q' + x + ' ' + y + ' ' + x + ' ' + (y + r) + ' Q' + x + ' ' + y + ' ' + (x - r) + ' ' + y + ' Q' + x + ' ' + y + ' ' + x + ' ' + (y - r) + ' Z" fill="' + K + '"/>'; };
-      s += star(-22, 40, 26) + star(322, 4, 20) + star(342, 96, 13);
+      var star = function (x, y, r) { return '<path d="M' + x + ' ' + (y - r) + ' Q' + x + ' ' + y + ' ' + (x + r) + ' ' + y + ' Q' + x + ' ' + y + ' ' + x + ' ' + (y + r) + ' Q' + x + ' ' + y + ' ' + (x - r) + ' ' + y + ' Q' + x + ' ' + y + ' ' + x + ' ' + (y - r) + ' Z" fill="' + C.beak + '"/>'; };
+      s += star(-16, 36, 18) + star(214, 8, 14) + star(226, 80, 9);
     }
     return s + '</svg>';
   }
@@ -145,8 +149,8 @@ const ScamUI = (function () {
   // ---------------------------------------------------------------------
   // The message, with the warning signs highlighted INSIDE it.
   // evidence = [{level, spans:[{start,end}]}, ...] (from rules.js).
-  // Each reason gets a number; the number sits right after its first
-  // highlighted phrase, so the list below can say "this is what number 2 means".
+  // Each reason gets a number; the number sits right after its first highlighted
+  // phrase, so the list can say "this is what number 2 means".
   // ---------------------------------------------------------------------
   function annotate(text, evidence) {
     var box = el("div", "msg-text");
@@ -185,11 +189,9 @@ const ScamUI = (function () {
         box.appendChild(m);
       }
       (badgeAt[b] || []).forEach(function (n) {
-        var evLevel = evidence[n - 1].level;
-        var badge = el("span", "num " + evLevel, String(n));
+        var badge = el("span", "num " + evidence[n - 1].level, String(n));
         badge.setAttribute("aria-hidden", "true");
-        badge.dataset.late = "1";           // numbers appear together with the highlights
-        marks.push(badge);
+        marks.push(badge);          // numbers appear together with the highlights
         box.appendChild(badge);
       });
     }
@@ -197,55 +199,61 @@ const ScamUI = (function () {
   }
 
   // ---------------------------------------------------------------------
-  // The answer: verdict + 3-step meter + reasons + advice
+  // The answer: verdict card (owl + big word + risk bar), reasons, advice
   // ---------------------------------------------------------------------
+  function risk(level) {
+    var on = { okay: 1, careful: 2, scam: 3 }[level];
+    var r = el("div", "risk");
+    r.setAttribute("role", "img");
+    r.setAttribute("aria-label", RISK_LABEL[level]);
+    var bar = el("div", "risk-bar");
+    for (var i = 1; i <= 3; i++) bar.appendChild(el("i", i <= on ? "on" : ""));
+    r.appendChild(bar);
+    r.appendChild(el("p", "risk-label", RISK_LABEL[level]));
+    return r;
+  }
+
   function verdict(result) {
-    var v = el("section", "verdict v-" + result.level);
+    var v = el("section", "verdict-card v-" + result.level);
     v.setAttribute("role", "status");
     v.tabIndex = -1;
 
+    var top = el("div", "verdict");
     var avatar = el("div", "v-owl");
     avatar.appendChild(owl(result.level));
-    v.appendChild(avatar);
-
+    top.appendChild(avatar);
     var words = el("div", "v-words");
-    words.appendChild(el("p", "v-kicker", "Our take"));
     words.appendChild(el("h2", "v-title", result.title));
     words.appendChild(el("p", "v-line", VERDICT_LINE[result.level]));
-    v.appendChild(words);
+    top.appendChild(words);
+    v.appendChild(top);
+    v.appendChild(risk(result.level));
     return v;
-  }
-
-  function meter(level) {
-    var m = el("div", "meter");
-    m.setAttribute("role", "img");
-    m.setAttribute("aria-label", "Meter: " + { okay: "Looks okay", careful: "Be careful", scam: "Likely scam" }[level]);
-    [["okay", "Okay"], ["careful", "Careful"], ["scam", "Scam"]].forEach(function (s) {
-      m.appendChild(el("span", "seg seg-" + s[0] + (s[0] === level ? " on" : ""), s[1]));
-    });
-    return m;
   }
 
   function reasons(result) {
     var sec = el("section", "reasons");
     if (result.evidence.length === 0) {
       sec.appendChild(el("h3", "sec", "What we found"));
-      var none = el("div", "ev none");
-      none.appendChild(icon("tick", "ev-ico"));
-      none.appendChild(el("p", "ev-text", result.reasons[0]));
+      var none = el("ul", "group");
+      var li = el("li", "row-static");
+      li.appendChild(icon("check", "ok-ico"));
+      li.appendChild(el("p", "row-text", result.reasons[0]));
+      none.appendChild(li);
       sec.appendChild(none);
       return sec;
     }
     var n = result.evidence.length;
     sec.appendChild(el("h3", "sec", n === 1 ? "What caught our eye" : "What caught our eye (" + n + ")"));
-    var list = el("ol", "evidence");
+    var list = el("ol", "group");
     result.evidence.forEach(function (e, i) {
-      var li = el("li", "ev " + e.level);
+      var li = el("li", "row-static " + e.level);
       li.appendChild(el("span", "num " + e.level, String(i + 1)));
-      var body = el("div", "ev-body");
-      body.appendChild(el("p", "ev-text", e.text));
-      body.appendChild(el("span", "chip " + e.level, LEVEL_WORD[e.level]));
-      li.appendChild(body);
+      var p = el("p", "row-text");
+      var sr = el("span", "sr", SEVERITY[e.level] + ". ");
+      p.appendChild(sr);
+      p.appendChild(document.createTextNode(e.text));
+      li.appendChild(p);
       list.appendChild(li);
     });
     sec.appendChild(list);
@@ -262,6 +270,6 @@ const ScamUI = (function () {
   return {
     APP_NAME: APP_NAME,
     el: el, icon: icon, owl: owl,
-    annotate: annotate, verdict: verdict, meter: meter, reasons: reasons, advice: advice
+    annotate: annotate, verdict: verdict, reasons: reasons, advice: advice
   };
 })();

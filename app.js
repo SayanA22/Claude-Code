@@ -4,11 +4,11 @@
  * behave the same.
  *
  * The journey:
- *   1. HOME    – the owl asks you to paste something (or try an example).
- *   2. SCAN    – the owl "reads" your message for a moment and the warning
- *                signs light up inside it, one by one.
- *   3. RESULT  – the verdict, a 3-step meter, the numbered reasons that match
- *                the highlights, and the advice to ask a family member.
+ *   1. HOME    – a clear question, one big box to paste into, and three examples.
+ *   2. CHECK   – the owl reads the message for a moment while the warning signs
+ *                light up inside it, one by one.
+ *   3. ANSWER  – one big verdict with the owl's reaction and a risk bar, the numbered
+ *                reasons that match the highlights, and the family-member advice.
  *                "Check another" takes you back to the start.
  *
  * (rules.js decides; ui.js draws the pieces; this file connects them.)
@@ -20,9 +20,9 @@ const ScamApp = (function () {
   var counter = 0;
 
   var EXAMPLES = [
-    { label: "A delivery text", text: "USPS: Your package is on hold. Pay a $2.99 redelivery fee at usps-redelivery.top/x" },
-    { label: "A link", text: "https://paypa1.com/login" },
-    { label: "A normal text", text: "Hey, dinner at 6?" }
+    { icon: "box",  label: "Delivery text", text: "USPS: Your package is on hold. Pay a $2.99 redelivery fee at usps-redelivery.top/x" },
+    { icon: "link", label: "Look-alike link", text: "https://paypa1.com/login" },
+    { icon: "chat", label: "Normal text", text: "Hey, dinner at 6?" }
   ];
 
   var reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -37,53 +37,63 @@ const ScamApp = (function () {
     // ---------- the skeleton ----------
     var app = el("div", "app state-home");
 
-    var hero = el("header", "hero");
+    var top = el("header", "topbar");
     var brand = el("div", "brand");
     var mark = el("img", "brand-mark"); mark.src = options.markSrc || markSrc(); mark.alt = "";
     brand.appendChild(mark);
     brand.appendChild(el("span", "brand-name", ScamUI.APP_NAME));
-    hero.appendChild(brand);
-    var heroMain = el("div", "hero-main");
-    var copy = el("div", "hero-copy");
-    copy.appendChild(el("h1", "hero-title", "Got a message that feels off?"));
-    copy.appendChild(el("p", "hero-sub", "Paste it below and I’ll take a look."));
-    heroMain.appendChild(copy);
-    var heroOwl = el("div", "hero-owl"); heroOwl.appendChild(ScamUI.owl("idle"));
-    heroMain.appendChild(heroOwl);
-    hero.appendChild(heroMain);
-    app.appendChild(hero);
+    top.appendChild(brand);
+    app.appendChild(top);
 
-    var sheet = el("main", "sheet");
+    var page = el("main", "page");
+
+    // --- home ---
     var homeView = el("section", "view view-home");
-    var label = el("label", "field-label", "Paste a message or link"); label.setAttribute("for", uid);
-    var input = el("textarea", "field"); input.id = uid; input.rows = 4;
-    input.placeholder = "Paste it here, then press Enter";
-    var actions = el("div", "actions");
-    var checkBtn = el("button", "btn primary", "Check it"); checkBtn.type = "button";
-    actions.appendChild(checkBtn);
-    var nudge = el("p", "nudge"); nudge.hidden = true;
-    var exWrap = el("div", "examples");
-    exWrap.appendChild(el("span", "ex-label", "Not sure? Try one:"));
-    var exList = el("div", "ex-list");
-    EXAMPLES.forEach(function (ex) {
-      var chip = el("button", "chip-btn", ex.label); chip.type = "button";
-      chip.addEventListener("click", function () { input.value = ex.text; run(ex.text); });
-      exList.appendChild(chip);
-    });
-    exWrap.appendChild(exList);
-    homeView.appendChild(label); homeView.appendChild(input); homeView.appendChild(nudge);
-    homeView.appendChild(actions); homeView.appendChild(exWrap);
+    var intro = el("div", "intro");
+    var copy = el("div", "intro-copy");
+    copy.appendChild(el("h1", "title", "Is this a scam?"));
+    copy.appendChild(el("p", "intro-sub", "Paste a message or link and I’ll check it for warning signs."));
+    intro.appendChild(copy);
+    var introOwl = el("div", "intro-owl"); introOwl.appendChild(ScamUI.owl("idle"));
+    intro.appendChild(introOwl);
+    homeView.appendChild(intro);
 
+    var composer = el("div", "composer");
+    var label = el("label", "sr", "Message or link to check"); label.setAttribute("for", uid);
+    var input = el("textarea", "field"); input.id = uid; input.rows = 4;
+    input.placeholder = "Paste a message or link here";
+    var checkBtn = el("button", "btn primary", "Check it"); checkBtn.type = "button";
+    checkBtn.appendChild(ScamUI.icon("arrow", "btn-ico"));
+    composer.appendChild(label); composer.appendChild(input); composer.appendChild(checkBtn);
+    homeView.appendChild(composer);
+    var nudge = el("p", "nudge"); nudge.hidden = true;
+    homeView.appendChild(nudge);
+
+    var ex = el("section", "examples");
+    ex.appendChild(el("h2", "sec", "Not sure? Try one"));
+    var tiles = el("div", "tiles");
+    EXAMPLES.forEach(function (e) {
+      var tile = el("button", "tile"); tile.type = "button";
+      var ico = el("span", "tile-ico"); ico.appendChild(ScamUI.icon(e.icon));
+      tile.appendChild(ico);
+      tile.appendChild(el("span", "tile-label", e.label));
+      tile.addEventListener("click", function () { input.value = e.text; run(e.text); });
+      tiles.appendChild(tile);
+    });
+    ex.appendChild(tiles);
+    homeView.appendChild(ex);
+
+    // --- result (filled in by run) ---
     var resultView = el("section", "view view-result");
     resultView.hidden = true;
 
-    sheet.appendChild(homeView);
-    sheet.appendChild(resultView);
+    page.appendChild(homeView);
+    page.appendChild(resultView);
     var privacy = el("p", "privacy");
     privacy.appendChild(ScamUI.icon("lock", "privacy-ico"));
     privacy.appendChild(el("span", null, "Private: nothing leaves your device."));
-    sheet.appendChild(privacy);
-    app.appendChild(sheet);
+    page.appendChild(privacy);
+    app.appendChild(page);
     root.appendChild(app);
 
     // ---------- helpers ----------
@@ -98,6 +108,7 @@ const ScamApp = (function () {
       setState("home");
       input.value = "";
       nudge.hidden = true;
+      window.scrollTo(0, 0);
       if (options.autofocus !== false) input.focus();
     }
 
@@ -116,22 +127,23 @@ const ScamApp = (function () {
       var result = ScamRules.checkText(text, extra);
       var ann = ScamUI.annotate(result.text, result.evidence);
 
-      // Build the result view once. Pieces are hidden until their moment.
+      // Build the result view once. Pieces stay hidden until their moment.
       resultView.textContent = "";
+
+      var status = el("div", "scan-status");
+      var statusOwl = el("div", "scan-owl"); statusOwl.appendChild(ScamUI.owl("scan"));
+      var statusText = el("div", "scan-text");
+      statusText.appendChild(el("h2", "scan-title", "Checking your message…"));
+      statusText.appendChild(el("p", "scan-sub", "Looking for common warning signs"));
+      status.appendChild(statusOwl); status.appendChild(statusText);
+
       var verdictSlot = el("div", "reveal slot-verdict");
       var verdictInner = el("div", "reveal-inner");
       verdictInner.appendChild(ScamUI.verdict(result));
-      verdictInner.appendChild(ScamUI.meter(result.level));
       verdictSlot.appendChild(verdictInner);
 
       var msgCard = el("section", "msg-card scanning");
-      var msgHead = el("div", "msg-head");
-      var scanOwl = el("span", "scan-owl"); scanOwl.appendChild(ScamUI.owl("scan"));
-      var msgLabel = el("span", "msg-label", "Reading it closely");
-      var dots = el("span", "dots"); dots.setAttribute("aria-hidden", "true"); dots.textContent = "...";
-      msgLabel.appendChild(dots);
-      msgHead.appendChild(scanOwl); msgHead.appendChild(msgLabel);
-      msgCard.appendChild(msgHead);
+      msgCard.appendChild(el("h3", "msg-label", "Your message"));
       var msgBody = el("div", "msg-body");
       msgBody.appendChild(ann.node);
       msgBody.appendChild(el("div", "scanbar"));
@@ -142,10 +154,12 @@ const ScamApp = (function () {
       restInner.appendChild(ScamUI.reasons(result));
       restInner.appendChild(ScamUI.advice(result));
       var again = el("button", "btn primary again", "Check another"); again.type = "button";
+      again.appendChild(ScamUI.icon("arrow", "btn-ico"));
       again.addEventListener("click", showHome);
       restInner.appendChild(again);
       restSlot.appendChild(restInner);
 
+      resultView.appendChild(status);
       resultView.appendChild(verdictSlot);
       resultView.appendChild(msgCard);
       resultView.appendChild(restSlot);
@@ -153,8 +167,9 @@ const ScamApp = (function () {
       homeView.hidden = true;
       resultView.hidden = false;
       setState("scan");
+      window.scrollTo(0, 0);
 
-      // Finish early if someone taps the message while it is still scanning.
+      // Finish early if someone taps the message while it is still being read.
       var finished = false;
       function finish() {
         if (finished) return;
@@ -162,14 +177,12 @@ const ScamApp = (function () {
         clearTimers();
         ann.marks.forEach(function (m) { m.classList.add("on"); });
         msgCard.classList.remove("scanning");
-        msgLabel.textContent = "Your message";
-        scanOwl.hidden = true;
+        status.hidden = true;
         verdictSlot.classList.add("show");
         restSlot.classList.add("show");
         setState("result");
-        var v = verdictSlot.querySelector(".verdict");
+        var v = verdictSlot.querySelector(".verdict-card");
         if (v) v.focus({ preventScroll: true });
-        verdictSlot.scrollIntoView({ block: "start" });
       }
       msgCard.addEventListener("click", function () { if (!finished) finish(); });
 
@@ -195,9 +208,9 @@ const ScamApp = (function () {
     return { run: run, home: showHome, root: app };
   }
 
-  // The small shield icon next to the name. (Path is relative to whichever page loads us.)
+  // The small mark next to the name. (Path is relative to whichever page loads us.)
   function markSrc() {
-    return (document.body && document.body.dataset.root || "") + "icons/icon32.png";
+    return (document.body && document.body.dataset.root || "") + "icons/icon48.png";
   }
 
   // ---------- start automatically on the real pages ----------
@@ -205,8 +218,9 @@ const ScamApp = (function () {
     var root = document.getElementById("app");
     if (!root || window.SCAM_NO_AUTOSTART) return;
     document.title = ScamUI.APP_NAME;
-    var fromLink = new URLSearchParams(location.search).get("text");   // the right-click window passes the text this way
-    var real = new URLSearchParams(location.search).get("real");       // the link's true address, if there was one
+    var params = new URLSearchParams(location.search);
+    var fromLink = params.get("text");        // the right-click window passes the text this way
+    var real = params.get("real");            // and the link's true address, if there was one
     mount(root, { initialText: fromLink ? fromLink.trim() : "", realLink: real || "" });
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", autoStart);

@@ -34,9 +34,9 @@ Every answer lists *why*, one short sentence per red flag, and ends with:
 | `popup.html` | The window that opens from the toolbar icon (a thin page that loads `app.js`). |
 | `results.html` | The window opened by the right-click menu. Same thing, but it checks the text it was given straight away. |
 | `app.js` | **The journey:** ask, read, answer. Runs the popup, the right-click window and the web version. |
-| `ui.js` | The pieces of the screen: the owl, the highlighted message, the verdict, the meter and the reasons. |
+| `ui.js` | The pieces of the screen: the owl, the line icons, the highlighted message, the verdict card with its risk bar, and the reasons list. |
 | `fonts/` | The easy-to-read font (Atkinson Hyperlegible, open license), stored here so nothing is downloaded. |
-| `styles.css` | Navy and white look with a dark mode. Big text, high contrast, large buttons. Colors are named "slots" at the top, so they are easy to change. |
+| `styles.css` | The whole look: a calm canvas, soft shadows, grouped lists, one big verdict. Light and dark looks, big text, high contrast. Colors are named "slots" at the top, so they are easy to change. |
 | `icons/` | Toolbar and store icons. |
 | `tests/run-tests.js` | Example messages and links with their expected results. |
 | `web/index.html` | The web version for phones and any browser. Runs the same `rules.js`, `ui.js`, `app.js` and `styles.css`. |
@@ -102,7 +102,8 @@ When the flag fires, the phrases in `marks` light up inside the person's message
 
 - **The name:** change `APP_NAME` at the top of `ui.js`, and `"name"` in `manifest.json`.
 - **Colors:** they are named "slots" at the top of `styles.css` (a light set and a dark set). Change them there.
-- **The owl:** a chubby black-outline owl drawn in code in `ui.js` (`owlMarkup`), with a giant eye magnified by its magnifying glass. It has five moods: idle, scan, scam (arms flung up, tiny pupils), careful (one eyebrow up, wobbly mouth) and okay (a wave).
+- **The owl:** a round navy line-drawing with a few warm accents, drawn in code in `ui.js` (`owlMarkup`). It wears a magnifying glass that makes one eye comically big. Five moods: idle, scan (eyes sweep), scam (arms flung up), careful (one eyebrow up) and okay (a wave).
+- **The app icon:** the owl's face on a navy tile, in `icons/`.
 
 ## Known limitations (Version 1)
 
