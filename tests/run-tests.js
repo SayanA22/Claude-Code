@@ -196,6 +196,22 @@ hit.forEach((h) => {
 console.log(hit.length >= 2 ? "PASS  highlights point at the right words (odd spacing and curly quotes too)" : "FAIL  highlights missing");
 if (hit.length < 2) failed++;
 
+// Design rule: nothing in the stylesheet may set text smaller than 20px (1rem).
+// (This is checked here so a too-small size can never be committed by accident.)
+{
+  const css = require("fs").readFileSync(__dirname + "/../styles.css", "utf8");
+  const small = [];
+  (css.match(/font(?:-size)?\s*:\s*[^;}]+/g) || []).forEach((decl) => {
+    const size = decl.match(/(?:^|[\s:])(\d*\.?\d+)(px|rem|em)\b/);
+    if (!size) return;
+    const n = parseFloat(size[1]);
+    const px = size[2] === "px" ? n : n * 20;       // 1rem and 1em both mean 20px here
+    if (px < 20) small.push(decl.trim());
+  });
+  if (small.length) { failed++; console.log("FAIL  text smaller than 20px in styles.css: " + small.join(" | ")); }
+  else console.log("PASS  no text in styles.css is smaller than 20px");
+}
+
 // Rules that must hold for EVERY result
 const sample = checkText("Hey, dinner at 6?");
 if (!sample.footer.endsWith("ask a family member before clicking or paying.")) {

@@ -129,7 +129,6 @@ ul, ol { list-style: none; }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
 .brand-mark { width: 34px; height: 34px; border-radius: 10px; }
 .text-btn { display: inline-flex; align-items: baseline; justify-content: center; gap: 1px; min-width: 52px; height: 34px; padding: 0 12px; font: inherit; font-weight: 700; line-height: 34px; color: var(--navy); background: var(--tint); border: 0; border-radius: 99px; cursor: pointer; }
-.text-btn small { font-size: 0.8em; }
 .text-btn[aria-pressed="true"] { color: var(--btn-text); background: var(--btn-bg); }
 @media (prefers-color-scheme: dark) { .text-btn { color: #d6e6fa; } .text-btn[aria-pressed="true"] { color: var(--btn-text); } }
 .page { padding: 4px 20px 8px; }

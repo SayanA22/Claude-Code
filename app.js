@@ -46,7 +46,7 @@ const ScamApp = (function () {
     // The larger-text switch. Remembered for next time.
     var textBtn = el("button", "text-btn"); textBtn.type = "button";
     textBtn.setAttribute("aria-label", "Larger text");
-    textBtn.appendChild(document.createTextNode("A")); textBtn.appendChild(el("small", null, "a"));
+    textBtn.textContent = "Aa";
     function setLarge(on, save) {
       document.documentElement.classList.toggle("large", on);
       textBtn.setAttribute("aria-pressed", String(on));
