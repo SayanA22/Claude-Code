@@ -121,8 +121,10 @@ ul, ol { list-style: none; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .ico { display: inline-block; flex: none; }
 .ico svg { display: block; width: 100%; height: 100%; }
-.owl { display: block; }
-.owl svg { display: block; width: 100%; height: auto; overflow: visible; }
+.owl { display: block; position: relative; }
+.owl-img { display: block; width: 100%; height: auto; }
+.owl-badge { position: absolute; right: -4%; bottom: 2%; width: 38%; }
+.owl-badge svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 2px 3px rgba(0,0,0,.25)); }
 
 /* ----- Top bar: just the name ----- */
 .topbar { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px 0; }
@@ -266,7 +268,10 @@ button:focus-visible { outline: 4px solid var(--focus); outline-offset: 3px; }
 /* ----- Little animations (all switched off for people who prefer less motion) ----- */
 @keyframes sweep { from { top: -60px; } to { top: 100%; } }
 @keyframes read { from { transform: translateX(-6px); } to { transform: translateX(6px); } }
-.owl-scan .pupils { animation: read 0.7s ease-in-out infinite alternate; }
+@keyframes bob { from { transform: translateY(0) rotate(-3deg); } to { transform: translateY(-6px) rotate(3deg); } }
+@keyframes shake { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-5deg); } 75% { transform: rotate(5deg); } }
+.owl-scan .owl-img { animation: bob 0.7s ease-in-out infinite alternate; }
+.owl-scam .owl-img { animation: shake 0.5s ease-in-out 2; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

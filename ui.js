@@ -74,92 +74,33 @@ const ScamUI = (function () {
   }
 
   // ---------------------------------------------------------------------
-  // The owl. A round, friendly line-drawing in navy with a few warm accents.
-  // It always wears its magnifying glass, which makes one eye comically big.
-  // Five moods:
-  //   idle    – attentive, waiting for you to paste something
-  //   scan    – reading the message (its eyes sweep from side to side)
-  //   scam    – alarmed: arms flung up, tiny pupils
-  //   careful – head tilt, one eyebrow raised
-  //   okay    – happy eyes and a wave
+  // The owl mascot: one picture (img/owl.png) plus a small badge that shows
+  // how it feels about the message:
+  //   idle    – no badge, just waiting for you to paste something
+  //   scan    – a magnifying glass, bobbing while it reads
+  //   scam    – red "!" badge, and the owl gives a little shake
+  //   careful – amber "!" badge
+  //   okay    – green check badge
   // ---------------------------------------------------------------------
-  function owlMarkup(mood) {
-    var C = { line: "#0B2A4A", white: "#FFFFFF", tint: "#E3EDF9", scal: "#A9C2E3", beak: "#F5A524", cheek: "#FFC4BA", glass: "#D6E8FF" };
-    function L(w) { return ' stroke="' + C.line + '" stroke-width="' + (w || 5) + '" stroke-linejoin="round" stroke-linecap="round"'; }
-    var scam = mood === "scam", careful = mood === "careful", okay = mood === "okay";
-    var s = '<svg viewBox="-34 -14 268 226" aria-hidden="true">';
+  function owlSrc() { return (document.body && document.body.dataset.root || "") + "img/owl.png"; }
 
-    // feet and ear tufts sit behind the body
-    s += '<ellipse cx="82" cy="193" rx="13" ry="7" fill="' + C.beak + '"' + L(4) + '/><ellipse cx="118" cy="193" rx="13" ry="7" fill="' + C.beak + '"' + L(4) + '/>';
-    s += '<path d="M48 62 L36 24 L80 44 Z" fill="' + C.white + '"' + L() + '/><path d="M152 62 L164 24 L120 44 Z" fill="' + C.white + '"' + L() + '/>';
-
-    // the round body, belly and a few feather scallops
-    s += '<path d="M100 26 C154 26 186 66 186 114 C186 162 154 192 100 192 C46 192 14 162 14 114 C14 66 46 26 100 26 Z" fill="' + C.white + '"' + L(5.5) + '/>';
-    s += '<ellipse cx="100" cy="152" rx="46" ry="31" fill="' + C.tint + '"/>';
-    s += '<path d="M84 150 v10 M100 146 v14 M116 150 v10" fill="none" stroke="' + C.scal + '" stroke-width="4" stroke-linecap="round"/>';
-
-    // stubby wings: down, both flung up (alarm), or the left one waving (okay)
-    var wl = scam ? ' transform="rotate(122 26 112)"' : (okay ? ' transform="rotate(138 26 112)"' : "");
-    var wr = scam ? ' transform="rotate(-122 174 112)"' : "";
-    s += '<ellipse cx="22" cy="140" rx="13" ry="30" fill="' + C.white + '"' + L() + wl + '/>';
-    s += '<ellipse cx="178" cy="140" rx="13" ry="30" fill="' + C.white + '"' + L() + wr + '/>';
-
-    // a cheeky curl of feather
-    s += '<path d="M100 27 q-4 -17 9 -17 q12 2 4 14" fill="none"' + L(4.5) + '/>';
-
-    // ---- the face (tilts when unsure) ----
-    s += '<g transform="rotate(' + (careful ? -7 : 0) + ' 100 100)">';
-    if (okay) {
-      s += '<path d="M46 98 Q68 74 90 98" fill="none"' + L(6) + '/><path d="M104 94 Q132 60 160 94" fill="none"' + L(6) + '/>';
-      s += '<circle cx="42" cy="122" r="9" fill="' + C.cheek + '"/><circle cx="158" cy="122" r="9" fill="' + C.cheek + '"/>';
-    } else {
-      s += '<circle cx="68" cy="92" r="24" fill="' + C.white + '"' + L() + '/><circle cx="134" cy="90" r="28" fill="' + C.white + '"' + L() + '/>';
-      var lx = 70, ly = 90, rx = 138, ry = 92, lr = 10, rr = 14;           // a lazy, slightly cross-eyed stare
-      if (scam) { lx = 68; ly = 92; rx = 134; ry = 90; lr = 5.5; rr = 7; }  // tiny shocked pupils
-      if (careful) { lx = 78; ly = 96; rx = 146; ry = 98; }                 // side-eye
-      s += '<g class="pupils"><circle cx="' + lx + '" cy="' + ly + '" r="' + lr + '" fill="' + C.line + '"/><circle cx="' + rx + '" cy="' + ry + '" r="' + rr + '" fill="' + C.line + '"/>';
-      s += '<circle cx="' + (lx - 3) + '" cy="' + (ly - 4) + '" r="3" fill="#fff"/><circle cx="' + (rx - 5) + '" cy="' + (ry - 6) + '" r="4.5" fill="#fff"/></g>';
-      if (scam) s += '<path d="M42 66 L88 80" fill="none"' + L(7) + '/><path d="M178 52 L124 66" fill="none"' + L(7) + '/>';
-      if (careful) s += '<path d="M44 66 Q68 48 94 64" fill="none"' + L(6) + '/>';
-    }
-
-    // the magnifying glass
-    s += '<path d="M162 118 L188 146" fill="none" stroke="' + C.line + '" stroke-width="13" stroke-linecap="round"/>';
-    s += '<circle cx="134" cy="90" r="38" fill="' + C.glass + '" fill-opacity=".28" stroke="' + C.line + '" stroke-width="7"/>';
-    s += '<path d="M110 70 q7 -10 18 -12" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".95"/>';
-    // beak and mouth (drawn after the glass so it is never hidden)
-    if (scam) {
-      s += '<path d="M84 110 L112 110 L98 144 Z" fill="' + C.line + '"' + L(4) + '/><path d="M89 111 L107 111 L98 124 Z" fill="' + C.beak + '"/>';
-    } else if (okay) {
-      s += '<path d="M88 112 Q98 107 108 112 L98 130 Z" fill="' + C.beak + '"' + L(4) + '/><path d="M78 136 Q98 158 118 136" fill="none"' + L(5) + '/>';
-    } else if (careful) {
-      s += '<path d="M89 112 Q99 107 109 112 L101 130 Z" fill="' + C.beak + '"' + L(4) + '/><path d="M76 146 q7 -7 14 0 t14 0 t14 0" fill="none"' + L(4.5) + '/>';
-    } else {
-      s += '<path d="M88 112 Q98 107 108 112 L98 132 Z" fill="' + C.beak + '"' + L(4) + '/>';
-    }
-
-    s += '</g>';
-    if (!scam) s += '<ellipse cx="192" cy="152" rx="15" ry="12" fill="' + C.white + '"' + L() + ' transform="rotate(42 192 152)"/>';   // the wing gripping the handle
-
-    // marks that show the mood
-    var bang = function (x) { return '<rect x="' + (x - 6) + '" y="2" width="12" height="28" rx="6" fill="' + C.line + '"/><circle cx="' + x + '" cy="42" r="6.5" fill="' + C.line + '"/>'; };
-    if (scam) {
-      s += bang(-18) + bang(218);
-      s += '<path d="M22 44 L8 32 M36 22 L28 6 M178 22 L186 6 M192 44 L206 32" fill="none"' + L(5) + '/>';
-    }
-    if (careful) {
-      s += '<g transform="translate(204 -6)"><path d="M0 16 Q0 -4 16 -4 Q32 -4 32 12 Q32 24 18 30 Q16 32 16 42" fill="none" stroke="' + C.line + '" stroke-width="9" stroke-linecap="round"/><circle cx="16" cy="60" r="6.5" fill="' + C.line + '"/></g>';
-    }
-    if (okay) {
-      var star = function (x, y, r) { return '<path d="M' + x + ' ' + (y - r) + ' Q' + x + ' ' + y + ' ' + (x + r) + ' ' + y + ' Q' + x + ' ' + y + ' ' + x + ' ' + (y + r) + ' Q' + x + ' ' + y + ' ' + (x - r) + ' ' + y + ' Q' + x + ' ' + y + ' ' + x + ' ' + (y - r) + ' Z" fill="' + C.beak + '"/>'; };
-      s += star(-16, 36, 18) + star(214, 8, 14) + star(226, 80, 9);
-    }
+  function badgeMarkup(mood) {
+    var fill = { scam: "#D92D20", careful: "#E8A200", okay: "#12A150", scan: "#0A3F73" }[mood];
+    if (!fill) return "";
+    var s = '<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="' + fill + '" stroke="#fff" stroke-width="3"/>';
+    var w = ' fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"';
+    if (mood === "okay") s += '<path d="M11 21 L18 28 L30 13"' + w + '/>';
+    else if (mood === "scan") s += '<circle cx="18" cy="18" r="7"' + w + '/><path d="M23.5 23.5 L30 30"' + w + '/>';
+    else s += '<path d="M20 10 L20 22"' + w + '/><circle cx="20" cy="29.5" r="2.6" fill="#fff"/>';
     return s + '</svg>';
   }
 
   function owl(mood) {
     var s = el("span", "owl owl-" + mood);
-    s.innerHTML = owlMarkup(mood);
+    var img = el("img", "owl-img"); img.src = owlSrc(); img.alt = "";
+    s.appendChild(img);
+    var b = badgeMarkup(mood);
+    if (b) { var badge = el("span", "owl-badge"); badge.innerHTML = b; s.appendChild(badge); }
     return s;
   }
 
