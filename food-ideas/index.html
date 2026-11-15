@@ -998,7 +998,7 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",applyBrandi
 
 applyBranding(); renderFilters(); buildDeck(); renderDeck();
 loadPhotos().then(()=>{ if(Object.keys(photos).length && sheet.hidden) renderDeck(); });
-const APP_VERSION = "v17";
+const APP_VERSION = "v19";
 async function forceUpdate(){
   toast("Updating…");
   try{
