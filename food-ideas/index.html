@@ -797,6 +797,8 @@ function sheetBody(){
       <div class="seg">${[["light","☀️ Light"],["dark","🌙 Dark"],["auto","📱 Auto"]].map(([k,n])=>`<button class="chip ${mode===k?"on":""}" data-mode="${k}">${n}</button>`).join("")}</div>
       <label>App icon</label>
       <div class="icons">${ICONS.map(ic=>`<button class="ic ${ic===icon?"on":""}" data-icon="${ic}" style="background:${COLORS[color].c}" aria-label="Icon ${ic}"><span>${ic}</span></button>`).join("")}</div>
+      <div class="note2">🔄 App version <b>${APP_VERSION}</b>. The app updates itself when you open it. If something looks old, tap the button below.</div>
+      <button class="btn alt" data-act="forceupdate">🔄 Update the app now</button>
       <div class="note2">📲 Phones only look at the icon when you add the app. To change the icon on the home screen, delete the app icon, open this page again, and tap <b>Add to Home Screen</b> (iPhone) or <b>Install app</b> (Android).</div>`;
   }
   if(sheetName==="detail"){
@@ -870,6 +872,7 @@ sheet.addEventListener("click",e=>{
   if(v && !e.target.closest("button")) return openSheet("detail",v.dataset.view);
   const t=e.target.closest("button"); if(!t) return; const d=t.dataset;
   if(d.close!==undefined) return closeSheet();
+  if(d.act==="forceupdate"){ forceUpdate(); return; }
   if(d.act==="fjump"){ const r=$("#fres"); if(r) sheet.scrollTo({top:r.offsetTop-12,behavior:"smooth"}); return; }
   if(d.act==="ftop"){ sheet.scrollTo({top:0,behavior:"smooth"}); return; }
   if(d.ftag){ t.classList.toggle("on"); return; }
@@ -967,7 +970,23 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",applyBrandi
 
 applyBranding(); renderFilters(); buildDeck(); renderDeck();
 loadPhotos().then(()=>{ if(Object.keys(photos).length && sheet.hidden) renderDeck(); });
-if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+const APP_VERSION = "v16";
+async function forceUpdate(){
+  toast("Updating…");
+  try{
+    const regs=await navigator.serviceWorker.getRegistrations(); await Promise.all(regs.map(r=>r.unregister()));
+    const keys=await caches.keys(); await Promise.all(keys.map(k=>caches.delete(k)));   // only the app's saved files; favorites, recipes and photos are kept
+  }catch(e){}
+  location.reload();
+}
+if("serviceWorker" in navigator){
+  const hadController=!!navigator.serviceWorker.controller; let reloaded=false;
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{
+    if(!hadController||reloaded) return; reloaded=true;                       // first ever install: nothing to refresh
+    if(sheet.hidden) location.reload(); else toast("Updated! Close and reopen the app to see the new version");
+  });
+  navigator.serviceWorker.register("sw.js").then(r=>r.update()).catch(()=>{});
+}
 </script>
 </body>
 </html>
