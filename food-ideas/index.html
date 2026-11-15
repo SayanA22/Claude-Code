@@ -45,10 +45,8 @@
   @supports (container-type:size){
     .card{container-type:size}
     .card .blob{width:min(52cqw,210px,34cqh);font-size:min(27cqw,109px,17.6cqh)}
-    .card .blob.art{width:min(62cqw,240px,41cqh)}
     @container (max-height: 340px){            /* short screens: shrink the picture and text so long names still fit */
       .card .blob{width:min(52cqw,210px,26cqh);font-size:min(27cqw,109px,13.4cqh);margin-bottom:10px}
-      .card .blob.art{width:min(54cqw,210px,27.5cqh)}
       .card h2{font-size:1.4rem}
       .card .note{margin:5px 0 8px;font-size:.9rem}
       .tag{padding:4px 10px}
@@ -127,14 +125,15 @@
   .res{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:18px;padding:12px 14px;margin:8px 0;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.06)}
   .res .e{font-size:1.9rem}.res .t{flex:1;min-width:0}.res b{display:block}.res small{color:var(--muted)}
   .res .go{color:var(--muted);font-size:1.2rem}.ok{color:var(--yes);font-weight:600}
-  .blob.art svg{width:94%;height:94%;display:block;overflow:visible}
-  .e.art{width:52px;height:52px;flex:none;display:flex;align-items:center;justify-content:center}
-  .detail .blob.art{width:156px}
-  .e.art svg{width:100%;height:100%;display:block;overflow:visible}
-  .stylepick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0 14px}
-  .sp{border:0;border-radius:14px;background:var(--soft);padding:6px 2px 5px;font-size:.7rem;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:1px;font-family:inherit}
-  .sp svg,.sp .auto{width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:1.5rem}
-  .sp.on{background:var(--accent);color:var(--accent-ink);font-weight:600}
+  .blob.ico{position:relative}
+  .ico .hero{display:block;line-height:1}
+  .blob.ico .hero{transform:translateY(-6%)}
+  .ico .acc{position:absolute;display:flex;align-items:center;justify-content:center;width:1.5em;height:1.5em;border-radius:50%;background:var(--card);box-shadow:0 2px 8px rgba(0,0,0,.22);font-size:.3em;line-height:1}
+  .blob.ico .a0{right:4%;bottom:4%}.blob.ico .a1{left:4%;bottom:4%}
+  .e.ico{position:relative;width:46px;height:46px;display:flex;align-items:center;justify-content:center;flex:none}
+  .mini .acc{font-size:.36em;width:1.5em;height:1.5em;box-shadow:0 1px 3px rgba(0,0,0,.28)}
+  .mini .a0{right:-6px;bottom:-5px}.mini .a1{display:none}
+  .chip.ip{font-size:1.4rem;padding:5px 10px}
   .blob.ph{background-size:cover;background-position:center;border-radius:32%;font-size:0;box-shadow:0 4px 14px rgba(0,0,0,.18)}
   .cam{position:absolute;top:16px;left:16px;width:44px;height:44px;border-radius:50%;background:var(--soft);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:1.25rem;cursor:pointer;user-select:none}
   .th{width:46px;height:46px;border-radius:12px;background-size:cover;background-position:center;font-size:0;flex:none}
@@ -620,854 +619,25 @@ async function shrinkPhoto(file, max=900){
     return await new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(new Error("encode failed")),"image/jpeg",0.82));
   } finally { URL.revokeObjectURL(url); }
 }
-// ---- dish illustrations: every meal is drawn as its own little picture (vessel + its real ingredients) ----
-/* Dish illustrations: every meal is drawn as a small flat-style SVG (100x100) from a spec:
-   [vessel, base, toppings[], options]   e.g. ["bowl","curry:#e9a23b",["potato:6","cauliflower:5"],{rim:"#5b8fd6",side:"naan"}] */
-const DA = (() => {
-  const f1 = n => Math.round(n * 10) / 10;
-  const hash = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
-  const rng = seed => { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
-  const shade = (hex, k) => { const n = parseInt(hex.slice(1), 16); let r = n >> 16, g = (n >> 8) & 255, b = n & 255; const m = k < 0 ? 0 : 255, p = Math.abs(k); r = Math.round(r + (m - r) * p); g = Math.round(g + (m - g) * p); b = Math.round(b + (m - b) * p); return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1); };
-  const cir = (x, y, r, fill, extra = "") => `<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(r)}" fill="${fill}"${extra}/>`;
-  const ell = (x, y, rx, ry, fill, extra = "") => `<ellipse cx="${f1(x)}" cy="${f1(y)}" rx="${f1(rx)}" ry="${f1(ry)}" fill="${fill}"${extra}/>`;
-  const rect = (x, y, w, h, rx, fill, extra = "") => `<rect x="${f1(x)}" y="${f1(y)}" width="${f1(w)}" height="${f1(h)}" rx="${f1(rx)}" fill="${fill}"${extra}/>`;
-  const path = (d, fill, extra = "") => `<path d="${d}" fill="${fill}"${extra}/>`;
-  const line = (d, stroke, w, extra = "") => `<path d="${d}" fill="none" stroke="${stroke}" stroke-width="${w}" stroke-linecap="round"${extra}/>`;
-  const gl = (x, y, r) => cir(x, y, r, "#fff", ' opacity=".45"');           // little glossy highlight
-  const at = (x, y, rot, inner) => `<g transform="translate(${f1(x)} ${f1(y)}) rotate(${Math.round(rot)})">${inner}</g>`;
-
-  /* ---------- toppings / ingredients: each draws around (0,0) at size s ---------- */
-  const T = {
-    tomato:   s => cir(0,0,s,"#e5402f") + cir(0,0,s*.7,"#f2685a") + cir(0,0,s*.38,"#f9a99c") + gl(-s*.35,-s*.38,s*.2),
-    cherry:   s => cir(0,0,s*.8,"#d52b2b") + gl(-s*.28,-s*.3,s*.2),
-    cucumber: s => cir(0,0,s,"#4f9a3d") + cir(0,0,s*.8,"#d4ebae") + cir(0,0,s*.3,"#b5d98a"),
-    carrot:   s => cir(0,0,s,"#ef8420") + cir(0,0,s*.58,"#f8b058") + cir(0,0,s*.18,"#fbd49a"),
-    onion:    s => cir(0,0,s*.8,"none",` stroke="#c283b4" stroke-width="${f1(s*.34)}"`) + cir(0,0,s*.35,"none",` stroke="#e1c0d8" stroke-width="${f1(s*.16)}"`),
-    onionY:   s => cir(0,0,s*.8,"none",` stroke="#e6c46a" stroke-width="${f1(s*.34)}"`),
-    pea:      s => cir(0,0,s*.5,"#63b246") + gl(-s*.15,-s*.15,s*.14),
-    corn:     s => rect(-s*.4,-s*.4,s*.8,s*.8,s*.22,"#f6c33a") + gl(-s*.1,-s*.1,s*.14),
-    kidney:   s => ell(0,0,s*.75,s*.48,"#a3281f") + ell(-s*.2,-s*.15,s*.3,s*.12,"#d8604f"),
-    blackbean:s => ell(0,0,s*.7,s*.46,"#2e2626") + ell(-s*.2,-s*.15,s*.26,s*.1,"#6b5a5a"),
-    pinto:    s => ell(0,0,s*.7,s*.46,"#c99a6b") + cir(-s*.2,-s*.05,s*.1,"#8a5a34") + cir(s*.25,s*.1,s*.1,"#8a5a34"),
-    white:    s => ell(0,0,s*.72,s*.46,"#f2ead6") + ell(-s*.2,-s*.15,s*.26,s*.1,"#fff"),
-    chickpea: s => cir(0,0,s*.62,"#dfb76e") + cir(s*.2,-s*.2,s*.2,"#c99a4a"),
-    lentil:   s => cir(0,0,s*.4,"#c3702d"),
-    redlentil:s => cir(0,0,s*.4,"#e06a2c"),
-    potato:   s => rect(-s*.78,-s*.78,s*1.56,s*1.56,s*.3,"#e2b455") + rect(-s*.6,-s*.6,s*1.2,s*1.2,s*.22,"#f3d78d"),
-    sweetpotato:s=> rect(-s*.78,-s*.78,s*1.56,s*1.56,s*.3,"#e8782a") + rect(-s*.6,-s*.6,s*1.2,s*1.2,s*.22,"#f5a15a"),
-    cauliflower:s=> cir(-s*.4,s*.1,s*.55,"#efe8cf") + cir(s*.4,s*.1,s*.55,"#efe8cf") + cir(0,-s*.4,s*.6,"#f7f2de") + cir(-s*.1,-s*.45,s*.22,"#fff"),
-    broccoli: s => rect(-s*.16,0,s*.32,s*.8,s*.1,"#8dc66a") + cir(-s*.42,-s*.1,s*.5,"#2f8d3f") + cir(s*.42,-s*.1,s*.5,"#2f8d3f") + cir(0,-s*.5,s*.55,"#3ea14b") + cir(-s*.15,-s*.6,s*.18,"#6cc274"),
-    leaf:     s => path(`M${-s} 0 Q0 ${-s*.9} ${s} 0 Q0 ${s*.9} ${-s} 0Z`,"#2f8f46") + line(`M${-s*.8} 0 L${s*.8} 0`,"#1c6a33",s*.1),
-    leafL:    s => path(`M${-s} 0 Q0 ${-s*.9} ${s} 0 Q0 ${s*.9} ${-s} 0Z`,"#8bc34a") + line(`M${-s*.8} 0 L${s*.8} 0`,"#5f9a2e",s*.1),
-    herb:     s => path(`M0 0 Q${-s*.5} ${-s*.6} ${-s*.1} ${-s} Q${s*.5} ${-s*.5} 0 0Z`,"#4aa84f") + path(`M0 0 Q${s*.6} ${-s*.1} ${s*.9} ${-s*.6} Q${s*.3} ${-s*.7} 0 0Z`,"#3d9442"),
-    basil:    s => path(`M${-s*.9} 0 Q0 ${-s*.95} ${s*.9} 0 Q0 ${s*.95} ${-s*.9} 0Z`,"#3a9a40") + line(`M${-s*.7} 0 L${s*.7} 0`,"#1f6f2a",s*.1),
-    mushroom: s => path(`M${-s} ${-s*.1} Q${-s} ${-s} 0 ${-s} Q${s} ${-s} ${s} ${-s*.1} Z`,"#c59c70") + rect(-s*.32,-s*.15,s*.64,s*.95,s*.2,"#eadfca") + ell(0,-s*.55,s*.55,s*.18,"#dcbc96"),
-    eggplant: s => rect(-s*.75,-s*.75,s*1.5,s*1.5,s*.3,"#5f3274") + rect(-s*.55,-s*.55,s*1.1,s*1.1,s*.2,"#8f5aa6") + cir(-s*.2,-s*.2,s*.12,"#d8c3e2"),
-    zucchini: s => cir(0,0,s,"#4a9a3a") + cir(0,0,s*.72,"#e4f2c2") + cir(0,0,s*.18,"#cfe6a0"),
-    pepperR:  s => line(`M${-s} ${s*.3} Q0 ${-s} ${s} ${s*.3}`,"#d6402f",s*.55),
-    pepperY:  s => line(`M${-s} ${s*.3} Q0 ${-s} ${s} ${s*.3}`,"#f2bf2a",s*.55),
-    pepperG:  s => line(`M${-s} ${s*.3} Q0 ${-s} ${s} ${s*.3}`,"#5ba04a",s*.55),
-    chili:    s => path(`M${-s} ${-s*.2} Q0 ${-s*.9} ${s} ${s*.5} Q${s*.2} ${s*.1} ${-s} ${-s*.2}Z`,"#d3261f") + cir(-s*.95,-s*.2,s*.14,"#3d8b37"),
-    cheese:   s => rect(-s*.8,-s*.5,s*1.6,s,s*.2,"#f7cf55") + cir(-s*.2,0,s*.16,"#e8b535") + cir(s*.35,s*.1,s*.12,"#e8b535"),
-    cheddar:  s => path(`M${-s} ${s*.7} L0 ${-s} L${s} ${s*.7}Z`,"#f1a33a") + cir(0,s*.15,s*.18,"#d98a1f"),
-    shred:    s => line(`M${-s} 0 Q0 ${-s*.5} ${s} ${s*.1}`,"#f6c94a",s*.32) + line(`M${-s*.7} ${s*.4} Q0 ${-s*.1} ${s*.8} ${s*.5}`,"#f3bb36",s*.28),
-    mozz:     s => cir(0,0,s*.95,"#fbf8ee") + cir(0,0,s*.95,"none",' stroke="#e5ddc6" stroke-width=".8"'),
-    feta:     s => rect(-s*.7,-s*.7,s*1.4,s*1.4,s*.25,"#fbf9f0") + cir(-s*.2,-s*.1,s*.12,"#e9e3cc"),
-    paneer:   s => rect(-s*.75,-s*.75,s*1.5,s*1.5,s*.25,"#f5e8bd") + rect(-s*.55,-s*.55,s*1.1,s*1.1,s*.18,"#fbf3d8"),
-    tofu:     s => rect(-s*.75,-s*.75,s*1.5,s*1.5,s*.25,"#efdfb5") + rect(-s*.55,-s*.55,s*1.1,s*1.1,s*.18,"#f9efd2"),
-    friedtofu:s => rect(-s*.75,-s*.75,s*1.5,s*1.5,s*.25,"#d99a45") + rect(-s*.55,-s*.55,s*1.1,s*1.1,s*.18,"#efc274"),
-    eggfried: s => path(`M${-s} 0 Q${-s*1.1} ${-s*.9} ${-s*.1} ${-s} Q${s*1.1} ${-s*1.1} ${s} ${-s*.1} Q${s*1.2} ${s} ${s*.1} ${s} Q${-s*1.1} ${s*1.1} ${-s} 0Z`,"#fffdf6") + cir(0,0,s*.42,"#f7a900") + gl(-s*.14,-s*.14,s*.14),
-    eggboiled:s => ell(0,0,s*.8,s,"#fffdf6") + cir(0,s*.1,s*.4,"#f7b21a") + ell(0,0,s*.8,s,"none",' stroke="#ece4cf" stroke-width=".8"'),
-    scramble: s => cir(-s*.4,0,s*.5,"#f7d445") + cir(s*.35,-s*.2,s*.55,"#f9dc5d") + cir(s*.1,s*.4,s*.45,"#f5cf38"),
-    avocado:  s => ell(0,0,s*.8,s,"#4c7a2a") + ell(0,0,s*.62,s*.82,"#cde48a") + cir(0,s*.15,s*.3,"#8a5a2b"),
-    avoslice: s => path(`M${-s} ${s*.4} Q0 ${-s*1.1} ${s} ${s*.4} Q0 ${s*.1} ${-s} ${s*.4}Z`,"#a8cc5c") + path(`M${-s} ${s*.4} Q0 ${s*.1} ${s} ${s*.4} Q0 ${s*.55} ${-s} ${s*.4}Z`,"#4c7a2a"),
-    lemon:    s => cir(0,0,s,"#f4cf2f") + cir(0,0,s*.8,"#fbe887") + [0,60,120].map(a=>line(`M0 ${-s*.78} L0 ${s*.78}`,"#fff7c9",s*.08,` transform="rotate(${a})"`)).join(""),
-    lime:     s => cir(0,0,s,"#5fa83a") + cir(0,0,s*.8,"#cbe69a") + [0,60,120].map(a=>line(`M0 ${-s*.78} L0 ${s*.78}`,"#eaf5cf",s*.08,` transform="rotate(${a})"`)).join(""),
-    strawberry:s=> path(`M${-s*.8} ${-s*.4} Q0 ${-s*1.1} ${s*.8} ${-s*.4} Q${s*.6} ${s*.7} 0 ${s} Q${-s*.6} ${s*.7} ${-s*.8} ${-s*.4}Z`,"#e0364a") + path(`M${-s*.5} ${-s*.55} L0 ${-s*.9} L${s*.5} ${-s*.55} L0 ${-s*.3}Z`,"#3f9a45") + cir(-s*.2,0,s*.07,"#ffd7a8") + cir(s*.25,s*.15,s*.07,"#ffd7a8") + cir(0,s*.45,s*.07,"#ffd7a8"),
-    blueberry:s => cir(0,0,s*.6,"#4659b3") + cir(0,-s*.35,s*.14,"#2c3a85") + gl(-s*.2,-s*.2,s*.14),
-    raspberry:s => cir(-s*.3,0,s*.4,"#cf2f56") + cir(s*.3,0,s*.4,"#cf2f56") + cir(0,-s*.35,s*.42,"#dc3b62") + cir(0,s*.35,s*.4,"#c42a50"),
-    banana:   s => cir(0,0,s,"#f2d36c") + cir(0,0,s*.72,"#fbeeb6") + cir(0,0,s*.2,"#e6c25a"),
-    apple:    s => path(`M${-s} ${s*.3} Q0 ${-s*1.2} ${s} ${s*.3} Q0 ${s*.1} ${-s} ${s*.3}Z`,"#d8453f") + path(`M${-s*.9} ${s*.3} Q0 ${s*.05} ${s*.9} ${s*.3} Q0 ${s*.6} ${-s*.9} ${s*.3}Z`,"#f7ecc9"),
-    mango:    s => rect(-s*.75,-s*.75,s*1.5,s*1.5,s*.3,"#f6a02a") + rect(-s*.55,-s*.55,s*1.1,s*1.1,s*.2,"#fbc65d"),
-    pineapple:s => rect(-s*.75,-s*.75,s*1.5,s*1.5,s*.3,"#f3cf2a") + rect(-s*.55,-s*.55,s*1.1,s*1.1,s*.2,"#fae681"),
-    coconut:  s => cir(0,0,s*.8,"#fffaf0") + cir(0,0,s*.8,"none",' stroke="#efe6d2" stroke-width=".8"'),
-    nut:      s => ell(0,0,s*.7,s*.45,"#b57a42") + ell(-s*.2,-s*.15,s*.3,s*.12,"#d9a671"),
-    peanut:   s => ell(-s*.35,0,s*.5,s*.4,"#cf9a5a") + ell(s*.35,0,s*.5,s*.4,"#cf9a5a"),
-    choc:     s => rect(-s*.6,-s*.6,s*1.2,s*1.2,s*.15,"#5a3420") + rect(-s*.4,-s*.4,s*.8,s*.8,s*.1,"#7a4a2e"),
-    chip:     s => path(`M${-s*.5} ${s*.4} L0 ${-s*.5} L${s*.5} ${s*.4}Z`,"#4a2a1a"),
-    cream:    s => cir(0,s*.25,s*.9,"#fffaf0") + cir(0,-s*.1,s*.65,"#fffdf7") + cir(0,-s*.4,s*.38,"#fff"),
-    bread:    s => rect(-s,-s,s*2,s*2,s*.4,"#c98a45") + rect(-s*.8,-s*.8,s*1.6,s*1.6,s*.3,"#f5e0b0") + line(`M${-s*.4} ${-s*.2} L${s*.3} ${-s*.2}`,"#e3c58a",s*.12),
-    crouton:  s => rect(-s*.7,-s*.7,s*1.4,s*1.4,s*.2,"#d99a4a") + rect(-s*.5,-s*.5,s*1,s*1,s*.15,"#f0c577"),
-    tchip:    s => path(`M${-s} ${s*.7} L0 ${-s} L${s} ${s*.7}Z`,"#f0bc4a") + path(`M${-s*.6} ${s*.5} L0 ${-s*.6} L${s*.6} ${s*.5}Z`,"#f7d37c"),
-    olive:    s => cir(0,0,s*.7,"#4b4d34") + cir(0,0,s*.3,"#e9e6d3"),
-    sesame:   s => ell(0,0,s*.4,s*.22,"#f4e9c6"),
-    scallion: s => cir(0,0,s*.6,"none",` stroke="#8fc44f" stroke-width="${f1(s*.3)}"`),
-    nori:     s => rect(-s*.9,-s*.35,s*1.8,s*.7,s*.1,"#27312a"),
-    salsa:    s => cir(0,0,s*.45,"#d9382a") + cir(s*.5,s*.1,s*.3,"#e9533f"),
-    syrup:    s => ell(0,0,s*1.4,s*.7,"#a24a14") + ell(-s*.3,-s*.2,s*.6,s*.2,"#c8691f"),
-    butter:   s => rect(-s*.7,-s*.5,s*1.4,s,s*.2,"#ffe58a") + rect(-s*.5,-s*.35,s*.8,s*.25,s*.1,"#fff3b8"),
-    spice:    s => cir(0,0,s*.3,"#c0562a"),
-    seed:     s => ell(0,0,s*.35,s*.2,"#7a5a3a"),
-    dot:      s => cir(0,0,s*.35,"#f6e7b4"),
-    cilantro: s => path(`M0 0 Q${-s*.7} ${-s*.4} ${-s*.4} ${-s} Q${s*.1} ${-s*.6} 0 0Z`,"#4caf50") + path(`M0 0 Q${s*.8} ${-s*.3} ${s*.5} ${-s*.9} Q${-s*.1} ${-s*.6} 0 0Z`,"#3f9d43") + path(`M0 0 Q${-s*.2} ${s*.8} ${s*.4} ${s*.9} Q${s*.5} ${s*.3} 0 0Z`,"#56b95a"),
-    naan:     s => path(`M${-s} ${s*.6} Q${-s*.9} ${-s*.9} 0 ${-s} Q${s*.9} ${-s*.9} ${s} ${s*.6} Q0 ${s*1.1} ${-s} ${s*.6}Z`,"#e9c37e") + cir(-s*.3,-s*.1,s*.14,"#c58f43") + cir(s*.3,0,s*.14,"#c58f43") + cir(0,-s*.5,s*.1,"#c58f43"),
-    noodleb:  s => line(`M${-s} 0 Q${-s*.5} ${-s*.8} 0 0 T${s} 0`,"#f1d58a",s*.35),
-    tortilla: s => cir(0,0,s,"#efd8a6") + cir(0,0,s,"none",' stroke="#d9b877" stroke-width=".8"') + cir(-s*.3,-s*.2,s*.15,"#d9b877") + cir(s*.35,s*.25,s*.15,"#d9b877"),
-    kale:     s => path(`M${-s} 0 Q${-s*.6} ${-s*.9} ${-s*.1} ${-s*.4} Q${s*.4} ${-s} ${s} ${-s*.1} Q${s*.5} ${s*.9} 0 ${s*.4} Q${-s*.6} ${s} ${-s} 0Z`,"#256d3a"),
-    grain:    s => ell(0,0,s*.45,s*.22,"#fbf7e8"),
-    quinoa:   s => cir(0,0,s*.3,"#e7d3a0"),
-    ladoo:    s => cir(0,0,s,"#f6efe0") + cir(-s*.3,-s*.2,s*.12,"#e3d6bb") + cir(s*.3,s*.25,s*.12,"#e3d6bb") + cir(s*.1,-s*.5,s*.1,"#e3d6bb"),
-    pastry:   s => rect(-s,-s,s*2,s*2,s*.35,"#e0a85a") + rect(-s*.75,-s*.75,s*1.5,s*1.5,s*.25,"#f1c67f"),
-    sprout:   s => line(`M0 ${s} Q${s*.3} 0 ${-s*.2} ${-s}`,"#f4f0cf",s*.28),
-    mint:     s => path(`M${-s*.9} 0 Q0 ${-s*.95} ${s*.9} 0 Q0 ${s*.95} ${-s*.9} 0Z`,"#5bbf6a") + line(`M${-s*.7} 0 L${s*.7} 0`,"#2f8f46",s*.1),
-    wedge:    s => path(`M${-s} ${s*.5} Q0 ${-s*1.1} ${s} ${s*.5} Z`,"#f4cf2f") + path(`M${-s*.8} ${s*.35} Q0 ${-s*.85} ${s*.8} ${s*.35} Z`,"#fbe887"),
-  };
-  // bigger / smaller default sizes and counts for each topping
-  const D = {
-    tomato:[5.2,6], cherry:[3.6,7], cucumber:[4.6,7], carrot:[4,7], onion:[4.4,5], onionY:[4.4,5], pea:[2.2,16], corn:[2.4,14], kidney:[3.4,10], blackbean:[3.2,12], pinto:[3.2,10], white:[3.2,10],
-    chickpea:[3.2,12], lentil:[1.9,22], redlentil:[1.9,22], potato:[4,8], sweetpotato:[4,8], cauliflower:[5.4,5], broccoli:[5.6,5], leaf:[5.4,6], leafL:[5.4,6], herb:[3.6,14], basil:[5,4], mushroom:[5,6], eggplant:[4,7], zucchini:[4.4,6],
-    pepperR:[5,5], pepperY:[5,4], pepperG:[5,4], chili:[4.5,3], cheese:[4,5], cheddar:[3.6,5], shred:[5,6], mozz:[4.8,4], feta:[3.2,7], paneer:[3.8,7], tofu:[3.8,7], friedtofu:[3.8,7],
-    eggfried:[8,1], eggboiled:[5.4,3], scramble:[6.5,2], avocado:[6,1], avoslice:[6,2], lemon:[5.5,2], lime:[5.5,2], strawberry:[4.4,4], blueberry:[3,12], raspberry:[3.4,6], banana:[4.2,6], apple:[5.4,4],
-    mango:[3.6,8], pineapple:[3.6,8], coconut:[5.6,2], nut:[2.8,10], peanut:[3,9], choc:[3.4,7], chip:[2,14], cream:[6,1], bread:[6.4,2], crouton:[2.8,10], tchip:[5.4,6], olive:[3,7], sesame:[1.8,20], scallion:[3,9],
-    nori:[5,1], salsa:[3.4,7], syrup:[7,1], butter:[4.6,1], spice:[1.8,16], seed:[1.6,14], dot:[1.8,14], cilantro:[4.4,8], naan:[11,1], noodleb:[6,3], tortilla:[9,1], kale:[5.4,6], grain:[2.4,16], quinoa:[1.8,24], ladoo:[5,3], pastry:[5,3], sprout:[4,8], wedge:[5.4,2], mint:[4.6,3]
-  };
-
-  /* ---------- scatter items inside an ellipse without piling up ---------- */
-  const scatter = (cx, cy, rx, ry, items, rnd) => {
-    const placed = [], out = [];
-    for (const it of items) {
-      let best = null;
-      for (let tries = 0; tries < 40; tries++) {
-        const a = rnd() * 6.2832, r = Math.sqrt(rnd());
-        const x = cx + Math.cos(a) * (rx - it.s * .7) * r, y = cy + Math.sin(a) * (ry - it.s * .7) * r;
-        let ok = true; for (const p of placed) { const d = Math.hypot(p.x - x, p.y - y); if (d < (p.s + it.s) * (tries < 25 ? .95 : .55)) { ok = false; break; } }
-        if (ok) { best = { x, y }; break; }
-        if (!best) best = { x, y };
-      }
-      placed.push({ x: best.x, y: best.y, s: it.s });
-      out.push(at(best.x, best.y, rnd() * 360, T[it.k](it.s)));
-    }
-    return out.join("");
-  };
-  let MINI = false;
-  const expand = (list, rnd, scale = 1) => {
-    const items = [];
-    for (const raw of list || []) {
-      const [k, n] = String(raw).split(":"); const d = D[k]; if (!T[k]) continue;
-      const count = n ? +n : d[1];
-      for (let i = 0; i < count; i++) items.push({ k, s: d[0] * scale * (.88 + rnd() * .24) });
-    }
-    // large pieces first so small ones fill the gaps; a little shuffle keeps colours mixed
-    items.sort((a, b) => b.s - a.s + (rnd() - .5) * 1.6);
-    if (MINI && items.length > 7) items.length = 7;
-    return items;
-  };
-
-  const fit = (list, rnd, rx, ry, base = 1, cap = 10000) => {
-    const probe = expand(list, rng(7), base), cov = probe.reduce((a, i) => a + i.s * i.s, 0) / (rx * ry);
-    const k = cov < .4 ? Math.min(2.4, Math.sqrt(.4 / Math.max(cov, .015))) : 1;
-    return expand(list, rnd, base * k).slice(0, cap);
-  };
-
-  /* ---------- bases drawn inside a vessel ---------- */
-  const spiral = (cx, cy, R, color, w, rnd, turns = 4.5) => {
-    let d = ""; const n = 120;
-    for (let i = 0; i <= n; i++) { const t = i / n, a = t * turns * 6.2832, r = R * (.12 + .88 * t) * (1 + Math.sin(i * .9) * .03); d += (i ? "L" : "M") + f1(cx + Math.cos(a) * r) + " " + f1(cy + Math.sin(a) * r); }
-    return line(d, color, w) + line(d, shade(color, .25), w * .35, ' opacity=".7" transform="translate(-.4 -.4)"');
-  };
-  let base = (kind, cx, cy, R, rnd) => {
-    const [t, col] = String(kind || "plain:#f7f4ec").split(":");
-    const c = col || "#f7f4ec";
-    switch (t) {
-      case "rice": { let g = ""; for (let i = 0; i < 70; i++) { const a = rnd() * 6.28, r = Math.sqrt(rnd()) * R * .94; g += at(cx + Math.cos(a) * r, cy + Math.sin(a) * r, rnd() * 180, ell(0, 0, 2.2, 1.1, i % 3 ? "#ffffff" : "#e8e3d2")); } return cir(cx, cy, R, c || "#fbfaf4") + g; }
-      case "noodles": return cir(cx, cy, R, shade(c, .55)) + spiral(cx, cy, R * .92, c, 3.4, rnd) + spiral(cx, cy, R * .7, c, 3.2, rnd, 3);
-      case "pasta": return cir(cx, cy, R, shade(c, .35)) + spiral(cx, cy, R * .9, c, 4, rnd, 3.6);
-      case "salad": { let g = cir(cx, cy, R, "#7cb342"); const gs = ["#8bc34a", "#7cb342", "#aed581", "#9ccc65", "#689f38"]; for (let i = 0; i < 16; i++) { const a = rnd() * 6.28, r = Math.sqrt(rnd()) * R * .8; g += at(cx + Math.cos(a) * r, cy + Math.sin(a) * r, rnd() * 360, path(`M-9 0 Q0 -8 9 0 Q0 8 -9 0Z`, gs[i % 5]) + line("M-7 0 L7 0", "#558b2f", .7)); } return g; }
-      case "grains": { let g = cir(cx, cy, R, c); for (let i = 0; i < 90; i++) { const a = rnd() * 6.28, r = Math.sqrt(rnd()) * R * .94; g += cir(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 1.1, i % 2 ? shade(c, .25) : shade(c, -.18)); } return g; }
-      case "broth": return cir(cx, cy, R, c) + cir(cx, cy, R * .78, "none", ` stroke="${shade(c, .35)}" stroke-width="1.2" opacity=".7"`) + cir(cx - R * .3, cy + R * .25, 2.2, "#ffe27a", ' opacity=".6"') + cir(cx + R * .35, cy - R * .2, 1.7, "#ffe27a", ' opacity=".6"');
-      case "curry": return cir(cx, cy, R, c) + line(`M${f1(cx - R * .6)} ${f1(cy - R * .2)} Q${f1(cx)} ${f1(cy - R * .8)} ${f1(cx + R * .6)} ${f1(cy - R * .1)}`, shade(c, .3), 2, ' opacity=".7"') + line(`M${f1(cx - R * .5)} ${f1(cy + R * .4)} Q${f1(cx)} ${f1(cy + R * .1)} ${f1(cx + R * .5)} ${f1(cy + R * .45)}`, shade(c, -.2), 1.6, ' opacity=".5"');
-      case "baked": { let g = cir(cx, cy, R, "#efb04c"); for (let i = 0; i < 14; i++) { const a = rnd() * 6.28, r = Math.sqrt(rnd()) * R * .85; g += cir(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 1.6 + rnd() * 2.4, "#d58a2a", ' opacity=".8"'); } return g; }
-      case "sauce": return cir(cx, cy, R, c) + cir(cx - R * .3, cy - R * .3, R * .25, shade(c, .25), ' opacity=".5"');
-      default: return cir(cx, cy, R, c) + cir(cx - R * .25, cy - R * .3, R * .22, shade(c, .3), ' opacity=".4"');
-    }
-  };
-
-  /* ---------- vessels ---------- */
-  const shadowC = (x, y, r) => cir(x + 2, y + 3, r, "#000", ' opacity=".12"');
-  const V = {};
-  V.bowl = (sp, rnd) => {
-    const rim = sp.o.rim || "#f7f4ec", ring = shade(rim, -.18);
-    return { pre: shadowC(50, 50, 42) + cir(50, 50, 42, rim) + cir(50, 50, 42, "none", ` stroke="${ring}" stroke-width="1.4"`) + cir(50, 50, 35.5, shade(rim, -.12)) + base(sp.base, 50, 50, 34, rnd) + line("M20 36 Q26 24 38 18", "#fff", 2, ' opacity=".45"'), area: [50, 50, 28, 28] };
-  };
-  V.soup = V.bowl;
-  V.plate = (sp, rnd) => {
-    const rim = sp.o.rim || "#fbf9f4";
-    return { pre: shadowC(50, 50, 43) + cir(50, 50, 43, rim) + cir(50, 50, 43, "none", ` stroke="${shade(rim, -.12)}" stroke-width="1.2"`) + cir(50, 50, 33, "none", ` stroke="${shade(rim, -.1)}" stroke-width="1"`) + (sp.base ? base(sp.base, 50, 50, 30, rnd) : ""), area: [50, 50, 29, 29] };
-  };
-  V.pan = (sp, rnd) => ({ pre: shadowC(44, 52, 38) + rect(76, 47, 23, 8, 4, "#2b2f36") + cir(44, 52, 38, "#434951") + cir(44, 52, 33, "#2e3238") + base(sp.base, 44, 52, 31, rnd) + line("M22 38 Q28 28 38 24", "#fff", 1.6, ' opacity=".25"'), area: [44, 52, 26, 26] });
-  V.pot = (sp, rnd) => ({ pre: shadowC(50, 52, 40) + rect(2, 46, 12, 7, 3.5, sp.o.rim || "#7a828d") + rect(86, 46, 12, 7, 3.5, sp.o.rim || "#7a828d") + cir(50, 52, 39, sp.o.rim || "#8d95a0") + cir(50, 52, 33, "#5a616b") + base(sp.base, 50, 52, 31, rnd), area: [50, 52, 27, 27] });
-  V.tray = (sp, rnd) => ({ pre: shadowC(50, 52, 40).replace(/<circle[^>]*\/>/, "") + rect(11, 22, 82, 62, 9, "#000", ' opacity=".12"') + rect(8, 19, 84, 62, 9, "#cdd3dc") + rect(13, 24, 74, 52, 6, "#e6eaef") + path("M13 24 H87 V76 H13Z", "none") + rect(15, 26, 70, 48, 5, sp.base ? (String(sp.base).split(":")[1] || "#f0b955") : "#f0b955") + (String(sp.base).startsWith("baked") ? Array.from({ length: 12 }, () => cir(18 + rnd() * 64, 29 + rnd() * 42, 1.6 + rnd() * 2.4, "#d58a2a", ' opacity=".8"')).join("") : ""), area: [50, 50, 32, 21] });
-  V.pizza = (sp, rnd) => {
-    let g = shadowC(50, 50, 43) + cir(50, 50, 43, "#e0a95a") + cir(50, 50, 38.5, "#d6402c") + cir(50, 50, 37.5, sp.o.cheese || "#f6cf72");
-    for (let i = 0; i < 6; i++) { const a = rnd() * 6.28, r = rnd() * 28; g += cir(50 + Math.cos(a) * r, 50 + Math.sin(a) * r, 3 + rnd() * 3, "#e0553b", ' opacity=".55"'); }
-    return { pre: g, post: [0, 60, 120].map(a => line("M50 8 L50 92", "#b98235", .9, ` opacity=".45" transform="rotate(${a} 50 50)"`)).join(""), area: [50, 50, 29, 29] };
-  };
-  V.pie = (sp, rnd) => {
-    let rimDots = ""; for (let i = 0; i < 28; i++) { const a = i / 28 * 6.2832; rimDots += cir(50 + Math.cos(a) * 41, 50 + Math.sin(a) * 41, 3.2, "#d79a4c"); }
-    const lattice = sp.o.lattice ? [-24, -12, 0, 12, 24].map(o => line(`M${50 + o - 30} 22 L${50 + o + 30} 78`, "#d9a05a", 4.2) + line(`M${50 + o + 30} 22 L${50 + o - 30} 78`, "#e6b36b", 4.2)).join("") : "";
-    return { pre: shadowC(50, 50, 43) + cir(50, 50, 43, "#c98b3f") + rimDots + cir(50, 50, 38, sp.o.crust || "#e6b26b") + (sp.base ? base(sp.base, 50, 50, 33, rnd) : ""), post: lattice, area: [50, 50, 24, 24] };
-  };
-  const side = (sp, rnd) => ({ pre: "", area: [50, 50, 0, 0] });
-
-  /* side-view builders draw everything themselves */
-  const layerCol = { leaf: "#6fb24a", leafL: "#8bc34a", kale: "#2f7a42", tomato: "#e5402f", cheese: "#f7cf55", cheddar: "#f1a33a", mozz: "#fbf8ee", cucumber: "#5fa347", onion: "#c283b4", avocado: "#8fbf4a", avoslice: "#8fbf4a", eggfried: "#f7d445", scramble: "#f7d445", eggboiled: "#f7d445", kidney: "#b5372c", blackbean: "#4a3a36", chickpea: "#d9b068", mushroom: "#b58a5e", tofu: "#efdfb5", friedtofu: "#d99a45", paneer: "#f5e8bd", pepperR: "#d6402f", pepperY: "#f2bf2a", eggplant: "#6f3d84", zucchini: "#7bb04c", potato: "#e2b455", sweetpotato: "#e8782a", carrot: "#ef8420", broccoli: "#3ea14b", salsa: "#d9382a", herb: "#4caf50", basil: "#3a9a40", pastry: "#d99a4a", lentil: "#8a4a2a" };
-  V.sandwich = (sp, rnd) => {
-    const bun = sp.o.bun || "#e3b169", crust = shade(bun, -.2); let y = 78, g = ell(50, 84, 40, 6, "#000", ' opacity=".12"') + rect(14, 70, 72, 13, 6, crust) + rect(15, 70, 70, 11, 5, bun);
-    const layers = (sp.t || []).map(s => s.split(":")[0]); y = 70;
-    for (const k of layers) { const col = layerCol[k] || "#c9a063"; const h = k === "tomato" || k === "cucumber" || k === "onion" ? 5 : 6.5; y -= h;
-      if (["leaf", "leafL", "kale", "herb", "basil"].includes(k)) { let d = `M10 ${y + h}`; for (let i = 0; i <= 8; i++) d += ` Q${10 + i * 10 + 5} ${y - 2 + (i % 2) * 4} ${10 + (i + 1) * 10 - 0} ${y + h}`; g += path(d + ` L90 ${y + h + 3} L10 ${y + h + 3}Z`, col); }
-      else if (["cheese", "cheddar", "mozz"].includes(k)) g += rect(12, y, 76, h - 1.5, 2, col) + path(`M12 ${y + h - 1.5} l-4 3 l9 0Z`, col);
-      else if (["eggfried", "scramble", "eggboiled"].includes(k)) g += rect(16, y, 68, h, 3, "#fffdf6") + ell(50, y + h / 2, 14, h / 2, "#f7a900");
-      else if (["lentil", "kidney", "blackbean", "chickpea", "mushroom", "tofu", "friedtofu", "paneer", "eggplant", "zucchini", "potato", "sweetpotato", "carrot", "broccoli", "pastry"].includes(k)) g += rect(15, y - 1, 70, h + 1, 5, col) + [20, 36, 52, 68, 80].map(x => cir(x + rnd() * 4, y + h / 2, 1.3, shade(col, -.25))).join("");
-      else g += rect(14, y, 72, h, h / 2, col);
-    }
-    const top = y - 11; g += path(`M13 ${y} Q13 ${top - 6} 50 ${top - 6} Q87 ${top - 6} 87 ${y} Z`, crust) + path(`M15 ${y} Q15 ${top - 4} 50 ${top - 4} Q85 ${top - 4} 85 ${y} Z`, bun) + line(`M26 ${top + 2} Q34 ${top - 2} 46 ${top - 2}`, "#fff", 1.8, ' opacity=".4"');
-    if (sp.o.seeds) for (let i = 0; i < 9; i++) g += ell(30 + rnd() * 40, top - 1 + rnd() * 5, 1.4, .8, "#f6ecd0", ` transform="rotate(${Math.round(rnd() * 90 - 45)})"`);
-    return { pre: g, area: null, shift: 0 };
-  };
-  V.burger = (sp, rnd) => { sp.o.seeds = true; sp.o.bun = sp.o.bun || "#dd9b4b"; return V.sandwich(sp, rnd); };
-  V.stack = (sp, rnd) => {
-    const col = sp.o.cake || "#e9b66b", edge = shade(col, -.2); let g = ell(50, 80, 42, 8, "#000", ' opacity=".12"') + ell(50, 78, 42, 8, "#fbf8f0") + ell(50, 78, 42, 8, "none", ' stroke="#e6e0d0" stroke-width="1"');
-    const n = sp.o.layers || 4; let y = 74;
-    for (let i = 0; i < n; i++) { g += ell(50, y, 30, 6.5, edge) + rect(20, y - 7, 60, 7, 0, col) + ell(50, y - 7, 30, 6.5, shade(col, .08)); y -= 7; }
-    g += path(`M20 ${y + 7} Q22 ${y + 3} 28 ${y + 4} Q30 ${y + 14} 33 ${y + 6} Q40 ${y + 2} 44 ${y + 12} Q47 ${y + 2} 58 ${y + 5} Q66 ${y + 14} 70 ${y + 5} Q76 ${y + 2} 80 ${y + 7} Q50 ${y + 18} 20 ${y + 7}Z`, sp.o.sauce || "#a24a14", ' opacity=".95"');
-    g += at(50, y + 1, 0, T.butter(5.4));
-    const tops = expand(sp.t, rnd, 1); let k = 0; for (const it of tops.slice(0, 6)) { g += at(38 + (k++) * 5 + rnd() * 3, y - 2 - rnd() * 3, rnd() * 360, T[it.k](it.s * .9)); }
-    return { pre: g, area: null };
-  };
-  V.wrap = (sp, rnd) => {
-    const tort = sp.o.tort || "#efd9ad", ends = expand(sp.t, rnd, .9).slice(0, 7);
-    let g = ell(50, 82, 40, 6, "#000", ' opacity=".12"') + `<g transform="rotate(-24 50 52)">` + rect(12, 38, 76, 28, 14, shade(tort, -.1)) + rect(13, 39, 74, 26, 13, tort) + rect(46, 38, 42, 28, 13, sp.o.foil || "#f1efe9") + line("M46 38 L46 66", "#d6d2c6", 1) + ell(18, 52, 4, 13, shade(tort, -.18));
-    for (let i = 0; i < ends.length; i++) g += at(14 + rnd() * 4 - 2, 41 + (i % 3) * 6 + rnd() * 2, rnd() * 360, T[ends[i].k](ends[i].s * .95));
-    g += `</g>`; return { pre: g, area: null };
-  };
-  V.taco = (sp, rnd) => {
-    const shell = sp.o.shell || "#f1c36a"; let g = ell(50, 82, 40, 6, "#000", ' opacity=".12"') + path("M10 70 Q10 18 50 18 Q90 18 90 70 Z", shade(shell, -.15)) + path("M13 68 Q13 22 50 22 Q87 22 87 68 Z", shell);
-    const items = expand(sp.t, rnd, .95).slice(0, 14); for (const it of items) g += at(24 + rnd() * 52, 26 + rnd() * 12, rnd() * 360, T[it.k](it.s));
-    g += path("M8 70 Q8 40 50 44 Q92 40 92 70 Q50 56 8 70Z", shade(shell, -.05)) + line("M14 66 Q50 54 86 66", "#fff", 1.4, ' opacity=".35"'); return { pre: g, area: null };
-  };
-  V.glass = (sp, rnd) => {
-    const liq = sp.base ? String(sp.base).split(":")[1] || "#f6e7c1" : "#f6e7c1"; let g = ell(50, 90, 26, 4, "#000", ' opacity=".12"') + path("M28 14 L72 14 L66 86 Q50 91 34 86 Z", "#e8f4fa", ' opacity=".7"') + path("M31 28 L69 28 L65 84 Q50 88 35 84 Z", liq) + ell(50, 28, 19, 4, shade(liq, .25));
-    const layer2 = sp.o.layer; if (layer2) g += path("M33 52 L67 52 L65 84 Q50 88 35 84 Z", layer2);
-    const items = expand(sp.t, rnd, .8).slice(0, 10); for (const it of items) g += at(36 + rnd() * 28, 36 + rnd() * 44, rnd() * 360, T[it.k](it.s * .8));
-    g += path("M28 14 L72 14 L66 86 Q50 91 34 86 Z", "none", ' stroke="#bcd7e4" stroke-width="1.2"') + line("M33 20 L36 70", "#fff", 2, ' opacity=".5"') + line("M58 8 L52 64", "#e5484d", 3.2) + line("M58 8 L52 64", "#fff", 1, ' stroke-dasharray="3 3"');
-    if (sp.o.garnish && T[sp.o.garnish]) g += at(70, 15, 0, T[sp.o.garnish](6)); return { pre: g, area: null };
-  };
-  V.mug = (sp, rnd) => {
-    const liq = String(sp.base || "x:#d9a45a").split(":")[1] || "#d9a45a", cup = sp.o.rim || "#f7f4ec";
-    let g = ell(50, 86, 32, 5, "#000", ' opacity=".12"') + path("M76 34 Q94 34 94 52 Q94 70 74 68", "none", ` stroke="${shade(cup, -.1)}" stroke-width="6" stroke-linecap="round"`) + path("M20 30 L80 30 L76 80 Q50 88 24 80 Z", cup) + ell(50, 30, 30, 7, shade(cup, -.15)) + ell(50, 31, 27, 5.5, liq) + line("M28 44 L30 70", "#fff", 2, ' opacity=".5"');
-    const items = expand(sp.t, rnd, .8).slice(0, 8); for (const it of items) g += at(34 + rnd() * 32, 30 + rnd() * 3, rnd() * 360, T[it.k](it.s * .8));
-    g += [34, 48, 62].map((x, i) => line(`M${x} 22 q-4 -6 0 -10 q4 -5 0 -9`, "#fff", 1.8, ' opacity=".6"')).join(""); return { pre: g, area: null };
-  };
-  V.jar = (sp, rnd) => {
-    const cols = sp.o.layers || ["#f1e4c8", "#fff8ee", "#d8445a"]; let g = ell(50, 90, 26, 4, "#000", ' opacity=".12"') + rect(26, 22, 48, 64, 9, "#e8f4fa", ' opacity=".7"') + rect(24, 12, 52, 12, 4, "#b8bec6");
-    const h = 58 / cols.length; cols.forEach((c, i) => { g += rect(28, 28 + i * h, 44, h + 1, i === cols.length - 1 ? 7 : 0, c); });
-    const items = expand(sp.t, rnd, .7).slice(0, 12); for (const it of items) g += at(33 + rnd() * 34, 30 + rnd() * 52, rnd() * 360, T[it.k](it.s * .7));
-    g += rect(26, 22, 48, 64, 9, "none", ' stroke="#bcd7e4" stroke-width="1.2"') + line("M31 30 L31 80", "#fff", 2, ' opacity=".5"') + line("M70 6 L60 40", "#c0c6ce", 2.4) + ell(71, 6, 5, 2.4, "#c0c6ce"); return { pre: g, area: null };
-  };
-  V.cookie = (sp, rnd) => {
-    const col = sp.o.cake || "#d9a15c"; let g = shadowC(50, 52, 43) + cir(50, 50, 43, sp.o.rim || "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"');
-    const spots = sp.o.spots || [[34, 36, 15], [64, 38, 14], [50, 64, 15]];
-    for (const [x, y, r] of spots) { g += cir(x, y, r, shade(col, -.2)) + cir(x, y, r - 1.3, col) + cir(x - r * .3, y - r * .3, r * .3, shade(col, .2), ' opacity=".5"'); if (sp.o.kind === "pb") g += [-6, 0, 6].map(o => line(`M${x - r * .6} ${y + o} L${x + r * .6} ${y + o}`, shade(col, -.22), 1)).join(""); else if (sp.o.kind !== "plain") for (let i = 0; i < 6; i++) g += at(x + (rnd() - .5) * r * 1.2, y + (rnd() - .5) * r * 1.2, rnd() * 360, T.chip(2.4)); }
-    return { pre: g, area: null };
-  };
-  V.square = (sp, rnd) => {      // brownies / loaf slices / cake squares on a plate
-    const col = sp.o.cake || "#5a3420"; let g = shadowC(50, 52, 43) + cir(50, 50, 43, "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"');
-    for (const [x, y, r] of sp.o.spots || [[36, 40, 0], [60, 56, 0]]) g += `<g transform="rotate(${Math.round(rnd() * 20 - 10)} ${x} ${y})">` + rect(x - 14, y - 14, 28, 28, 4, shade(col, -.22)) + rect(x - 12.5, y - 12.5, 25, 22, 3, col) + rect(x - 12.5, y + 6, 25, 6, 2, sp.o.layer || shade(col, .3)) + [0, 1, 2, 3].map(i => cir(x - 8 + i * 5.2, y - 4 + (i % 2) * 5, 1.6, shade(col, -.3))).join("") + `</g>`;
-    return { pre: g, area: null };
-  };
-  V.scoop = (sp, rnd) => {
-    const cols = sp.o.scoops || ["#fff4d6", "#f6a8b8"]; let g = ell(50, 88, 34, 5, "#000", ' opacity=".12"') + path("M16 52 Q50 96 84 52 Z", "#e9e2d4") + path("M16 52 Q50 96 84 52", "none", ' stroke="#c9c1b0" stroke-width="1.2"') + rect(40, 84, 20, 5, 2, "#e0d9c8");
-    cols.forEach((c, i) => { const x = 50 + (i - (cols.length - 1) / 2) * 22, y = 42; g += cir(x, y, 15, c) + path(`M${x - 15} ${y} Q${x - 10} ${y + 10} ${x - 5} ${y + 5} Q${x} ${y + 12} ${x + 6} ${y + 5} Q${x + 11} ${y + 9} ${x + 15} ${y} Z`, shade(c, -.06)) + cir(x - 5, y - 6, 4, "#fff", ' opacity=".35"'); });
-    const items = expand(sp.t, rnd, .9).slice(0, 12); for (const it of items) g += at(30 + rnd() * 40, 24 + rnd() * 26, rnd() * 360, T[it.k](it.s * .9)); return { pre: g, area: null };
-  };
-  V.bucket = (sp, rnd) => {
-    let g = ell(50, 90, 28, 4, "#000", ' opacity=".12"'); for (let i = 0; i < 16; i++) g += at(24 + rnd() * 52, 18 + rnd() * 18, 0, cir(0, 0, 6 + rnd() * 3, i % 3 ? "#fff6db" : "#f7dc8a") + cir(-2, -2, 2.4, "#fff", ' opacity=".6"'));
-    g += path("M26 38 L74 38 L68 90 L32 90 Z", "#fff") + [0, 1, 2].map(i => path(`M${33 + i * 12} 38 L${37 + i * 12} 38 L${35 + i * 9} 90 L${31 + i * 9} 90Z`, "#e5483a")).join("") + path("M26 38 L74 38 L74 42 L26 42Z", "#c93a2e"); return { pre: g, area: null };
-  };
-  V.fries = (sp, rnd) => {
-    let g = ell(50, 90, 28, 4, "#000", ' opacity=".12"'); for (let i = 0; i < 22; i++) { const x = 28 + rnd() * 44, h = 22 + rnd() * 14; g += `<g transform="rotate(${Math.round(rnd() * 24 - 12)} ${x} 60)">` + rect(x - 2, 60 - h, 4.2, h + 6, 1.4, i % 3 ? "#f3c63f" : "#e8b52a") + `</g>`; }
-    g += path("M24 52 L76 52 L68 90 L32 90 Z", "#e5483a") + path("M24 52 L76 52 L74 58 L26 58Z", "#c93a2e") + cir(50, 72, 7, "#fff") + path("M46 70 q4 -4 8 0 q-4 6 -8 0Z", "#e5483a"); return { pre: g, area: null };
-  };
-  V.dumpling = (sp, rnd) => {
-    const col = sp.o.cake || "#f8f1e0"; let g = shadowC(50, 52, 43) + cir(50, 50, 43, sp.o.rim || "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"');
-    const pts = sp.o.spots || [[34, 36, 20], [62, 38, -20], [28, 62, 35], [54, 66, 0], [72, 60, -35]];
-    for (const [x, y, rot] of pts) g += at(x, y, rot, path("M-11 3 Q-11 -11 0 -11 Q11 -11 11 3 Q0 8 -11 3Z", col) + path("M-11 3 Q0 8 11 3", "none", ' stroke="#e2d6bb" stroke-width="1"') + [-6, -2, 2, 6].map(o => line(`M${o} -9 L${o} -3`, "#e2d6bb", 1)).join(""));
-    g += cir(78, 78, 6, "#3d2b1f") + cir(78, 78, 4.6, "#6b3f22") ; return { pre: g, area: null };
-  };
-  V.roll = (sp, rnd) => {
-    const col = sp.o.cake || "#e0a24a"; let g = shadowC(50, 52, 43) + cir(50, 50, 43, sp.o.rim || "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"');
-    for (const [x, y, rot] of sp.o.spots || [[50, 34, -18], [48, 56, -14], [52, 76, -20]]) g += at(x, y, rot, rect(-24, -7, 48, 14, 7, shade(col, -.2)) + rect(-23, -6, 46, 11, 5.5, col) + line("M-14 -3 L8 -3", "#f6d28a", 1.6, ' opacity=".7"') + ell(23, 0, 3, 6.5, shade(col, -.3)));
-    g += cir(80, 76, 6, "#d9382a"); return { pre: g, area: null };
-  };
-  V.sushi = (sp, rnd) => {
-    let g = shadowC(50, 52, 43) + rect(6, 22, 88, 56, 8, "#d7b47a") + rect(8, 24, 84, 52, 6, "#e9cf9a");
-    const fills = expand(sp.t, rnd, .7).slice(0, 6), cols = fills.map(f => layerCol[f.k] || "#e8782a");
-    [[26, 42], [50, 42], [74, 42], [38, 62], [62, 62]].forEach(([x, y], i) => { g += cir(x, y, 11, "#27312a") + cir(x, y, 8.6, "#fbfaf4") + cir(x, y, 4.2, cols[i % Math.max(1, cols.length)] || "#8fbf4a") + cir(x - 3, y - 3, 1.4, "#fff", ' opacity=".6"'); });
-    g += cir(84, 66, 3.6, "#9cc34a") + ell(84, 72, 6, 2.4, "#f2b6c0"); return { pre: g, area: null };
-  };
-  V.toast = (sp, rnd) => {
-    let g = shadowC(50, 52, 43) + cir(50, 50, 43, sp.o.rim || "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"');
-    const col = sp.o.cake || "#d8a35c";
-    for (const [x, y, rot] of sp.o.spots || [[40, 44, -8], [60, 56, 6]]) g += at(x, y, rot, rect(-19, -19, 38, 38, 8, shade(col, -.15)) + rect(-17, -17, 34, 34, 6, col) + rect(-14, -14, 28, 28, 4, shade(col, .22)));
-    return { pre: g, area: [50, 50, 22, 22], areaOnTop: true };
-  };
-  V.bagel = (sp, rnd) => {
-    let g = shadowC(50, 52, 43) + cir(50, 50, 43, "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"') + cir(44, 48, 26, "#cf9a52") + cir(44, 48, 21, "#e6b872") + cir(44, 48, 8, "#fbf9f4") + cir(44, 48, 8, "none", ' stroke="#cf9a52" stroke-width="1.2"');
-    g += path("M30 38 Q44 22 60 36 Q70 50 58 62 Q44 70 32 58 Q24 48 30 38Z", "#fffdf6", ' opacity=".95"') + cir(44, 48, 7, "#fbf9f4");
-    for (let i = 0; i < 16; i++) g += ell(26 + rnd() * 36, 28 + rnd() * 40, 1.1, .6, "#fff", ' opacity=".7"'); return { pre: g, area: null };
-  };
-  V.chips = (sp, rnd) => {   // bowl of chips / nachos with a dip
-    let g = shadowC(50, 50, 43) + cir(50, 50, 43, sp.o.rim || "#d98a5f") + cir(50, 50, 36, shade(sp.o.rim || "#d98a5f", -.15)) + cir(50, 50, 35, "#f3e0b0");
-    const ch = expand([sp.o.chip || "tchip:14"], rnd, 1); g += scatter(50, 50, 29, 29, ch, rnd); return { pre: g, area: [50, 50, 22, 22] };
-  };
-  V.skewer = (sp, rnd) => {
-    let g = shadowC(50, 52, 43) + cir(50, 50, 43, "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"'); const keys = (sp.t || []).map(s => s.split(":")[0]);
-    [[-14, 34], [0, 50], [14, 66]].forEach(([o, yy], r) => { g += line(`M${16 + o} ${yy + 18} L${84 + o} ${yy - 18}`.replace(/(\d+) (\d+) L(\d+) (\d+)/, (m, a, b, c2, d) => `${16} ${yy + 6} L${84} ${yy - 6}`), "#c79a63", 1.6); for (let i = 0; i < 5; i++) { const k = keys[(i + r) % keys.length] || "cherry", x = 24 + i * 13, y = yy + 6 - (i * 13 / 68 * 12); g += at(x, y, 0, T[k](D[k] ? Math.min(D[k][0], 5.4) : 4.5)); } });
-    return { pre: g, area: null };
-  };
-  V.rolls = V.roll;
-
-  /* ---------- sides that sit beside the vessel ---------- */
-  const SIDES = {
-    naan: g => at(78, 76, 15, T.naan(13)), roti: g => at(78, 76, 0, T.tortilla(11)), lime: g => at(80, 80, 0, T.lime(6.5)), lemon: g => at(80, 80, 0, T.lemon(6.5)),
-    bread: g => at(78, 78, 20, T.bread(8)), toast: g => at(78, 78, 12, T.bread(8)), chutney: g => cir(82, 80, 7, "#e9e3d0") + cir(82, 80, 5.2, "#4caf50"), sauce: g => cir(82, 80, 7, "#e9e3d0") + cir(82, 80, 5.2, "#c0392b"),
-    chopsticks: g => line("M60 96 L98 62", "#7a4a25", 1.8) + line("M66 98 L100 70", "#7a4a25", 1.8), spoon: g => line("M70 94 L96 66", "#c9ced6", 2.4) + ell(97, 64, 5, 3.2, "#c9ced6", ' transform="rotate(-48 97 64)"'),
-    fork: g => line("M72 98 L98 70", "#c9ced6", 2.2) + [0, 3, 6].map(o => line(`M${96 + o * .4 - 2} ${64 + o * .5} L${99 + o * .4} ${72 + o * .5}`, "#c9ced6", 1.2)).join(""),
-  };
-
-  /* =================== EXTRA: more ingredients, vessels and bases =================== */
-  Object.assign(T, {
-    grape:    s => cir(0,0,s*.6,"#6a4c93") + gl(-s*.2,-s*.2,s*.15),
-    cracker:  s => rect(-s*.8,-s*.8,s*1.6,s*1.6,s*.15,"#dfae5f") + rect(-s*.65,-s*.65,s*1.3,s*1.3,s*.1,"#ecc888") + [[-.3,-.3],[.3,-.3],[-.3,.3],[.3,.3]].map(p=>cir(p[0]*s,p[1]*s,s*.1,"#c9954a")).join(""),
-    pitaw:    s => path(`M${-s} ${s*.6} Q0 ${-s*1.3} ${s} ${s*.6} Z`,"#dcbd85") + path(`M${-s*.8} ${s*.5} Q0 ${-s} ${s*.8} ${s*.5} Z`,"#efd9a8"),
-    carrotstick:s=> rect(-s,-s*.28,s*2,s*.56,s*.28,"#ef8420") + line(`M${-s*.6} 0 L${s*.4} 0`,"#f8b058",s*.12),
-    cukestick:s=> rect(-s,-s*.28,s*2,s*.56,s*.28,"#7fb84f") + line(`M${-s*.6} 0 L${s*.4} 0`,"#cfe8a0",s*.12),
-    celerystick:s=> rect(-s,-s*.3,s*2,s*.6,s*.3,"#a6d17a") + line(`M${-s*.7} 0 L${s*.6} 0`,"#d7ecb8",s*.12),
-    pod:      s => ell(0,0,s,s*.45,"#5fae3e") + [-.45,0,.45].map(x=>cir(x*s,0,s*.26,"#8fd36a")).join(""),
-    samosa:   s => path(`M${-s} ${s*.7} Q${-s} ${-s*.2} 0 ${-s} Q${s} ${-s*.2} ${s} ${s*.7} Q0 ${s*.95} ${-s} ${s*.7}Z`,"#d58c2b") + path(`M${-s*.78} ${s*.6} Q${-s*.78} ${-s*.1} 0 ${-s*.78} Q${s*.78} ${-s*.1} ${s*.78} ${s*.6} Q0 ${s*.8} ${-s*.78} ${s*.6}Z`,"#ecb455") + line(`M${-s*.6} ${s*.72} Q0 ${s*.95} ${s*.6} ${s*.72}`,"#b8721d",s*.12),
-    fritter:  s => cir(0,0,s,"#d58c2b") + cir(-s*.15,-s*.2,s*.7,"#e9a846") + cir(-s*.3,-s*.3,s*.2,"#f6c872") + cir(s*.4,s*.2,s*.15,"#b8691a") + cir(-s*.2,s*.45,s*.12,"#b8691a"),
-    tempura:  s => rect(-s,-s*.38,s*1.7,s*.76,s*.34,"#e9b44f") + rect(-s*.8,-s*.25,s*1.3,s*.3,s*.14,"#f6d27f") + cir(s*.8,0,s*.42,"#3f9b46"),
-    jamun:    s => cir(0,0,s*.9,"#6b3a1f") + cir(0,0,s*.9,"none",' stroke="#4a2410" stroke-width=".8"') + gl(-s*.28,-s*.28,s*.2),
-    ricecake: s => rect(-s*.95,-s*.3,s*1.9,s*.6,s*.3,"#fbf6ea") + rect(-s*.95,-s*.3,s*1.9,s*.6,s*.3,"none",' stroke="#e8dfc6" stroke-width=".7"'),
-    penne:    s => path(`M${-s} ${s*.35} L${-s*.55} ${-s*.38} L${s} ${-s*.3} L${s*.55} ${s*.42}Z`,"#efc968") + line(`M${-s*.5} ${s*.05} L${s*.5} ${s*.05}`,"#d6a840",s*.12),
-    gnocchi:  s => ell(0,0,s*.95,s*.62,"#f2e2b8") + [-.45,0,.45].map(x=>line(`M${x*s} ${-s*.45} L${x*s} ${s*.45}`,"#d6c08c",s*.1)).join(""),
-    shell:    s => path(`M${-s} ${s*.5} Q${-s} ${-s*.95} 0 ${-s*.9} Q${s} ${-s*.95} ${s} ${s*.5} Q0 ${s*.95} ${-s} ${s*.5}Z`,"#f1e2b6") + [-.5,0,.5].map(x=>line(`M${x*s} ${s*.4} L${x*s*.8} ${-s*.6}`,"#d9c590",s*.1)).join("") + ell(0,s*.15,s*.45,s*.25,"#9cc66b"),
-    garlic:   s => path(`M0 ${-s} Q${s*.9} ${-s*.1} ${s*.4} ${s*.8} Q0 ${s*1.05} ${-s*.4} ${s*.8} Q${-s*.9} ${-s*.1} 0 ${-s}Z`,"#f6efdc") + line(`M0 ${-s*.8} L0 ${s*.6}`,"#e4d8b8",s*.1),
-    okra:     s => cir(0,0,s*.9,"#6db04a") + cir(0,0,s*.62,"#b9dc86") + [0,72,144,216,288].map(a=>at(Math.cos(a/57.3)*s*.32,Math.sin(a/57.3)*s*.32,0,cir(0,0,s*.13,"#eef7cf"))).join(""),
-    bruschetta:s=> rect(-s,-s*.7,s*2,s*1.4,s*.3,"#d9a65d") + rect(-s*.85,-s*.55,s*1.7,s*1.1,s*.2,"#eecb8a") + cir(-s*.4,0,s*.28,"#e5402f") + cir(s*.1,-s*.1,s*.28,"#e5402f") + cir(s*.5,s*.15,s*.24,"#e5402f") + cir(0,s*.25,s*.14,"#3f9b46"),
-    ribbon:   s => line(`M${-s} 0 q${s*.5} ${-s*.9} ${s} 0 t${s} 0`,"#f6cf3a",s*.4),
-    friedonion:s=> line(`M${-s} ${s*.3} Q${-s*.3} ${-s*.9} ${s*.3} ${s*.1} T${s} ${-s*.3}`,"#8c5a26",s*.38),
-    potatoslice:s=> cir(0,0,s,"#e9c77c") + cir(0,0,s*.82,"#f6e2ae"),
-    cauliflowerR:s=> cir(-s*.4,s*.1,s*.55,"#e0592a") + cir(s*.4,s*.1,s*.55,"#e86a33") + cir(0,-s*.4,s*.6,"#ee7a3a") + cir(-s*.1,-s*.5,s*.2,"#f7a76a"),
-    chilla:   s => cir(0,0,s,"#dfae4c") + cir(0,0,s,"none",' stroke="#c99034" stroke-width=".8"') + [[-.4,-.3,"#3f9b46"],[.3,-.4,"#d9382a"],[.35,.3,"#3f9b46"],[-.3,.4,"#d9382a"],[0,0,"#3f9b46"]].map(p=>cir(p[0]*s,p[1]*s,s*.1,p[2])).join(""),
-    paratha:  s => cir(0,0,s,"#dca048") + cir(0,0,s*.9,"#e8b565") + [[-.4,-.3],[.35,-.35],[.4,.3],[-.3,.4],[0,0]].map(p=>cir(p[0]*s,p[1]*s,s*.14,"#b9742a")).join(""),
-    scallionpancake:s=> cir(0,0,s,"#d9a243") + cir(0,0,s*.88,"#e8bb62") + line(`M0 ${-s*.7} L0 ${s*.7}`,"#c58f35",s*.06) + line(`M${-s*.7} 0 L${s*.7} 0`,"#c58f35",s*.06) + [[-.4,-.35],[.35,-.3],[.4,.3],[-.3,.4],[.1,.1]].map(p=>cir(p[0]*s,p[1]*s,s*.11,"#7cb342")).join(""),
-    bakedapple:s=> cir(0,0,s,"#c9372f") + cir(0,0,s*.5,"#efc66e") + cir(0,0,s*.5,"none",' stroke="#a82a24" stroke-width=".8"') + [[-.2,-.1],[.2,.1],[0,.25],[.1,-.25]].map(p=>cir(p[0]*s,p[1]*s,s*.08,"#c58f43")).join("") + gl(-s*.55,-s*.55,s*.16),
-    deviled:  s => ell(0,0,s*.7,s,"#fffdf6") + ell(0,0,s*.7,s,"none",' stroke="#e6dec6" stroke-width=".7"') + cir(0,s*.1,s*.4,"#f6c33b") + cir(0,s*.1,s*.2,"#f9d664") + cir(s*.12,-s*.15,s*.1,"#d9382a"),
-    tamago:   s => rect(-s*.9,-s*.7,s*1.8,s*1.4,s*.3,"#f3c640") + rect(-s*.9,-s*.7,s*1.8,s*1.4,s*.3,"none",' stroke="#dba91e" stroke-width=".8"') + line(`M${-s*.6} ${-s*.3} Q${-s*.2} ${-s*.5} ${s*.2} ${-s*.2} T${s*.6} ${s*.2}`,"#e2a822",s*.1) + line(`M${-s*.6} ${s*.2} Q${-s*.2} 0 ${s*.2} ${s*.3}`,"#e2a822",s*.1),
-    crepe:    s => path(`M${-s} ${s*.8} L${s} ${s*.8} A${s*1.7} ${s*1.7} 0 0 0 ${-s} ${s*.8}Z`,"#efcf93") + line(`M0 ${s*.8} L0 ${-s*.3}`,"#d9b36d",s*.08) + [[-.4,.5],[.2,.1],[.45,.55],[-.1,.7]].map(p=>cir(p[0]*s,p[1]*s,s*.09,"#fff7e5")).join(""),
-    sauceR:   s => ell(0,0,s*1.1,s*.7,"#d9382a") + ell(-s*.3,-s*.2,s*.4,s*.15,"#ef6a58"),
-    sauceW:   s => ell(0,0,s*1.1,s*.7,"#fff7e6") + ell(-s*.3,-s*.2,s*.4,s*.15,"#fff"),
-    crumb:    s => cir(0,0,s*.45,"#c98a3a"),
-    seedpod:  s => ell(0,0,s*.4,s*.22,"#6f8f3a"),
-    applegold:s => path(`M${-s} ${s*.3} Q0 ${-s*1.2} ${s} ${s*.3} Q0 ${s*.1} ${-s} ${s*.3}Z`,"#d98f35") + path(`M${-s*.9} ${s*.3} Q0 ${s*.05} ${s*.9} ${s*.3} Q0 ${s*.6} ${-s*.9} ${s*.3}Z`,"#f0cf8a"),
-    mangoslice:s=> path(`M${-s} ${s*.4} Q0 ${-s*1.1} ${s} ${s*.4} Q0 ${s*.1} ${-s} ${s*.4}Z`,"#f6a026") + path(`M${-s*.8} ${s*.35} Q0 ${-s*.7} ${s*.8} ${s*.35}`,"none",' stroke="#fbd27a" stroke-width="1.4"'),
-    leek:     s => cir(0,0,s*.65,"none",` stroke="#b9d98a" stroke-width="${f1(s*.3)}"`) + cir(0,0,s*.3,"none",` stroke="#e8f2cf" stroke-width="${f1(s*.14)}"`),
-  });
-  Object.assign(D, { grape:[3,8], cracker:[4.6,6], pitaw:[6,5], carrotstick:[7,5], cukestick:[7,5], celerystick:[7,4], pod:[6.4,9], samosa:[9.5,3], fritter:[5,8], tempura:[8.6,6], jamun:[4.6,4], ricecake:[5.5,9],
-    penne:[5,12], gnocchi:[4.6,10], shell:[7,5], garlic:[3.2,3], okra:[3.6,9], bruschetta:[10.5,3], ribbon:[4,6], friedonion:[3.6,10], potatoslice:[4.4,12], cauliflowerR:[5.4,6], chilla:[11,2], paratha:[17,1],
-    scallionpancake:[12,2], bakedapple:[10,2], deviled:[8.6,6], tamago:[8.4,4], crepe:[10,2], sauceR:[3.6,3], sauceW:[3.6,2], crumb:[1.6,30], seedpod:[2.2,8], leek:[3.6,8], applegold:[5.4,9], mangoslice:[6,7] });
-
-  /* ---- extra base styles ---- */
-  const _base = base;
-  base = (kind, cx, cy, R, rnd) => {
-    const [t, col] = String(kind || "plain:#f7f4ec").split(":");
-    if (t === "split") {
-      const [a, b] = String(col).split("|"); let g = path(`M${cx} ${cy - R} A${R} ${R} 0 0 0 ${cx} ${cy + R}Z`, a) + path(`M${cx} ${cy - R} A${R} ${R} 0 0 1 ${cx} ${cy + R}Z`, b);
-      for (let i = 0; i < 40; i++) { const x = cx - 2 - rnd() * (R - 5), y = cy + (rnd() - .5) * R * 1.6; if (Math.hypot(x - cx, y - cy) < R - 2) g += at(x, y, rnd() * 180, ell(0, 0, 2.2, 1.1, i % 3 ? "#fff" : "#e8e3d2")); }
-      return g + line(`M${cx - 4} ${cy - R * .7} Q${cx + 2} ${cy} ${cx - 4} ${cy + R * .7}`, shade(b, .2), 1.4, ' opacity=".6"');
-    }
-    if (t === "bibim") {
-      const cols = String(col).split("|"); let g = cir(cx, cy, R, "#fbfaf4"), n = cols.length;
-      cols.forEach((c, i) => { const a0 = i / n * 6.2832 - 1.57, a1 = (i + .86) / n * 6.2832 - 1.57, r1 = R * .92, r0 = R * .34; g += path(`M${f1(cx + Math.cos(a0) * r0)} ${f1(cy + Math.sin(a0) * r0)} L${f1(cx + Math.cos(a0) * r1)} ${f1(cy + Math.sin(a0) * r1)} A${r1} ${r1} 0 0 1 ${f1(cx + Math.cos(a1) * r1)} ${f1(cy + Math.sin(a1) * r1)} L${f1(cx + Math.cos(a1) * r0)} ${f1(cy + Math.sin(a1) * r0)} A${r0} ${r0} 0 0 0 ${f1(cx + Math.cos(a0) * r0)} ${f1(cy + Math.sin(a0) * r0)}Z`, c); });
-      return g + T.eggfried(R * .36).replace(/^/, "").replace(/(.*)/s, m => at(cx, cy, 0, m));
-    }
-    if (t === "crumble") { let g = cir(cx, cy, R, "#d9a14e"); for (let i = 0; i < 60; i++) { const a = rnd() * 6.28, r = Math.sqrt(rnd()) * R * .92; g += cir(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 1.4 + rnd() * 2, i % 2 ? "#b9772a" : "#ecc477"); } return g; }
-    if (t === "mash") { let g = cir(cx, cy, R, "#f1e2b0"); for (let i = -3; i <= 3; i++) g += line(`M${cx - R * .8} ${cy + i * R * .22} Q${cx} ${cy + i * R * .22 - 3} ${cx + R * .8} ${cy + i * R * .22}`, "#d9bf7e", 1.2); return g; }
-    return _base(kind, cx, cy, R, rnd);
-  };
-
-  /* ---- bowl gets an optional sauce mound ---- */
-  const _bowl = V.bowl;
-  V.bowl = (sp, rnd) => {
-    const v = _bowl(sp, rnd);
-    if (sp.o.sauce) v.pre += cir(50, 48, 12.5, sp.o.sauce) + cir(46, 44, 5, shade(sp.o.sauce, .3), ' opacity=".5"');
-    return v;
-  };
-  V.soup = V.bowl;
-
-  /* ---- improved wrap / taco / pie / scoop ---- */
-  V.wrap = (sp, rnd) => {
-    const tort = sp.o.tort || "#efd9ad", ends = expand(sp.t, rnd, 1.35).slice(0, 8);
-    let g = ell(50, 84, 40, 6, "#000", ' opacity=".12"') + `<g transform="rotate(-18 50 52)">`;
-    for (let i = 0; i < ends.length; i++) g += at(9 + (i % 3) * 5 + rnd() * 3, 38 + (i % 4) * 7 + rnd() * 3, rnd() * 360, T[ends[i].k](ends[i].s));
-    g += rect(16, 36, 70, 32, 15, shade(tort, -.12)) + rect(17, 37, 68, 30, 14, tort) + rect(56, 36, 32, 32, 14, sp.o.foil || "#eceae3") + line("M56 36 L56 68", "#cfcabc", 1.2) + line("M64 40 L86 40", "#fff", 1.4, ' opacity=".7"') + ell(20, 52, 5, 15, shade(tort, -.1)) + ell(20, 52, 3.2, 11, sp.o.fill || "#f6d28a") + line("M24 40 Q40 38 52 41", "#fff", 1.6, ' opacity=".5"') + `</g>`;
-    return { pre: g, area: null };
-  };
-  V.taco = (sp, rnd) => {
-    const shell = sp.o.shell || "#f1c36a"; let g = ell(50, 84, 38, 6, "#000", ' opacity=".12"') + path("M14 76 Q12 26 50 26 Q88 26 86 76 Z", shade(shell, -.2)) + path("M17 74 Q16 31 50 31 Q84 31 83 74 Z", shade(shell, -.05));
-    let d = "M18 44"; for (let i = 0; i <= 8; i++) d += ` Q${18 + i * 8 + 4} ${38 + (i % 2) * -8} ${18 + (i + 1) * 8} ${44}`; g += path(d + " L82 52 L18 52Z", "#5da83f");
-    const items = expand(sp.t, rnd, 1).slice(0, 12); for (const it of items) g += at(26 + rnd() * 48, 34 + rnd() * 12, rnd() * 360, T[it.k](it.s));
-    g += path("M12 78 Q12 52 50 54 Q88 52 88 78 Q50 68 12 78Z", shell) + path("M12 78 Q12 52 50 54 Q88 52 88 78", "none", ` stroke="${shade(shell, -.2)}" stroke-width="1.2"`) + line("M22 66 Q50 58 78 66", "#fff", 1.4, ' opacity=".4"'); return { pre: g, area: null };
-  };
-  V.pie = (sp, rnd) => {
-    let rimDots = ""; const crust = sp.o.crust || "#e6b26b";
-    if (!sp.o.smooth) for (let i = 0; i < 28; i++) { const a = i / 28 * 6.2832; rimDots += cir(50 + Math.cos(a) * 41, 50 + Math.sin(a) * 41, 3.2, shade(crust, -.12)); }
-    const lat = sp.o.lattice ? `<clipPath id="pc"><circle cx="50" cy="50" r="37"/></clipPath><g clip-path="url(#pc)">` + [-30, -18, -6, 6, 18, 30].map(o => line(`M${50 + o - 40} 10 L${50 + o + 40} 90`, shade(crust, -.08), 4.6) + line(`M${50 + o + 40} 10 L${50 + o - 40} 90`, shade(crust, .12), 4.6)).join("") + `</g>` : "";
-    const vents = sp.o.vents ? [0, 72, 144, 216, 288].map(a => at(50, 50, a, line("M0 -6 Q3 -14 0 -22", shade(crust, -.4), 2.2) + path("M0 -24 q-4 -4 0 -8 q4 4 0 8Z", shade(crust, .1)))).join("") + cir(50, 50, 3.4, shade(crust, -.2)) + [0, 36, 72, 108, 144, 180, 216, 252, 288, 324].map(a => at(50, 50, a, cir(0, -33, 1.2, shade(crust, -.35)))).join("") : "";
-    return { pre: shadowC(50, 50, 43) + cir(50, 50, 43, sp.o.smooth ? shade(crust, -.2) : shade(crust, -.18)) + rimDots + cir(50, 50, 38, crust) + (sp.base ? base(sp.base, 50, 50, 34, rnd) : ""), post: lat + vents, area: [50, 50, 24, 24] };
-  };
-  V.scoop = (sp, rnd) => {
-    const cols = sp.o.scoops || ["#fff4d6", "#f6a8b8"]; let g = ell(50, 90, 36, 5, "#000", ' opacity=".12"') + path("M12 56 Q50 98 88 56 Z", "#e9e2d4") + path("M12 56 Q50 98 88 56", "none", ' stroke="#c9c1b0" stroke-width="1.2"') + ell(50, 56, 38, 5, "#f3eee3") + rect(38, 84, 24, 5, 2, "#e0d9c8");
-    cols.forEach((c, i) => { const x = 50 + (i - (cols.length - 1) / 2) * 24, y = 42; g += cir(x, y, 17, c) + path(`M${x - 17} ${y} Q${x - 11} ${y + 11} ${x - 5} ${y + 5} Q${x} ${y + 13} ${x + 6} ${y + 5} Q${x + 12} ${y + 10} ${x + 17} ${y} Z`, shade(c, -.06)) + cir(x - 6, y - 7, 4.5, "#fff", ' opacity=".35"'); });
-    const items = expand(sp.t, rnd, .95).slice(0, 12); for (const it of items) g += at(26 + rnd() * 48, 22 + rnd() * 28, rnd() * 360, T[it.k](it.s * .9)); return { pre: g, area: null };
-  };
-  V.nachos = (sp, rnd) => {
-    let g = shadowC(50, 50, 43) + cir(50, 50, 43, sp.o.rim || "#d98a5f") + cir(50, 50, 38, shade(sp.o.rim || "#d98a5f", -.15)) + cir(50, 50, 37, "#f3e0b0");
-    g += scatter(50, 50, 31, 31, expand(["tchip:16"], rnd, 1.1), rnd) + cir(50, 50, 28, "#f6cd5a", ' opacity=".35"'); return { pre: g, area: [50, 50, 27, 27] };
-  };
-  V.dip = (sp, rnd) => {
-    const dc = String(sp.base || "x:#e7cd95").split(":")[1] || "#e7cd95"; let g = shadowC(50, 50, 43) + cir(50, 50, 43, sp.o.rim || "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"');
-    const items = expand(sp.t, rnd, sp.o.scale || 1.5).slice(0, 12); items.forEach((it, i) => { const a = i / items.length * 6.2832 + .3, r = 29; g += at(50 + Math.cos(a) * r, 50 + Math.sin(a) * r, a * 57.3 + 90, T[it.k](it.s * .95)); });
-    g += cir(50, 50, 17, sp.o.bowl || "#e8e1d0") + cir(50, 50, 14.5, dc) + path("M42 48 Q50 42 58 48", "none", ` stroke="${shade(dc, .3)}" stroke-width="1.4" stroke-linecap="round"`) + cir(46, 46, 2, "#fff", ' opacity=".4"'); if (sp.o.drizzle) g += cir(50, 50, 3, sp.o.drizzle); return { pre: g, area: null };
-  };
-  V.waffle = (sp, rnd) => {
-    let g = shadowC(50, 52, 43) + cir(50, 50, 43, "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"') + rect(20, 20, 60, 60, 8, "#d8a050") + rect(22, 22, 56, 56, 6, "#efc27a");
-    for (let i = 0; i < 5; i++) for (let j = 0; j < 5; j++) g += rect(25 + i * 10.6, 25 + j * 10.6, 8, 8, 1.8, "#e0a659");
-    return { pre: g, area: [50, 50, 22, 22] };
-  };
-  V.muffin = (sp, rnd) => {
-    let g = ell(50, 86, 42, 6, "#000", ' opacity=".12"'); [[26, 62], [50, 54], [74, 62]].forEach(([x, y], i) => { g += path(`M${x - 15} ${y} L${x + 15} ${y} L${x + 11} ${y + 24} L${x - 11} ${y + 24}Z`, ["#e5eaf0", "#dfe6ee", "#e5eaf0"][i]) + [0, 1, 2].map(k => line(`M${x - 9 + k * 9} ${y + 2} L${x - 7 + k * 7} ${y + 22}`, "#c3ccd6", .8)).join("") + path(`M${x - 17} ${y + 2} Q${x - 18} ${y - 20} ${x} ${y - 20} Q${x + 18} ${y - 20} ${x + 17} ${y + 2}Z`, sp.o.cake || "#f2c94a") + path(`M${x - 17} ${y + 2} Q${x - 18} ${y - 20} ${x} ${y - 20}`, "none", ' stroke="#fff" stroke-width="2" opacity=".35"'); for (let k = 0; k < 4; k++) g += at(x - 9 + rnd() * 18, y - 14 + rnd() * 12, rnd() * 360, T[["pepperR", "leaf", "cheddar", "herb"][k]](3.2)); });
-    return { pre: g, area: null };
-  };
-  V.loaf = (sp, rnd) => {
-    const col = sp.o.cake || "#c98a45"; let g = ell(50, 84, 42, 6, "#000", ' opacity=".12"') + rect(8, 54, 84, 8, 3, "#d9c9a5", ' opacity="0"') + path("M12 64 L12 42 Q12 30 28 30 L72 30 Q88 30 88 42 L88 64 Q50 70 12 64Z", shade(col, -.2)) + path("M15 62 L15 43 Q15 33 29 33 L71 33 Q85 33 85 43 L85 62 Q50 67 15 62Z", col) + line("M28 38 Q36 35 50 35", "#fff", 1.8, ' opacity=".4"');
-    [[34, 52], [58, 56]].forEach(([x, y]) => { g += `<g transform="rotate(${Math.round(rnd() * 14 - 7)} ${x} ${y})">` + rect(x - 14, y - 15, 28, 26, 6, shade(col, -.18)) + rect(x - 12.5, y - 13.5, 25, 23, 5, "#f3dfae") + [0, 1, 2, 3, 4].map(i => cir(x - 8 + (i % 3) * 8, y - 6 + Math.floor(i / 3) * 8, 1.4, "#c98a45")).join("") + `</g>`; });
-    const items = expand(sp.t, rnd, .9).slice(0, 4); for (const it of items) g += at(30 + rnd() * 40, 34 + rnd() * 6, rnd() * 360, T[it.k](it.s)); return { pre: g, area: null };
-  };
-  V.flan = (sp, rnd) => {
-    let g = shadowC(50, 52, 43) + cir(50, 50, 43, "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"') + ell(50, 60, 34, 12, "#a9561b", ' opacity=".9"') + path("M20 58 Q20 30 50 28 Q80 30 80 58 Q50 68 20 58Z", "#f6dc8a") + path("M24 52 Q24 34 50 32 Q76 34 76 52", "none", ' stroke="#fff" stroke-width="2.4" opacity=".4"') + path("M22 50 Q22 32 50 30 Q78 32 78 50 Q76 60 72 58 Q70 66 66 60 Q60 68 54 61 Q46 68 40 60 Q34 66 30 58 Q24 60 22 50Z", "#a9561b", ' opacity=".95"');
-    for (const it of expand(sp.t, rnd, 1).slice(0, 3)) g += at(50 + rnd() * 14 - 7, 30 + rnd() * 4, rnd() * 360, T[it.k](it.s)); return { pre: g, area: null };
-  };
-  V.omelette = (sp, rnd) => {
-    const col = sp.o.eggc || "#f6cf45"; let g = shadowC(50, 52, 43) + cir(50, 50, 43, "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"') + path("M14 62 Q14 22 50 22 Q86 22 86 62 Q50 74 14 62Z", shade(col, -.15)) + path("M17 60 Q17 26 50 26 Q83 26 83 60 Q50 70 17 60Z", col) + path("M22 54 Q24 32 44 30", "none", ' stroke="#fff" stroke-width="2.4" opacity=".4" stroke-linecap="round"');
-    const bits = expand(sp.t, rnd, 1.25).slice(0, 12); for (const it of bits) g += at(24 + rnd() * 52, 36 + rnd() * 24, rnd() * 360, T[it.k](it.s)); if (sp.o.flecks) for (let i = 0; i < 16; i++) g += cir(24 + rnd() * 52, 34 + rnd() * 26, 1.2 + rnd() * 1, i % 2 ? "#3f9b46" : "#d9382a");
-    g += path("M18 62 Q50 74 82 62", "none", ` stroke="${shade(col, -.25)}" stroke-width="1.2"`); return { pre: g, area: null };
-  };
-  V.onigiri = (sp, rnd) => {
-    let g = shadowC(50, 52, 43) + cir(50, 50, 43, "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"');
-    [[34, 40, -10], [64, 44, 12], [48, 70, 0]].forEach(([x, y, r]) => { g += at(x, y, r, path("M0 -17 Q19 12 15 14 Q0 20 -15 14 Q-19 12 0 -17Z", "#fbfaf4") + path("M0 -17 Q19 12 15 14 Q0 20 -15 14 Q-19 12 0 -17Z", "none", ' stroke="#e5e0cf" stroke-width="1"') + path("M-12 2 L12 2 L15 14 Q0 20 -15 14Z", "#27312a") + cir(0, -6, 1.2, "#e8dfc6") + cir(-4, -1, 1, "#e8dfc6")); });
-    g += cir(80, 78, 5, "#f2b6c0") + cir(82, 72, 3, "#9cc34a"); return { pre: g, area: null };
-  };
-  V.idli = (sp, rnd) => {
-    let g = shadowC(50, 52, 43) + cir(50, 50, 43, "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"');
-    [[32, 40], [56, 34], [44, 58]].forEach(([x, y]) => { g += cir(x, y, 12, "#e7e2d2") + cir(x, y, 10.6, "#fffdf6") + path(`M${x - 8} ${y - 3} Q${x} ${y - 9} ${x + 8} ${y - 3}`, "none", ' stroke="#ece6d3" stroke-width="1"') + gl(x - 4, y - 4, 2.6); });
-    g += cir(72, 66, 13, "#e8e1d0") + cir(72, 66, 11, "#e0782a") + [[68, 63], [76, 62], [72, 70], [66, 69]].map(([x, y]) => cir(x, y, 1.5, "#f6d27a")).join("") + cir(78, 40, 8, "#e8e1d0") + cir(78, 40, 6.4, "#7cb342"); return { pre: g, area: null };
-  };
-  V.dosa = (sp, rnd) => {
-    let g = shadowC(50, 52, 43) + cir(50, 50, 43, "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"') + path("M12 58 Q40 22 88 30 Q82 52 74 62 Q40 74 12 58Z", "#d8a24a") + path("M16 57 Q42 28 83 34 Q78 52 71 60 Q40 69 16 57Z", "#ecc16d");
-    for (let i = 0; i < 18; i++) g += cir(24 + rnd() * 52, 40 + rnd() * 20, 1.2 + rnd() * 1.4, "#c98e36", ' opacity=".7"'); g += cir(30, 82, 8, "#e8e1d0") + cir(30, 82, 6.4, "#f4efe0") + cir(60, 84, 8, "#e8e1d0") + cir(60, 84, 6.4, "#4caf50") + cir(82, 80, 8, "#e8e1d0") + cir(82, 80, 6.4, "#e0782a"); return { pre: g, area: null };
-  };
-  V.pita = (sp, rnd) => {
-    let g = ell(50, 84, 40, 6, "#000", ' opacity=".12"'); const items = expand(sp.t, rnd, 1).slice(0, 10); for (const it of items) g += at(24 + rnd() * 52, 28 + rnd() * 14, rnd() * 360, T[it.k](it.s * 1.35));
-    g += path("M10 74 Q10 40 50 38 Q90 40 90 74 Q50 84 10 74Z", "#d6b87e") + path("M14 72 Q14 44 50 42 Q86 44 86 72 Q50 80 14 72Z", "#ecd59f") + line("M20 52 Q50 44 80 52", "#fff", 1.6, ' opacity=".4"'); return { pre: g, area: null };
-  };
-  V.baguette = (sp, rnd) => {
-    let g = ell(50, 84, 42, 6, "#000", ' opacity=".12"') + `<g transform="rotate(-14 50 54)">`; const items = expand(sp.t, rnd, 1).slice(0, 10); for (const it of items) g += at(18 + rnd() * 62, 40 + rnd() * 8, rnd() * 360, T[it.k](it.s));
-    g += rect(6, 48, 88, 22, 11, "#c98a45") + rect(8, 50, 84, 18, 9, "#e6b672") + [20, 38, 56, 74].map(x => line(`M${x} 52 L${x + 8} 58`, "#c98a45", 1.6)).join("") + rect(8, 40, 84, 14, 7, "#d9a45d", ' opacity="0"') + `</g>`; return { pre: g, area: null };
-  };
-  V.potato = (sp, rnd) => {
-    const flesh = sp.o.flesh || "#f8efd0"; let g = shadowC(50, 52, 43) + cir(50, 50, 43, "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"');
-    [[50, 34], [50, 66]].forEach(([x, y]) => { g += ell(x, y, 32, 14, "#8a5a34") + ell(x, y - 1, 30, 12, flesh) + ell(x, y - 2, 24, 8, shade(flesh, .2), ' opacity=".7"'); });
-    const items = expand(sp.t, rnd, 1.4).slice(0, 14); for (const it of items) { const yy = rnd() < .5 ? 34 : 66; g += at(30 + rnd() * 40, yy - 3 + rnd() * 6, rnd() * 360, T[it.k](it.s)); } return { pre: g, area: null };
-  };
-  V.pepper = (sp, rnd) => {
-    let g = shadowC(50, 52, 43) + cir(50, 50, 43, "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"'); const cols = sp.o.peppers || ["#d6402f", "#f2bf2a"];
-    [[34, 50, cols[0]], [66, 50, cols[1]]].forEach(([x, y, c]) => { g += path(`M${x - 17} ${y - 20} Q${x - 22} ${y + 8} ${x - 12} ${y + 24} Q${x} ${y + 30} ${x + 12} ${y + 24} Q${x + 22} ${y + 8} ${x + 17} ${y - 20} Q${x} ${y - 26} ${x - 17} ${y - 20}Z`, c) + path(`M${x - 12} ${y - 16} Q${x - 15} ${y + 8} ${x - 8} ${y + 20} Q${x} ${y + 24} ${x + 8} ${y + 20} Q${x + 15} ${y + 8} ${x + 12} ${y - 16} Q${x} ${y - 20} ${x - 12} ${y - 16}Z`, "#f1e6c5") + rect(x - 3, y - 27, 6, 6, 2, "#3f8f3f"); });
-    const items = expand(sp.t, rnd, .85).slice(0, 18); items.forEach((it, i) => { const x = i % 2 ? 66 : 34; g += at(x - 8 + rnd() * 16, 40 + rnd() * 22, rnd() * 360, T[it.k](it.s)); }); return { pre: g, area: null };
-  };
-  V.quesadilla = (sp, rnd) => {
-    let g = shadowC(50, 50, 43) + cir(50, 50, 43, "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"') + cir(48, 50, 35, "#cf9b46") + cir(48, 50, 33, "#e8b960");
-    for (let i = 0; i < 10; i++) g += line(`M${28 + rnd() * 40} ${24 + rnd() * 50} l${6 + rnd() * 8} ${2 + rnd() * 4}`, "#c1862f", 1.6, ' opacity=".6"');
-    [0, 60, 120].forEach(a => { g += line("M48 14 L48 86", "#b9792a", 1.1, ` opacity=".7" transform="rotate(${a} 48 50)"`); });
-    [[0, -26], [60, -26], [120, -26], [180, -26], [240, -26], [300, -26]].forEach(([a, r]) => { g += at(48, 50, a, path("M-5 -33 q5 -5 10 0 q-3 7 -5 6 q-2 1 -5 -6Z", "#f6cf55")); });
-    for (const it of fit(sp.t, rnd, 22, 22, 1, 12)) { const a = rnd() * 6.28, r = 6 + rnd() * 24; g += at(48 + Math.cos(a) * r, 50 + Math.sin(a) * r, rnd() * 360, T[it.k](it.s * .9)); }
-    g += cir(82, 80, 8, "#e8e1d0") + cir(82, 80, 6.4, "#d9382a"); return { pre: g, area: null };
-  };
-  V.quesadilla_old = (sp, rnd) => {
-    let g = shadowC(50, 50, 43) + cir(50, 50, 43, "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"');
-    [[0, 6], [60, 6], [120, 6]].forEach(([a, o]) => { g += `<g transform="rotate(${a} 50 50)">` + path("M50 50 L14 38 A38 38 0 0 1 86 38Z", "#d9a24b", ' transform="translate(0 -4)"') + path("M50 50 L18 38 A34 34 0 0 1 82 38Z", "#ecc16d", ' transform="translate(0 -4)"') + `</g>`; });
-    g += [0, 60, 120, 180, 240, 300].map(a => at(50, 50, a, path("M-4 -22 q3 -6 8 0 q-4 8 -8 0Z", "#f6cf55"))).join("");
-    for (const it of expand(sp.t, rnd, .8).slice(0, 10)) { const a = rnd() * 6.28, r = 10 + rnd() * 20; g += at(50 + Math.cos(a) * r, 50 + Math.sin(a) * r, rnd() * 360, T[it.k](it.s)); }
-    g += cir(78, 78, 7, "#e8e1d0") + cir(78, 78, 5.4, "#d9382a"); return { pre: g, area: null };
-  };
-  V.lasagna = (sp, rnd) => {
-    let g = shadowC(50, 52, 43) + cir(50, 50, 43, "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"') + rect(14, 28, 72, 40, 6, "#d9a24b") + rect(16, 24, 68, 40, 6, "#f0b955");
-    const layers = ["#f2dfa8", "#d6402c", "#7cb342", "#f6f0dc", "#d6402c", "#f2dfa8"]; layers.forEach((c, i) => { g += rect(18, 30 + i * 5.4, 64, 5, 1.4, c); }); g += path("M16 26 Q50 14 84 26 L84 32 L16 32Z", "#e6a43b");
-    for (let i = 0; i < 6; i++) g += cir(22 + rnd() * 56, 22 + rnd() * 6, 1.6 + rnd() * 1.6, "#c8801f", ' opacity=".8"'); g += at(50, 18, 0, T.basil(5)) + at(40, 20, 40, T.basil(4)); return { pre: g, area: null };
-  };
-  V.enchilada = (sp, rnd) => {
-    let g = shadowC(50, 52, 40) + rect(8, 22, 84, 62, 9, "#cdd3dc") + rect(12, 26, 76, 54, 6, "#e6eaef") + rect(14, 28, 72, 50, 5, "#c9372a");
-    [[50, 38], [50, 54], [50, 70]].forEach(([x, y]) => { g += rect(20, y - 6, 60, 12, 6, "#e8c680") + rect(21, y - 5, 58, 9, 4.5, "#f1d9a0") + ell(80, y, 3, 6, "#d6b36a"); }); g += rect(18, 40, 64, 6, 3, "#f6cf55", ' opacity=".85"') + rect(18, 60, 64, 6, 3, "#f6cf55", ' opacity=".85"');
-    for (const it of expand(sp.t, rnd, .9).slice(0, 10)) g += at(24 + rnd() * 52, 32 + rnd() * 42, rnd() * 360, T[it.k](it.s)); return { pre: g, area: null };
-  };
-  V.freshroll = (sp, rnd) => {
-    let g = shadowC(50, 52, 43) + cir(50, 50, 43, "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"'); const cols = (sp.o.fills || ["#e8782a", "#7cb342", "#e5402f", "#f7e08a"]);
-    [[44, 34, -12], [48, 60, -8]].forEach(([x, y, r]) => { g += at(x, y, r, rect(-30, -10, 60, 20, 10, "#f3f0e6", ' opacity=".95"') + cols.map((c, i) => rect(-24 + i * 12, -6 + (i % 2) * 2, 10, 7, 3, c, ' opacity=".9"')).join("") + rect(-30, -10, 60, 20, 10, "none", ' stroke="#dcd6c3" stroke-width="1"') + line("M-24 -7 L22 -7", "#fff", 1.4, ' opacity=".7"')); });
-    g += cir(78, 80, 9, "#e8e1d0") + cir(78, 80, 7.2, "#b9772d") + cir(76, 78, 2, "#d9a15a"); return { pre: g, area: null };
-  };
-  V.mound = (sp, rnd) => {
-    let g = shadowC(50, 52, 43) + cir(50, 50, 43, "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"');
-    const items = expand(sp.t, rnd, 1.45).slice(0, 7);
-    items.forEach((it, i) => { const a = (-62 + i * (124 / Math.max(1, items.length - 1))) / 57.3; g += at(60 + Math.cos(a) * 20, 52 + Math.sin(a) * 24, a * 57.3 + 90, T[it.k](it.s)); });
-    g += cir(38, 50, 22, "#e6e1d0") + cir(38, 49, 20.4, "#fffdf6") + cir(30, 41, 6, "#fff", ' opacity=".7"'); for (let i = 0; i < 24; i++) { const a = rnd() * 6.28, r = Math.sqrt(rnd()) * 18; g += at(38 + Math.cos(a) * r, 49 + Math.sin(a) * r, rnd() * 180, ell(0, 0, 2, 1, "#ece6d3")); }
-    g += path("M22 60 Q38 70 56 58", "none", ' stroke="#f1ead2" stroke-width="3" stroke-linecap="round"') + cir(52, 80, 5, "#f1ead2", ' opacity="0"'); return { pre: g, area: null };
-  };
-  V.ratatouille = (sp, rnd) => {
-    let g = shadowC(50, 50, 43) + cir(50, 50, 43, "#c9d0da") + cir(50, 50, 39, "#e9edf2") + cir(50, 50, 36, "#c9372a");
-    const ring = (r, n, cols, s) => { let o = ""; for (let i = 0; i < n; i++) { const a = i / n * 6.2832; o += at(50 + Math.cos(a) * r, 50 + Math.sin(a) * r, a * 57.3, ell(0, 0, s, s * .8, cols[i % cols.length]) + ell(-s * .3, 0, s * .4, s * .5, shade(cols[i % cols.length], .25), ' opacity=".6"')); } return o; };
-    g += ring(29, 18, ["#7a3f8e", "#4f9d3c", "#e5402f", "#f2bf2a"], 6) + ring(19, 12, ["#4f9d3c", "#e5402f", "#7a3f8e", "#f2bf2a"], 5.4) + ring(10, 7, ["#e5402f", "#f2bf2a", "#7a3f8e"], 4.8) + cir(50, 50, 3.4, "#3f9b46") + at(50, 50, 0, T.basil(4)); return { pre: g, area: null };
-  };
-  V.affogato = (sp, rnd) => {
-    let g = ell(50, 90, 30, 4, "#000", ' opacity=".12"') + path("M22 44 L78 44 L72 86 Q50 92 28 86Z", "#e8f1f6", ' opacity=".85"') + path("M24 52 L76 52 L72 85 Q50 90 28 85Z", "#4a2c1d") + ell(50, 52, 26, 5, "#6b4128") + cir(50, 34, 17, "#fff4d6") + path("M33 34 Q38 46 43 40 Q48 48 54 40 Q60 47 67 34 Z", "#f0e2b8") + cir(44, 28, 5, "#fff", ' opacity=".4"') + path("M22 44 L78 44 L72 86 Q50 92 28 86Z", "none", ' stroke="#bcd7e4" stroke-width="1.2"') + path("M76 52 Q92 52 90 64 Q88 74 74 72", "none", ' stroke="#bcd7e4" stroke-width="3.4" stroke-linecap="round"');
-    for (const it of expand(sp.t, rnd, .8).slice(0, 6)) g += at(40 + rnd() * 20, 24 + rnd() * 10, rnd() * 360, T[it.k](it.s)); return { pre: g, area: null };
-  };
-  V.crepe = (sp, rnd) => {
-    let g = shadowC(50, 52, 43) + cir(50, 50, 43, "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"');
-    g += `<g transform="rotate(-14 50 50)">` + path("M14 58 L44 22 L74 58 Q44 72 14 58Z", "#e3bd7c") + path("M17 57 L44 26 L71 57 Q44 69 17 57Z", "#f1d29a") + line("M44 26 L44 66", "#d9b36d", 1.2) + line("M30 44 Q44 54 58 44", "#e0be80", 1, ' opacity=".8"') + `</g>`;
-    g += `<g transform="rotate(18 56 58)">` + path("M34 78 L62 42 L90 78 Q62 92 34 78Z", "#e3bd7c") + path("M37 77 L62 46 L87 77 Q62 89 37 77Z", "#f1d29a") + line("M62 46 L62 84", "#d9b36d", 1.2) + `</g>`;
-    for (const it of expand(sp.t, rnd, 1.5).slice(0, 8)) g += at(30 + rnd() * 40, 40 + rnd() * 32, rnd() * 360, T[it.k](it.s));
-    for (let i = 0; i < 30; i++) g += cir(20 + rnd() * 60, 24 + rnd() * 56, .8, "#fff", ' opacity=".9"'); return { pre: g, area: null };
-  };
-  V.tray = (sp, rnd) => {
-    const bc = String(sp.base || "baked:#f0b955").split(":"); const inner = bc[1] || "#f0b955";
-    let g = rect(11, 22, 82, 62, 9, "#000", ' opacity=".12"') + rect(8, 19, 84, 62, 9, "#cdd3dc") + rect(13, 24, 74, 52, 6, "#e6eaef") + rect(15, 26, 70, 48, 5, bc[0] === "mash" ? "#f1e2b0" : inner);
-    if (bc[0] === "baked") for (let i = 0; i < 14; i++) g += cir(18 + rnd() * 64, 29 + rnd() * 42, 1.6 + rnd() * 2.4, "#d58a2a", ' opacity=".8"');
-    if (sp.o.ridges) { for (let i = 0; i < 8; i++) g += line(`M17 ${30 + i * 5.4} Q50 ${27 + i * 5.4} 83 ${30 + i * 5.4}`, "#d9bf7e", 1.3); for (let i = 0; i < 9; i++) g += cir(20 + rnd() * 56, 30 + rnd() * 20, 1.6 + rnd() * 1.6, "#c98a3a", ' opacity=".6"'); g += rect(56, 50, 28, 24, 3, "#7a4a2a") + [[62, 58], [70, 64], [78, 56], [66, 68]].map(([x, y]) => cir(x, y, 2.2, "#6abf4b")).join("") + rect(56, 50, 28, 4, 1, "#e8d49a"); }
-    if (sp.o.score) { for (let i = 1; i < 4; i++) g += line(`M${15 + i * 17.5} 26 L${15 + i * 17.5} 74`, "#c68a2e", 1.2, ' opacity=".8"'); for (let i = 1; i < 3; i++) g += line(`M15 ${26 + i * 16} L85 ${26 + i * 16}`, "#c68a2e", 1.2, ' opacity=".8"'); }
-    if (sp.o.sauce) for (let i = 0; i < 6; i++) g += ell(20 + rnd() * 60, 30 + rnd() * 40, 4 + rnd() * 4, 3 + rnd() * 3, sp.o.sauce, ' opacity=".75"');
-    return { pre: g, area: [50, 50, 32, 21] };
-  };
-  V.plate = (sp, rnd) => {
-    const rim = sp.o.rim || "#fbf9f4"; return { pre: shadowC(50, 50, 43) + cir(50, 50, 43, rim) + cir(50, 50, 43, "none", ` stroke="${shade(rim, -.12)}" stroke-width="1.2"`) + cir(50, 50, 33, "none", ` stroke="${shade(rim, -.1)}" stroke-width="1"`) + (sp.base ? base(sp.base, 50, 50, 30, rnd) : ""), area: [50, 50, 30, 30] };
-  };
-  V.toast = (sp, rnd) => {
-    let g = shadowC(50, 52, 43) + cir(50, 50, 43, sp.o.rim || "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"'); const col = sp.o.cake || "#d8a35c", spots = sp.o.spots || [[40, 44, -8], [60, 56, 6]];
-    for (const [x, y, rot] of spots) g += at(x, y, rot, rect(-19, -19, 38, 38, 8, shade(col, -.15)) + rect(-17, -17, 34, 34, 6, col) + rect(-14, -14, 28, 28, 4, shade(col, .22)) + (sp.o.hole ? cir(0, 0, 9, "#fbf9f4") : ""));
-    const last = spots[spots.length - 1]; return { pre: g, area: [last[0], last[1], 15, 15] };
-  };
-  V.bagel = (sp, rnd) => {
-    let g = shadowC(50, 52, 43) + cir(50, 50, 43, "#fbf9f4") + cir(50, 50, 43, "none", ' stroke="#e8e3d6" stroke-width="1.2"') + cir(46, 50, 31, "#cf9a52") + cir(46, 50, 26, "#e6b872") + cir(46, 50, 9, "#fbf9f4") + cir(46, 50, 9, "none", ' stroke="#cf9a52" stroke-width="1.2"');
-    g += path("M26 38 Q46 20 66 38 Q76 52 64 66 Q46 78 28 62 Q18 50 26 38Z", "#fffdf6", ' opacity=".95"') + cir(46, 50, 8, "#fbf9f4"); return { pre: g, area: [46, 48, 18, 18] };
-  };
-  V.pot = (sp, rnd) => ({ pre: shadowC(50, 52, 40) + rect(2, 46, 12, 7, 3.5, sp.o.rim || "#7a828d") + rect(86, 46, 12, 7, 3.5, sp.o.rim || "#7a828d") + cir(50, 52, 39, sp.o.rim || "#8d95a0") + cir(50, 52, 33, shade(sp.o.rim || "#8d95a0", -.4)) + base(sp.base, 50, 52, 31, rnd), area: [50, 52, 27, 27] });
-  /* ---- more sides ---- */
-  Object.assign(SIDES, { gcheese: g => at(78, 78, 18, path("M-11 8 L0 -10 L11 8Z", "#d9a24b") + path("M-8 6 L0 -7 L8 6Z", "#ecc16d") + path("M-6 1 Q0 6 6 1", "none", ' stroke="#f6cf55" stroke-width="2.4"')),
-    pav: g => cir(78, 80, 8.5, "#d9a24b") + cir(78, 80, 7, "#ecc16d") + cir(66, 84, 8, "#d9a24b") + cir(66, 84, 6.6, "#ecc16d") + gl(75, 77, 2),
-    tortillaS: g => at(78, 76, 0, T.tortilla(11)) });
-
-  /* ---------- put it together ---------- */
-  const render = (spec, seedName, opts = {}) => { MINI = !!opts.mini; try { return render0(spec, seedName, opts); } finally { MINI = false; } };
-  const render0 = (spec, seedName, opts = {}) => {
-    const sp = { v: spec[0], base: spec[1], t: spec[2] || [], o: Object.assign({}, spec[3] || {}, opts.mini ? { mini: true } : {}) };
-    const rnd = rng(hash(seedName));
-    const vessel = (V[sp.v] || V.bowl)(sp, rnd);
-    let g = vessel.pre || "";
-    if (vessel.area) {
-      const [cx, cy, rx, ry] = vessel.area; const items = fit(sp.t, rnd, rx, ry, sp.o.scale || 1, sp.o.mini ? 12 : 10000);
-      const body = scatter(cx, cy, rx, ry, items, rnd);
-      g += body;
-    }
-    if (vessel.post) g += vessel.post;
-    if (sp.o.steam) g += [38, 50, 62].map(x => line(`M${x} 14 q-4 -5 0 -9 q4 -4 0 -8`, "#fff", 2, ' opacity=".7"')).join("");
-    if (sp.o.side && SIDES[sp.o.side]) g += SIDES[sp.o.side](g);
-    if (sp.o.garn) { const gs = sp.o.garn.split(","); gs.forEach((k, i) => { const [kk] = k.split(":"); if (T[kk]) g += at(24 + i * 8, 26 + i * 3, rnd() * 360, T[kk]((D[kk] || [4])[0])); }); }
-    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${g}</svg>`;
-  };
-  return { render, V, T, D, SIDES, hash, rng };
-})();
-
-const SPECS = {
-"Pancakes":["stack","","blueberry:4,strawberry:2",{layers:4}],
-"Oatmeal with fruit":["bowl","grains:#e8d6a8","banana:6,blueberry:7,nut:4",{rim:"#6fa8dc",side:"spoon"}],
-"Cinnamon toast":["toast","","spice:18,butter:1",{cake:"#d8a35c"}],
-"Avocado toast":["toast","","avoslice:3,cherry:3,sesame:8",{cake:"#d9a85f"}],
-"Fruit smoothie bowl":["bowl","sauce:#e58fb0","banana:6,blueberry:7,strawberry:3,nut:6",{rim:"#fbf9f4"}],
-"Bagel with cream cheese":["bagel","","cucumber:3,tomato:2,herb:5",{}],
-"Waffles with berries":["waffle","","strawberry:3,blueberry:6,butter:1",{}],
-"Granola & yogurt":["jar","","strawberry:2,blueberry:4,nut:4",{layers:["#f0dcae","#fffaf0","#e8c88a","#fffaf0"]}],
-"Poha":["bowl","grains:#f2d65a","peanut:8,onion:4,cilantro:7,chili:2,lemon:1",{rim:"#d98c5f"}],
-"Upma":["bowl","grains:#e9cf8a","carrot:5,pea:9,cilantro:6,lemon:1",{rim:"#f3b25a"}],
-"Aloo paratha":["plate","","paratha:1,butter:1,sauceW:2,cilantro:3,chili:1",{}],
-"Dosa with chutney":["dosa","","",{}],
-"Idli & sambar":["idli","","",{}],
-"Grilled cheese & tomato soup":["bowl","broth:#e0533b","basil:2,crouton:6,herb:5",{rim:"#d98c5f",side:"gcheese"}],
-"Caprese sandwich":["sandwich","","tomato,mozz,basil,tomato,mozz",{bun:"#e8c07a"}],
-"Chickpea salad sandwich":["sandwich","","leaf,chickpea,cucumber",{bun:"#e6c27c"}],
-"Bean & cheese burritos":["wrap","","kidney:2,cheddar:2,corn:3,tomato:1",{}],
-"Veggie wraps with hummus":["wrap","","cucumber:2,carrot:2,leaf:2,pepperR:2",{tort:"#9ccc65",fill:"#e8d9b0"}],
-"Lentil soup":["bowl","broth:#d9a14a","lentil:30,carrot:6,herb:6",{rim:"#7fb7c9",side:"spoon"}],
-"Falafel pita":["pita","","fritter:3,leaf:3,tomato:3,cucumber:3,onion:2",{}],
-"Tomato soup":["bowl","broth:#e0533b","basil:3,crouton:7,herb:6",{rim:"#f7f4ec",side:"spoon"}],
-"Quinoa veggie bowl":["bowl","grains:#e7d3a0","chickpea:9,cucumber:5,tomato:4,avoslice:2,leaf:3",{rim:"#7fb7c9"}],
-"Caesar-style salad with croutons":["bowl","salad","crouton:9,shred:5",{rim:"#f7f4ec"}],
-"Veggie nachos":["nachos","","kidney:6,corn:6,cherry:4,olive:5,cilantro:6,sauceW:2",{}],
-"Curd rice":["bowl","rice:#fbfaf4","sauceW:1,cilantro:7,salsa:6,chili:2",{rim:"#e8c15a"}],
-"Lemon rice":["bowl","grains:#f4d03f","peanut:8,lemon:2,herb:6,chili:2",{rim:"#7fb7c9"}],
-"Tacos":["taco","","leaf:3,tomato:4,cheese:3,kidney:3",{}],
-"Black bean tacos":["taco","","blackbean:9,avoslice:2,cilantro:5,lime:1",{shell:"#e9b455"}],
-"Veggie fajitas":["pan","plain:#2e3238","pepperR:5,pepperY:4,pepperG:3,onion:5,mushroom:5",{side:"tortillaS"}],
-"Burrito bowls":["bowl","rice:#fbfaf4","blackbean:12,corn:12,avoslice:2,tomato:4,cilantro:6,lime:1",{rim:"#7fb7c9"}],
-"Spaghetti with marinara":["bowl","pasta:#f2d27a","basil:3,shred:4",{rim:"#d9835b",sauce:"#d6402c"}],
-"Spaghetti with lentil marinara":["bowl","pasta:#efd07a","lentil:12,basil:2",{rim:"#7fb7c9",sauce:"#b8452c"}],
-"Pesto pasta":["bowl","pasta:#f2d680","cherry:5,nut:4,basil:3",{rim:"#f7f4ec",sauce:"#6aa84f"}],
-"Fettuccine Alfredo":["bowl","pasta:#f5e4b0","herb:7,shred:3,spice:6",{rim:"#e5e1d5",sauce:"#fff3d4"}],
-"Pasta primavera":["bowl","pasta:#f2d27a","broccoli:3,carrot:5,zucchini:4,cherry:4,pea:8",{rim:"#5b8fd6"}],
-"Baked ziti":["tray","baked:#e9a74c","basil:3,penne:6",{sauce:"#d6402c"}],
-"Veggie lasagna":["lasagna","","",{}],
-"Homemade veggie pizza":["pizza","","mushroom:5,pepperG:4,olive:6,basil:3,onion:4",{}],
-"Veggie burgers":["burger","","leaf,tomato,blackbean,cheddar",{}],
-"Macaroni & cheese":["bowl","pasta:#f2a832","shred:5,crumb:14",{rim:"#7fb7c9"}],
-"Eggplant parmesan":["tray","baked:#e9a74c","eggplant:5,basil:3,mozz:3",{sauce:"#d6402c"}],
-"Mushroom stroganoff":["bowl","noodles:#efe3c2","mushroom:7,herb:6,sauceW:2",{rim:"#d98c5f",sauce:"#a9805a"}],
-"Three-bean chili":["pot","curry:#a63a22","kidney:6,blackbean:6,pinto:6,corn:5,cheddar:2",{rim:"#7a828d",side:"lime"}],
-"Loaded baked potatoes":["potato","","sauceW:2,scallion:8,cheddar:2,shred:5",{}],
-"Stuffed bell peppers":["pepper","","kidney:4,corn:5,pea:4,shred:4,cilantro:2",{peppers:["#d6402f","#f2bf2a"]}],
-"Veggie quesadillas":["quesadilla","","pepperR:3,corn:5,kidney:3",{}],
-"Roasted veggies & potatoes":["tray","plain:#d8dce2","potato:7,carrot:5,broccoli:3,onion:4,herb:4",{}],
-"Big Greek salad with pita":["bowl","salad","tomato:5,cucumber:6,onion:5,olive:7,feta:5",{rim:"#7fb7c9"}],
-"Veggie noodle soup":["bowl","broth:#e9c87a","noodleb:5,carrot:6,pea:8,herb:6",{rim:"#f7f4ec",side:"spoon"}],
-"Veggie ramen":["bowl","noodles:#f0c872","eggboiled:2,nori:2,scallion:8,mushroom:3,sesame:10",{rim:"#2d3138",side:"chopsticks"}],
-"Pad Thai with tofu":["bowl","noodles:#e8b96a","tofu:5,peanut:8,scallion:6,lime:1,sprout:5",{rim:"#5b8fd6"}],
-"Veggie fried rice":["bowl","rice:#e9d4a0","carrot:7,pea:10,scramble:2,scallion:7",{rim:"#d98a5f",side:"chopsticks"}],
-"Vegetable stir-fry with tofu":["pan","sauce:#8a5a34","friedtofu:5,broccoli:4,pepperR:4,carrot:5,pea:8,sesame:8",{side:"chopsticks"}],
-"Veggie sushi rolls":["sushi","","cucumber,carrot,avocado,tofu",{}],
-"Veggie dumplings":["dumpling","","",{}],
-"Chana masala":["bowl","curry:#c8602a","chickpea:14,onionY:3,cilantro:8",{rim:"#5b8fd6",side:"roti"}],
-"Paneer butter masala":["bowl","curry:#e7752c","paneer:8,sauceW:1,cilantro:6",{rim:"#f7f4ec",side:"naan"}],
-"Palak paneer":["bowl","curry:#3f7d3a","paneer:8,sauceW:1",{rim:"#e5e1d5",side:"naan"}],
-"Aloo gobi":["pan","curry:#e8a33a","potato:7,cauliflower:5,tomato:4,cilantro:9",{side:"naan"}],
-"Rajma chawal":["bowl","split:#fbfaf4|#8a2f1f","kidney:8,cilantro:5",{rim:"#e8c15a"}],
-"Dal tadka & rice":["bowl","split:#fbfaf4|#e6b43c","chili:2,herb:6,onionY:3",{rim:"#5b8fd6"}],
-"Khichdi":["bowl","curry:#e7c95e","herb:5,butter:1,chili:1",{rim:"#d98c5f"}],
-"Vegetable biryani":["pot","grains:#e8b860","carrot:6,pea:8,friedonion:6,herb:8,mint:5,nut:4",{rim:"#b7791f"}],
-"Vegetable pulao":["bowl","rice:#efe3b8","carrot:5,pea:9,herb:6",{rim:"#e08f5a"}],
-"Baingan bharta":["bowl","curry:#7a4a3a","tomato:4,onionY:3,cilantro:8,chili:2",{rim:"#e8c15a",side:"roti"}],
-"Veggie curry with naan":["bowl","curry:#f0a53a","potato:5,carrot:5,pea:8,cauliflower:3,sauceW:1",{rim:"#7fb7c9",side:"naan"}],
-"Chocolate chip cookies":["cookie","","",{cake:"#d9a15c"}],
-"Baked apples with cinnamon":["plate","","bakedapple:2,spice:12,syrup:1",{}],
-"Kheer":["bowl","plain:#fff3d6","nut:7,dot:6,spice:4",{rim:"#e8c15a"}],
-"Ice cream with fruit":["scoop","","strawberry:3,blueberry:5,banana:3",{scoops:["#fff4d6","#6b4128"]}],
-"Banana bread":["loaf","","banana:3",{cake:"#c98a45"}],
-"Gulab jamun":["bowl","broth:#e6a23c","jamun:4,nut:3,dot:4",{rim:"#d98c5f"}],
-"Brownies":["square","","",{cake:"#5a3420",spots:[[36,40,0],[60,56,0]]}],
-"Yogurt with honey & nuts":["bowl","plain:#fff8ea","nut:8,blueberry:4,syrup:1",{rim:"#7fb7c9"}],
-"Popcorn":["bucket","","",{}],
-"Apple slices with peanut butter":["dip","plain:#c58a4a","apple:8",{drizzle:"#e8c07a"}],
-"Samosas":["plate","","samosa:3,cilantro:4",{side:"chutney"}],
-"Cheese & crackers":["plate","","cracker:7,cheddar:3,grape:8",{}],
-"Hummus with pita & veggies":["dip","plain:#e7cd95","pitaw:4,carrotstick:3,cukestick:3",{drizzle:"#c58a2a"}],
-"French fries":["fries","","",{}],
-"Vegetable tempura":["plate","","tempura:6,potatoslice:2",{side:"sauce"}],
-"Miso soup with tofu":["bowl","broth:#d9b27a","tofu:6,scallion:8,kale:3",{rim:"#c0392b",side:"chopsticks"}],
-"Vegetable udon":["bowl","noodles:#f3e9cf","mushroom:4,carrot:4,leaf:4,scallion:6",{rim:"#3b4a6b"}],
-"Teriyaki tofu with rice":["bowl","split:#fbfaf4|#7a3b1a","friedtofu:5,broccoli:3,sesame:12,scallion:5",{rim:"#e5e1d5"}],
-"Onigiri (rice balls)":["onigiri","","",{}],
-"Vegetable yakisoba":["plate","noodles:#d9a85a","leafL:4,carrot:6,pepperY:3,mushroom:3,scallion:6",{side:"chopsticks"}],
-"Japanese vegetable curry":["bowl","split:#fbfaf4|#8a4a1f","potato:4,carrot:4,pea:5",{rim:"#e5e1d5",side:"spoon"}],
-"Edamame with sea salt":["bowl","plain:#f5eed8","pod:10",{rim:"#d98a5f"}],
-"Cucumber sunomono salad":["bowl","broth:#f0f6e8","cucumber:12,sesame:10",{rim:"#3b4a6b"}],
-"Thai green curry":["bowl","curry:#9ac04a","tofu:5,pepperR:3,basil:3,sauceW:1",{rim:"#e5e1d5",side:"lime"}],
-"Thai red curry with sweet potato":["bowl","curry:#d8452a","sweetpotato:6,chickpea:6,leaf:3,sauceW:1",{rim:"#f7f4ec",side:"lime"}],
-"Tom kha mushroom soup":["bowl","broth:#f6e9c4","mushroom:6,tomato:3,herb:6,chili:2,lime:1",{rim:"#7fb7c9"}],
-"Thai basil tofu stir-fry":["bowl","split:#fbfaf4|#6b3b1f","friedtofu:5,pepperR:3,basil:6,chili:2",{rim:"#d98c5f"}],
-"Thai peanut noodles":["bowl","noodles:#efd9a0","peanut:9,carrot:5,sprout:4,lime:1,cilantro:6",{rim:"#f7f4ec",sauce:"#c58a4a"}],
-"Pineapple fried rice":["bowl","rice:#eedaa0","pineapple:7,pea:8,carrot:4,nut:4",{rim:"#f3cf2a"}],
-"Mango sticky rice":["mound","","mangoslice:6,sesame:6",{}],
-"Thai cucumber salad":["bowl","broth:#f0f6e8","cucumber:10,onion:6,peanut:6,chili:2,cilantro:5",{rim:"#f7f4ec"}],
-"Gnocchi with tomato sauce":["bowl","sauce:#d6402c","gnocchi:9,basil:3,shred:3",{rim:"#d98c5f"}],
-"Mushroom risotto":["bowl","rice:#f0e2bc","mushroom:6,herb:7,shred:4",{rim:"#e5e1d5"}],
-"Minestrone soup":["bowl","broth:#d6663a","carrot:6,pea:7,white:7,zucchini:5,tomato:3",{rim:"#7fb7c9",side:"bread"}],
-"Bruschetta":["plate","","bruschetta:3,basil:3",{}],
-"Spaghetti aglio e olio":["bowl","pasta:#f3dc8a","herb:8,chili:3,garlic:3,spice:6",{rim:"#3b4a6b"}],
-"Penne arrabbiata":["bowl","sauce:#c9341f","penne:12,chili:4,basil:3",{rim:"#f7f4ec"}],
-"Spinach & ricotta stuffed shells":["tray","baked:#f2d27a","shell:6,basil:3",{sauce:"#d6402c"}],
-"Pasta e fagioli":["bowl","broth:#d46a3a","white:10,penne:4,herb:6,shred:3",{rim:"#d98c5f"}],
-"Panzanella (Italian bread salad)":["bowl","plain:#f5e9d2","crouton:10,tomato:6,cucumber:5,onion:4,basil:4",{rim:"#d98c5f"}],
-"Affogato":["affogato","","chip:6",{}],
-"Bean & cheese enchiladas":["enchilada","","cilantro:5,corn:4",{}],
-"Chilaquiles":["plate","sauce:#c0392b","tchip:12,eggfried:1,onion:4,avoslice:2,cilantro:5",{}],
-"Esquites (street corn salad)":["bowl","plain:#fff2c7","corn:22,shred:6,spice:8,lime:1,cilantro:6",{rim:"#d98c5f"}],
-"Guacamole & chips":["dip","plain:#8fb84a","tchip:10",{drizzle:"#d9382a"}],
-"Mexican rice":["bowl","rice:#e07a4a","pea:8,carrot:4,cilantro:5,lime:1",{rim:"#d98c5f"}],
-"Tortilla soup":["bowl","broth:#c9502d","tchip:6,avoslice:2,shred:5,blackbean:8,corn:8,cilantro:5",{rim:"#7fb7c9"}],
-"Vegetarian mapo tofu":["bowl","curry:#b8321e","tofu:9,mushroom:3,scallion:8,spice:6",{rim:"#f7f4ec"}],
-"Kung pao tofu":["bowl","sauce:#9c4a22","friedtofu:6,peanut:10,pepperR:4,zucchini:3,chili:5",{rim:"#2d3138"}],
-"Vegetable lo mein":["bowl","noodles:#d9a45a","carrot:6,pepperR:3,mushroom:3,leafL:3,scallion:6",{rim:"#c0392b",side:"chopsticks"}],
-"Sweet & sour tofu":["bowl","sauce:#e0432a","friedtofu:6,pineapple:6,pepperG:4,onion:3",{rim:"#f7f4ec"}],
-"Vegetable spring rolls":["roll","","",{side:"sauce"}],
-"Scallion pancakes":["plate","","scallionpancake:2,scallion:6",{side:"sauce"}],
-"Dan dan noodles":["bowl","noodles:#efd9a0","peanut:8,scallion:8,leaf:4",{rim:"#f7f4ec",sauce:"#b8321e"}],
-"Vegetable bibimbap":["bowl","bibim:#e8782a|#4f9d3c|#8a5a34|#9ccc65|#f4efdb","sesame:10",{rim:"#2d3138"}],
-"Japchae (glass noodle stir-fry)":["plate","noodles:#a99b92","carrot:6,pepperY:3,mushroom:4,leaf:5,sesame:10",{}],
-"Tteokbokki (spicy rice cakes)":["bowl","curry:#d8452a","ricecake:9,scallion:6,sesame:8",{rim:"#2d3138"}],
-"Tabbouleh":["bowl","grains:#e9ddb0","herb:30,cherry:6,cucumber:4,lemon:1,mint:5",{rim:"#7fb7c9"}],
-"Mujaddara (lentils & rice)":["bowl","grains:#c9a46a","friedonion:12,herb:4,sauceW:1",{rim:"#d98c5f"}],
-"Baba ganoush":["dip","plain:#cdb59a","pitaw:4,cukestick:3,olive:3",{drizzle:"#8a9a3a"}],
-"Roasted vegetable couscous":["bowl","grains:#ecd9a6","zucchini:6,pepperR:4,chickpea:8,cherry:4,herb:5,onion:3",{rim:"#5b8fd6"}],
-"Chickpea shawarma wrap":["wrap","","chickpea:3,leaf:2,tomato:2,cucumber:2",{tort:"#f2dcae",fill:"#d9b26a"}],
-"Fresh spring rolls with peanut sauce":["freshroll","","",{}],
-"Vegetarian pho":["bowl","noodles:#f5efde","tofu:4,mushroom:4,sprout:6,basil:4,lime:1,chili:2",{rim:"#2f5d8a",side:"chopsticks"}],
-"Tofu banh mi":["baguette","","cucumber:3,carrot:4,cilantro:5,friedtofu:3",{}],
-"French toast":["toast","","strawberry:2,blueberry:5,dot:10",{cake:"#d89a3e"}],
-"Banana oat pancakes":["stack","","banana:5,nut:4",{layers:3,cake:"#dcb06a"}],
-"Overnight oats":["jar","","blueberry:6,banana:3",{layers:["#e8d6a8","#fff8ee","#e8d6a8"]}],
-"Chia pudding":["jar","","mango:5,strawberry:1",{layers:["#6b6270","#f3a22e","#6b6270"]}],
-"Tofu scramble":["pan","plain:#f2d24e","scramble:5,pepperR:3,leaf:4,cilantro:5",{side:"toast"}],
-"Veggie breakfast burrito":["wrap","","scramble:2,blackbean:3,cheddar:2,pepperR:2",{}],
-"Besan chilla":["plate","","chilla:2,cilantro:4",{side:"chutney"}],
-"Peanut butter banana toast":["toast","","banana:6,peanut:4",{cake:"#cf9a5a"}],
-"Crêpes with fruit":["crepe","","strawberry:3,blueberry:5",{}],
-"Crispy breakfast potatoes":["pan","plain:#3a3f47","potato:12,onion:4,pepperR:3,herb:5",{}],
-"Broccoli cheddar soup":["bowl","broth:#e9b04a","broccoli:6,shred:5",{rim:"#e5e1d5",side:"bread"}],
-"Black bean soup":["bowl","broth:#3a2f2c","sauceW:1,cilantro:5,avoslice:2,tchip:3",{rim:"#d9835b"}],
-"Potato leek soup":["bowl","broth:#efe6c8","leek:8,herb:5,crouton:5,sauceW:1",{rim:"#7fb7c9"}],
-"Gazpacho":["bowl","broth:#e0493a","cucumber:4,herb:4,crouton:5",{rim:"#7fb7c9",side:"bread"}],
-"Cold sesame noodles":["bowl","noodles:#e7c58e","cucumber:6,scallion:6,sesame:14",{rim:"#c0392b",sauce:"#c58a4a"}],
-"Veggie pasta salad":["bowl","plain:#f5eed8","penne:9,cherry:6,cucumber:4,olive:5,mozz:4,pepperY:3,basil:3",{rim:"#7fb7c9"}],
-"Mediterranean orzo salad":["bowl","grains:#efe3b5","cherry:6,cucumber:5,olive:6,feta:5,onion:3,herb:6",{rim:"#5b8fd6"}],
-"Spanish chickpea & spinach stew":["pot","curry:#c0642a","chickpea:12,kale:6",{rim:"#8d95a0",side:"bread"}],
-"Vegetable paella":["pot","rice:#f0c13f","pepperR:5,pea:10,pepperG:4,cherry:3,lemon:2,herb:6",{rim:"#454b55"}],
-"Patatas bravas":["plate","","potato:10,sauceR:3,sauceW:2",{}],
-"Pan con tomate":["toast","","tomato:3,herb:4",{cake:"#e0a85a"}],
-"Ratatouille":["ratatouille","","",{}],
-"French onion soup":["pot","baked:#e9a948","herb:3",{rim:"#8a5a34"}],
-"Potato gratin":["tray","baked:#efb04c","potatoslice:10,herb:3",{}],
-"Tarte tatin":["pie","sauce:#a9561b","applegold:9",{smooth:true,crust:"#e6b26b"}],
-"Mushroom bourguignon":["bowl","curry:#6b3a2e","mushroom:7,carrot:5,onionY:4,herb:6",{rim:"#8b2f2f",side:"bread"}],
-"Matar paneer":["bowl","curry:#d96a2b","pea:14,paneer:7,cilantro:6",{rim:"#e5e1d5",side:"roti"}],
-"Bhindi masala":["pan","curry:#c8a23a","okra:12,tomato:3",{}],
-"Mushroom masala":["bowl","curry:#a8501f","mushroom:8,cilantro:7,sauceW:1",{rim:"#7fb7c9",side:"naan"}],
-"Vegetable korma":["bowl","curry:#f1d9a3","carrot:5,pea:8,potato:4,cauliflower:3,nut:5,cilantro:5",{rim:"#c0392b",side:"naan"}],
-"Tomato rasam":["bowl","broth:#d9532e","herb:8,chili:3",{rim:"#c9803f",side:"spoon"}],
-"Pav bhaji":["bowl","curry:#c8431f","pea:8,butter:1,onion:3,cilantro:6",{rim:"#e5e1d5",side:"pav"}],
-"Vegetable pakora":["plate","","fritter:8,cilantro:3",{side:"chutney"}],
-"Masoor dal":["bowl","curry:#e8a33a","herb:6,chili:2,sauceR:2",{rim:"#e08f5a"}],
-"Lentil shepherd's pie":["tray","mash:#f1e2b0","herb:5",{ridges:true}],
-"Stuffed sweet potatoes":["potato","","blackbean:8,corn:6,avoslice:2,cilantro:5",{flesh:"#f08a24"}],
-"Sloppy lentil joes":["burger","","leaf,lentil,lentil,cheddar",{}],
-"Cauliflower buffalo bites":["plate","","cauliflowerR:8,celerystick:3",{side:"sauce"}],
-"Vegetable pot pie":["pie","","",{crust:"#e0a95a",vents:true}],
-"Apple crumble":["bowl","crumble","apple:3,sauceW:1",{rim:"#d98c5f"}],
-"Banana nice cream":["scoop","","banana:4,chip:10,nut:4",{scoops:["#f7e7a4","#f3dc88"]}],
-"Peanut butter cookies":["cookie","","",{cake:"#cf9a5a",kind:"pb"}],
-"Suji halwa":["bowl","plain:#e8a23a","nut:8,dot:5",{rim:"#f5b942"}],
-"Coconut ladoo":["plate","","ladoo:7",{rim:"#d98a5f"}],
-"Chocolate avocado mousse":["glass","sauce:#4a2c1d","",{garnish:"strawberry"}],
-"Mango lassi":["glass","sauce:#f9b233","dot:3",{garnish:"mint"}],
-"Roasted chickpeas":["bowl","plain:#f5eed8","chickpea:30,spice:12",{rim:"#d98a5f"}],
-"Caprese skewers":["skewer","","cherry,basil,mozz",{}],
-"Moroccan chickpea tagine":["pot","curry:#d9822b","chickpea:10,carrot:5,sweetpotato:4,mango:3,herb:5",{rim:"#c0642a"}],
-"Greek lemon potatoes":["tray","plain:#e6eaef","potato:8,lemon:3,herb:7",{}],
-"Scrambled eggs & toast":["plate","","scramble:3,bread:2,herb:6",{}],
-"Veggie omelette":["omelette","","pepperR:4,leaf:4,cheddar:3",{}],
-"Masala omelette":["omelette","","tomato:2,onion:2",{flecks:true,eggc:"#f2c744"}],
-"Egg bhurji":["pan","plain:#f2c94a","scramble:5,tomato:4,cilantro:7,chili:2",{side:"pav"}],
-"Huevos rancheros":["plate","","tortilla:2,eggfried:2,salsa:8,blackbean:7,avoslice:2,cilantro:5",{}],
-"Shakshuka":["pan","sauce:#c9382a","eggfried:3,feta:4,herb:7",{side:"bread"}],
-"Veggie frittata":["pan","plain:#f4d04e","pepperR:4,zucchini:5,leaf:4",{}],
-"Egg & cheese breakfast sandwich":["sandwich","","eggfried,cheddar",{bun:"#e6c27c"}],
-"Avocado egg toast":["toast","","avoslice:2,eggfried:1,spice:6",{cake:"#d9a85f"}],
-"Breakfast egg muffins":["muffin","","",{cake:"#f2c94a"}],
-"Egg in a hole":["toast","","eggfried:1,butter:1",{cake:"#d8a35c",spots:[[50,50,-4]],hole:true}],
-"Breakfast for dinner":["plate","","scramble:2,bread:2,tomato:3,strawberry:2",{}],
-"Egg fried rice":["bowl","rice:#efdca4","scramble:4,pea:8,carrot:5,scallion:8",{rim:"#c0392b",side:"chopsticks"}],
-"Tomato & egg stir-fry":["bowl","curry:#e65a3c","scramble:4,tomato:6,scallion:6",{rim:"#f7f4ec"}],
-"Egg drop soup":["bowl","broth:#f1d779","ribbon:8,scallion:8",{rim:"#e5e1d5",side:"spoon"}],
-"Egg curry":["bowl","curry:#d8742a","eggboiled:4,cilantro:6",{rim:"#7fb7c9",side:"roti"}],
-"Spanish tortilla":["pie","plain:#efc457","potatoslice:6,onion:3",{smooth:true,crust:"#d9a43e"}],
-"Spinach quiche":["pie","plain:#f1d886","leaf:7,shred:4",{crust:"#e6b26b"}],
-"Egg salad sandwich":["sandwich","","leaf,scramble,cucumber",{bun:"#f1deb4"}],
-"Mushroom carbonara":["bowl","pasta:#f5e3ae","mushroom:5,herb:7,spice:14",{rim:"#7fb7c9",sauce:"#fff0c9"}],
-"Tamagoyaki":["plate","","tamago:4,sprout:6",{}],
-"Deviled eggs":["plate","","deviled:6",{}],
-"Spanakopita":["tray","plain:#e6b25a","leaf:3",{score:true}],
-"Flan":["flan","","",{}],
-"Chocolate mousse":["bowl","plain:#5a3420","cream:1,strawberry:2,chip:10",{rim:"#f7f4ec"}],
-};
-const STYLES = [["","Auto"],["bowl","Bowl"],["plate","Plate"],["pan","Pan"],["tray","Baked dish"],["pizza","Pizza"],["burger","Burger"],["sandwich","Sandwich"],["wrap","Wrap"],["taco","Taco"],["pie","Pie"],["stack","Pancakes"],["glass","Drink"],["cookie","Cookies"],["scoop","Dessert"]];
-const STYLE_PREVIEW = {bowl:["bowl","curry:#e8a33a",["carrot:4","pea:7","cilantro:5"],{rim:"#7fb7c9"}], plate:["plate","",["scramble:3","bread:2","herb:5"],{}], pan:["pan","plain:#f2d24e",["tomato:3","pepperR:3","herb:5"],{}],
-  tray:["tray","baked:#e9a74c",["basil:3"],{sauce:"#d6402c"}], pizza:["pizza","",["mushroom:4","olive:5","basil:3"],{}], burger:["burger","",["leaf","tomato","kidney","cheddar"],{}], sandwich:["sandwich","",["leaf","tomato","cheese"],{}],
-  wrap:["wrap","",["kidney:2","corn:3","leaf:2"],{}], taco:["taco","",["leaf:3","tomato:4","cheese:3"],{}], pie:["pie","",["apple:6"],{lattice:true}], stack:["stack","",["blueberry:4"],{layers:4}],
-  glass:["glass","sauce:#f9b233",["dot:3"],{garnish:"mint"}], cookie:["cookie","",[],{cake:"#d9a15c"}], scoop:["scoop","",["strawberry:3"],{scoops:["#fff4d6","#f6a8b8"]}]};
-// ingredient -> how it is drawn on the dish (used for her own recipes)
-const KEY2TOP = {potato:"potato",onion:"onion",garlic:"garlic",tomato:"tomato",lentils:"lentil",chickpeas:"chickpea",beans:"kidney",paneer:"paneer",tofu:"tofu",mushroom:"mushroom",eggplant:"eggplant",spinach:"leaf",greens:"kale",lettuce:"leafL",cabbage:"leafL",
-  broccoli:"broccoli",cauliflower:"cauliflower",carrot:"carrot",bellpepper:"pepperR",corn:"corn",peas:"pea",cucumber:"cucumber",zucchini:"zucchini",avocado:"avoslice",lemon:"lemon",lime:"lime",apple:"apple",banana:"banana",berries:"strawberry",pineapple:"pineapple",
-  nuts:"nut",cheese:"shred",eggs:"scramble",olives:"olive",chocolate:"choc",bread:"bread",tortillas:"tortilla",cilantro:"cilantro",parsley:"herb",basil:"basil",mint:"mint",scallion:"scallion",chili:"chili",yogurt:"sauceW",cream:"sauceW",okra:"okra",leek:"leek",
-  sweetpotato:"sweetpotato",noodles:"noodleb",pesto:"basil",feta:"feta",mozz:"mozz"};
-const RIMS = ["#f7f4ec","#7fb7c9","#d98c5f","#5b8fd6","#e8c15a","#c0392b","#2d3138","#e5e1d5"];
-function guessStyle(m){
-  const n=m.name.toLowerCase();
-  const has=(...w)=>w.some(x=>n.includes(x));
-  if(has("pizza")) return "pizza"; if(has("burger")) return "burger"; if(has("sandwich")) return "sandwich"; if(has("taco")) return "taco"; if(has("wrap","burrito")) return "wrap";
-  if(has("pancake","waffle","crêpe","crepe","french toast")) return "stack"; if(has("cookie","brownie","biscuit")) return "cookie"; if(has("ice cream","pudding","mousse","kheer","halwa","custard")) return m.meal==="Dessert"?"scoop":"bowl";
-  if(has("smoothie","lassi","juice","shake","milkshake","lemonade")) return "glass"; if(has("pie","quiche","tart")) return "pie"; if(has("lasagna","bake","gratin","casserole","parmesan","enchilada")) return "tray";
-  if(has("soup","stew","chili","curry","dal","masala","korma","salad","pasta","spaghetti","noodle","ramen","rice","biryani","pulao","risotto","porridge","oat","bowl")) return "bowl";
-  if(has("stir","fry","saute","sauté","scramble","omelette","frittata","hash")) return "pan";
-  if(m.meal==="Dessert") return "cookie"; if(m.meal==="Breakfast"||m.meal==="Snack") return "plate"; return "bowl";
-}
-function autoSpec(m){
-  const v=m.style||guessStyle(m), n=String(m.name).toLowerCase(), has=(...w)=>w.some(x=>n.includes(x));
-  let base="";
-  if(["bowl","pan","pot","plate","tray","pie","glass"].includes(v)){
-    if(v==="tray") base="baked:#e9a74c";
-    else if(v==="glass") base="sauce:#f6e7c1";
-    else if(has("salad")) base="salad";
-    else if(has("curry","masala","dal","korma","gravy","bhaji")) base="curry:#e8a33a";
-    else if(has("soup","stew","chili","broth","rasam","chowder")) base="broth:#d9a14a";
-    else if(has("pasta","spaghetti","penne","alfredo","ziti")) base="pasta:#f2d27a";
-    else if(has("noodle","ramen","udon","lo mein","pho")) base="noodles:#efd9a0";
-    else if(has("rice","pulao","biryani","risotto","khichdi")) base="rice:#efe3b8";
-    else if(v==="bowl") base="plain:#f5eed8"; else if(v==="pan") base="sauce:#c98a3a";
+// ---- dish icons: a main picture + small badges for the key ingredients. Every built-in meal has its own combination. ----
+const DISH_ICONS = {"Pancakes":["🥞","🥛","🥚"],"Oatmeal with fruit":["🥣","🌾","🍌"],"Cinnamon toast":["🍞"],"Avocado toast":["🥑","🍞"],"Fruit smoothie bowl":["🥤","🍓","🍌"],"Bagel with cream cheese":["🥯","🧀"],"Waffles with berries":["🧇","🥛","🥚"],"Granola & yogurt":["🌾","🥛"],"Poha":["🍚","🧅"],"Upma":["🥘","🌾","🫛"],"Aloo paratha":["🫓","🥔"],"Dosa with chutney":["🌯"],"Idli & sambar":["🍡","🫘","🍅"],"Grilled cheese & tomato soup":["🥪","🍞","🧀"],"Caprese sandwich":["🥖","🍞","🧀"],"Chickpea salad sandwich":["🌰","🥬","🍞"],"Bean & cheese burritos":["🌯","🫓","🫘"],"Veggie wraps with hummus":["🥙","🫓"],"Lentil soup":["🍲","🥬","🫘"],"Falafel pita":["🧆","🫓","🌰"],"Tomato soup":["🍅","🧅","🧄"],"Quinoa veggie bowl":["🥗","🌾","🥑"],"Caesar-style salad with croutons":["🥬","🥛","🍞"],"Veggie nachos":["🍟","🫘","🧀"],"Curd rice":["🥛","🍚"],"Lemon rice":["🍋","🍚"],"Tacos":["🌮","🫓","🫘"],"Black bean tacos":["🫘","🫓","🧅"],"Veggie fajitas":["🫑","🫓","🍄"],"Burrito bowls":["🍱","🫘","🍚"],"Spaghetti with marinara":["🍝","🍅","🧄"],"Spaghetti with lentil marinara":["🥫","🫘","🍝"],"Pesto pasta":["🌿","🍝"],"Fettuccine Alfredo":["🧈","🥛","🍝"],"Pasta primavera":["🥕","🍝","🧀"],"Baked ziti":["🥘","🥫","🍝"],"Veggie lasagna":["🫕","🥫","🍝"],"Homemade veggie pizza":["🍕","🥫","🧀"],"Veggie burgers":["🍔","🍞","🫘"],"Macaroni & cheese":["🧀","🍝","🥛"],"Eggplant parmesan":["🍆","🍞","🥫"],"Mushroom stroganoff":["🍄","🍜","🧅"],"Three-bean chili":["🌶️","🫘","🫑"],"Loaded baked potatoes":["🥔","🫘","🧀"],"Stuffed bell peppers":["🫑","🍅","🌽"],"Veggie quesadillas":["🫓","🫘","🫑"],"Roasted veggies & potatoes":["🥦","🥔","🥕"],"Big Greek salad with pita":["🫒","🫓","🥒"],"Veggie noodle soup":["🥢","🥬","🫛"],"Veggie ramen":["🍜","🥬","🍵"],"Pad Thai with tofu":["🥜","🍜","⬜"],"Veggie fried rice":["🍘","🫛","🍚"],"Vegetable stir-fry with tofu":["🥡","🥦","🫛"],"Veggie sushi rolls":["🍙","🥑","🥒"],"Veggie dumplings":["🥟","🥬","🍄"],"Chana masala":["🍛","🌰","🍅"],"Paneer butter masala":["🧈","🥛","🍅"],"Palak paneer":["🥬","🧈","🥛"],"Aloo gobi":["🥔","🌸","🍅"],"Rajma chawal":["🍛","🫘","🍅"],"Dal tadka & rice":["🥣","🫘","🍅"],"Khichdi":["🍲","🫘","🍚"],"Vegetable biryani":["🍚","🥛","🍅"],"Vegetable pulao":["🍽️","🍚","🧅"],"Baingan bharta":["🍆","🍅","🧅"],"Veggie curry with naan":["🥘","🥥","🍅"],"Chocolate chip cookies":["🍪","🍫","🥚"],"Baked apples with cinnamon":["🍎","🌾"],"Kheer":["🍮","🍚","🥛"],"Ice cream with fruit":["🍨"],"Banana bread":["🍌","🥚"],"Gulab jamun":["🍩","🥛"],"Brownies":["🍫","🥚"],"Yogurt with honey & nuts":["🍯","🥛"],"Popcorn":["🍿"],"Apple slices with peanut butter":["🥜","🍎"],"Samosas":["🥟","🫛","🥔"],"Cheese & crackers":["🧀","🍘"],"Hummus with pita & veggies":["🥨","🫓"],"French fries":["🍟","🥔"],"Vegetable tempura":["🍠"],"Miso soup with tofu":["🍵","⬜"],"Vegetable udon":["🍜","🍄","🥬"],"Teriyaki tofu with rice":["🍱","🥦","⬜"],"Onigiri (rice balls)":["🍙","🍚"],"Vegetable yakisoba":["🥢","🍜"],"Japanese vegetable curry":["🍛","🥔","🥕"],"Edamame with sea salt":["🫛"],"Cucumber sunomono salad":["🥒"],"Thai green curry":["🍛","🌶️","🥥"],"Thai red curry with sweet potato":["🍠","🌶️","🥥"],"Tom kha mushroom soup":["🥥","🍄","⬜"],"Thai basil tofu stir-fry":["🌿","🫛","⬜"],"Thai peanut noodles":["🥜","🥬","🍜"],"Pineapple fried rice":["🍍","🫛","🍚"],"Mango sticky rice":["🥭","🍓","🥥"],"Thai cucumber salad":["🥒","🧅"],"Gnocchi with tomato sauce":["🥔","🍅","🧄"],"Mushroom risotto":["🍄","🍚","🧀"],"Minestrone soup":["🍲","🥒","🥬"],"Bruschetta":["🍅","🍞","🧄"],"Spaghetti aglio e olio":["🧄","🍝"],"Penne arrabbiata":["🌶️","🍝","🍅"],"Spinach & ricotta stuffed shells":["🧀","🥫","🍝"],"Pasta e fagioli":["🫘","🥬","🍝"],"Panzanella (Italian bread salad)":["🥗","🥒","🍞"],"Affogato":["☕","🍨"],"Bean & cheese enchiladas":["🌮","🍅","🌽"],"Chilaquiles":["🌮","🍟","🍅"],"Esquites (street corn salad)":["🌽","🧀"],"Guacamole & chips":["🥑","🍅","🧅"],"Mexican rice":["🍚","🍅","🧅"],"Tortilla soup":["🍲","🌽","🫓"],"Vegetarian mapo tofu":["🌶️","🍄","⬜"],"Kung pao tofu":["🥜","🥒","⬜"],"Vegetable lo mein":["🍜","🧄"],"Sweet & sour tofu":["🍍","⬜","🫑"],"Vegetable spring rolls":["🥟","🥬","🥕"],"Scallion pancakes":["🫓","🌱"],"Dan dan noodles":["🍜","🥜","🥬"],"Vegetable bibimbap":["🍚","🥒","🍄"],"Japchae (glass noodle stir-fry)":["🍝","🍜","🧄"],"Tteokbokki (spicy rice cakes)":["🍡","🥬"],"Tabbouleh":["🌿","🌾","🥒"],"Mujaddara (lentils & rice)":["🍚","🫘","🧅"],"Baba ganoush":["🍆","🧄"],"Roasted vegetable couscous":["🌾","🌰"],"Chickpea shawarma wrap":["🌯","🫓","🥛"],"Fresh spring rolls with peanut sauce":["🥬","🫓","🥜"],"Vegetarian pho":["🍜","🍄","⬜"],"Tofu banh mi":["🥖","🥒","⬜"],"French toast":["🍞","🥛","🥚"],"Banana oat pancakes":["🍌","🌾","🥛"],"Overnight oats":["🫙","🌾","🥛"],"Chia pudding":["🥄","🌱","🥛"],"Tofu scramble":["🍳","⬜","🥬"],"Veggie breakfast burrito":["🌯","🫓","⬜"],"Besan chilla":["🥞","🌾","🍅"],"Peanut butter banana toast":["🥜","🍌","🍞"],"Crêpes with fruit":["🍓","🥛","🥚"],"Crispy breakfast potatoes":["🍟","🥔","🫑"],"Broccoli cheddar soup":["🥦","🥛","🥕"],"Black bean soup":["🫘","🫑","🧅"],"Potato leek soup":["🥔","🥬","🥛"],"Gazpacho":["🍅","🥒","🫑"],"Cold sesame noodles":["🍜","🥒","🧄"],"Veggie pasta salad":["🥗","🫒","🍝"],"Mediterranean orzo salad":["🫒","🥒","🍝"],"Spanish chickpea & spinach stew":["🍲","🌰","🥬"],"Vegetable paella":["🥘","🌰","🫑"],"Patatas bravas":["🥔","🍅"],"Pan con tomate":["🥖","🍞","🍅"],"Ratatouille":["🍆","🥒","🫑"],"French onion soup":["🧅","🍞","🧀"],"Potato gratin":["🧀","🥛","🥔"],"Tarte tatin":["🍎","🥐"],"Mushroom bourguignon":["🍄","🥕","🍅"],"Matar paneer":["🫛","🧈","🍅"],"Bhindi masala":["🥬","🫛","🍅"],"Mushroom masala":["🍄","🍅","🧅"],"Vegetable korma":["🥥","🧅","🧄"],"Tomato rasam":["🍅","🫘","🧄"],"Pav bhaji":["🍞","🌸","🫛"],"Vegetable pakora":["🧅","🌾","🥬"],"Masoor dal":["🥣","🫘","🧄"],"Lentil shepherd's pie":["🥧","🥬","🫘"],"Stuffed sweet potatoes":["🍠","🌽","🥑"],"Sloppy lentil joes":["🍔","🫘","🫑"],"Cauliflower buffalo bites":["🔥","🌸","🥛"],"Vegetable pot pie":["🥧","🥐","🥬"],"Apple crumble":["🍎"],"Banana nice cream":["🍦","🍌"],"Peanut butter cookies":["🍪","🥜","🥛"],"Suji halwa":["🍮","🌾"],"Coconut ladoo":["🥥","🥛"],"Chocolate avocado mousse":["🥑","🍫","🥛"],"Mango lassi":["🥭","🍓","🥛"],"Roasted chickpeas":["🌰"],"Caprese skewers":["🍅","🧀"],"Moroccan chickpea tagine":["🍲","🌰","🥔"],"Greek lemon potatoes":["🍋","🥔","🧄"],"Scrambled eggs & toast":["🍳","🍞","🥚"],"Veggie omelette":["🥚","🧀"],"Masala omelette":["🍳","🥚","🍅"],"Egg bhurji":["🥚","🍅","🧅"],"Huevos rancheros":["🍳","🍅","🥑"],"Shakshuka":["🍳","🫑","🥚"],"Veggie frittata":["🥚","🥒","🥬"],"Egg & cheese breakfast sandwich":["🥪","🍞","🥚"],"Avocado egg toast":["🥑","🍞","🥚"],"Breakfast egg muffins":["🧁","🥛","🥚"],"Egg in a hole":["🍞","🥚"],"Breakfast for dinner":["🍳","🍞","🍅"],"Egg fried rice":["🍚","🫛","🥕"],"Tomato & egg stir-fry":["🍅","🥚"],"Egg drop soup":["🥣","🥚"],"Egg curry":["🍛","🥚","🍅"],"Spanish tortilla":["🥔","🥚","🧅"],"Spinach quiche":["🥧","🥐","🥛"],"Egg salad sandwich":["🥪","🥬","🍞"],"Mushroom carbonara":["🍝","🍄","🥚"],"Tamagoyaki":["🍳","🥚"],"Deviled eggs":["🥚"],"Spanakopita":["🥧","🥐","🥚"],"Flan":["🍮","🥛","🥚"],"Chocolate mousse":["🍫","🥛","🥚"]};
+const ICON_EMOJI = {"potato":"🥔","onion":"🧅","garlic":"🧄","tomato":"🍅","ginger":"🫚","rice":"🍚","lentils":"🫘","chickpeas":"🌰","beans":"🫘","paneer":"🧈","tofu":"⬜","mushroom":"🍄","eggplant":"🍆","spinach":"🥬","greens":"🥬","lettuce":"🥬","cabbage":"🥬","leek":"🥬","celery":"🥬","broccoli":"🥦","cauliflower":"🌸","carrot":"🥕","bellpepper":"🫑","chili":"🌶️","corn":"🌽","peas":"🫛","okra":"🫛","greenbeans":"🫛","edamame":"🫛","cucumber":"🥒","zucchini":"🥒","avocado":"🥑","lemon":"🍋","lime":"🍋","apple":"🍎","banana":"🍌","berries":"🍓","pineapple":"🍍","coconutmilk":"🥥","coconutflakes":"🥥","nuts":"🥜","peanutbutter":"🥜","pasta":"🍝","noodles":"🍜","bread":"🍞","tortillas":"🫓","pita":"🫓","naan":"🫓","eggs":"🥚","milk":"🥛","cream":"🥛","yogurt":"🥛","milkpowder":"🥛","cheese":"🧀","creamcheese":"🧀","oats":"🌾","granola":"🌾","quinoa":"🌾","bulgur":"🌾","couscous":"🌾","semolina":"🌾","besan":"🌾","poha":"🍚","olives":"🫒","chocolate":"🍫","icecream":"🍨","coffee":"☕","pastry":"🥐","nori":"🍙","parsley":"🌿","basil":"🌿","cilantro":"🌿","mint":"🌿","pesto":"🌿","marinara":"🥫","salsa":"🍅","wrappers":"🥟","ricepaper":"🫓","ricecakes":"🍡","chips":"🍟","gochujang":"🌶️","currypaste":"🌶️","breadcrumbs":"🍞","bagel":"🥯","gnocchi":"🥔","dough":"🍕","popcorn":"🍿","crackers":"🍘","chia":"🌱","scallion":"🌱","miso":"🍵","kombu":"🌊"};          // ingredient -> badge picture
+const ICON_RANK = ["basil","chili","cilantro","ginger","gochujang","kombu","lemon","lime","mint","naan","nuts","bagel","bulgur","chia","coconutflakes","coffee","couscous","crackers","creamcheese","dough","edamame","gnocchi","granola","greenbeans","greens","leek","milkpowder","okra","parsley","pesto","poha","popcorn","quinoa","ricecakes","ricepaper","scallion","besan","breadcrumbs","chips","currypaste","icecream","lettuce","miso","nori","pineapple","semolina","wrappers","berries","cauliflower","olives","paneer","apple","broccoli","cabbage","chocolate","eggplant","pastry","pita","salsa","corn","cream","marinara","oats","zucchini","banana","coconutmilk","peanutbutter","avocado","celery","yogurt","lentils","tortillas","chickpeas","peas","cucumber","noodles","mushroom","pasta","spinach","tofu","beans","bellpepper","potato","rice","bread","milk","carrot","eggs","cheese","tomato","onion","garlic"];           // most distinctive ingredients first (used for her own recipes)
+const FORM_ICONS = ["🍽️","🥘","🍲","🍛","🍜","🍝","🥗","🍕","🌮","🍔","🥪","🍳","🥞","🍞","🥧","🍰","🍪","🍎","🥕","🍅"];
+BUILTIN.forEach(m=>{ const d=DISH_ICONS[m.name]; if(d) m.emoji=d[0]; });
+function iconOf(m){
+  const d=DISH_ICONS[m.name]; if(d) return {hero:d[0],acc:d.slice(1)};
+  const hero=m.emoji||"🍽️", acc=[];
+  if(m.ingredients){
+    const n=needs(m), ks=[...n.req,...n.groups.map(g=>g[0])].sort((a,b)=>ICON_RANK.indexOf(a)-ICON_RANK.indexOf(b));
+    for(const k of ks){ const e=ICON_EMOJI[k]; if(e&&e!==hero&&!acc.includes(e)) acc.push(e); if(acc.length>=2) break; }
   }
-  const tops=[]; if(m.ingredients){ const nd=needs(m); for(const k of [...nd.req,...nd.groups.map(g=>g[0]),...nd.opt]){ const t=KEY2TOP[k]; if(t&&!tops.includes(t)) tops.push(t); if(tops.length>=6) break; } }
-  const opts={rim:RIMS[DA.hash(m.name)%RIMS.length]};
-  if(v==="stack") opts.layers=4; if(v==="pie") opts.lattice=has("apple","fruit","berry");
-  if(v==="cookie") opts.cake="#d9a15c"; if(v==="scoop") opts.scoops=["#fff4d6","#f6a8b8"];
-  return [v,base,tops,opts];
+  return {hero,acc};
 }
-const artCache = new Map();
-function dishSVG(m, mini){
-  const key=m.id+"|"+(mini?1:0)+"|"+(m.style||"")+"|"+m.name+"|"+(m.ingredients||"").length;
-  let v=artCache.get(key); if(v!==undefined) return v;
-  try{ const sp=SPECS[m.name]; v=DA.render(sp?[sp[0],sp[1],sp[2]?sp[2].split(","):[],sp[3]||{}]:autoSpec(m), m.name, {mini}); }catch(e){ v=""; }
-  artCache.set(key,v); return v;
-}
-const stylePreview = k => { try{ return DA.render(STYLE_PREVIEW[k],"preview-"+k,{mini:true}); }catch(e){ return ""; } };
+const iconInner = m => { const i=iconOf(m); return `<span class="hero">${i.hero}</span>${i.acc.map((e,k)=>`<span class="acc a${k}">${e}</span>`).join("")}`; };
 const bgImg = id => photos[id] ? `style="background-image:url('${photos[id]}')"` : "";
-const pic = m => photos[m.id] ? `<div class="blob ph" ${bgImg(m.id)} role="img" aria-label="Photo of ${esc(m.name)}"></div>` : `<div class="blob art">${dishSVG(m)}</div>`;
-const thumb = m => photos[m.id] ? `<div class="e th" ${bgImg(m.id)}></div>` : `<div class="e art">${dishSVG(m,true)}</div>`;
+const pic = m => photos[m.id] ? `<div class="blob ph" ${bgImg(m.id)} role="img" aria-label="Photo of ${esc(m.name)}"></div>` : `<div class="blob ico">${iconInner(m)}</div>`;
+const thumb = m => photos[m.id] ? `<div class="e th" ${bgImg(m.id)}></div>` : `<div class="e ico mini">${iconInner(m)}</div>`;
 const photoButtons = (id,has) => `<div class="row"><label class="btn alt pbtn">📷 ${has?"Retake":"Take a photo"}<input type="file" accept="image/*" capture="environment" hidden data-photo-for="${id}"></label><label class="btn alt pbtn">🖼 From gallery<input type="file" accept="image/*" hidden data-photo-for="${id}"></label></div>`;
 function formPhotoHTML(e){
   const url = pendingPhoto==="remove" ? null : (pendingURL || (e&&e.id&&photos[e.id]));
@@ -1604,7 +774,7 @@ filters.addEventListener("click",e=>{
 function itemRow(m, actions){
   const a = ago(m.id);
   return `<div class="item">${thumb(m)}
-    <div class="t" ${hasRecipe(m)?`data-view="${m.id}"`:""}><b>${esc(m.name)}</b><small>${esc(m.meal)}${m.cuisine&&m.cuisine!=="Other"?" · "+esc(m.cuisine):""} · ${mins(m)}${a?" · made "+a:""}</small></div>${actions}</div>`;
+    <div class="t" ${hasRecipe(m)?`data-view="${m.id}"`:""}><b>${esc(m.name)}${hasRecipe(m)?" 📝":""}</b><small>${esc(m.meal)}${m.cuisine&&m.cuisine!=="Other"?" · "+esc(m.cuisine):""} · ${mins(m)}${a?" · made "+a:""}</small></div>${actions}</div>`;
 }
 const favBtn = id => `<button class="icon ${S.favs.includes(id)?"on":""}" data-fav="${id}">${S.favs.includes(id)?"♥":"♡"}</button>`;
 let fridgeMore = false, sheetName = null, detailId = null, editId = null, prevSheet = null;
@@ -1659,7 +829,7 @@ function sheetBody(){
   if(sheetName==="detail"){
     const m=find(detailId); if(!m) return "";
     const ing=lines(m.ingredients), st=lines(m.steps);
-    return `<div class="detail">${photos[m.id]?`<div class="phbig" ${bgImg(m.id)} role="img" aria-label="Photo of ${esc(m.name)}"></div>`:`<div class="blob art">${dishSVG(m)}</div>`}<h1>${esc(m.name)}</h1>
+    return `<div class="detail">${photos[m.id]?`<div class="phbig" ${bgImg(m.id)} role="img" aria-label="Photo of ${esc(m.name)}"></div>`:`<div class="blob ico">${iconInner(m)}</div>`}<h1>${esc(m.name)}</h1>
       <div class="sub">${esc(m.note||"")}</div>
       <div class="meta"><span class="tag">${esc(m.meal)}${m.cuisine&&m.cuisine!=="Other"?" · "+esc(m.cuisine):""}</span><span class="tag">⏱ ${mins(m)}</span>${m.serves?`<span class="tag">🍽 Serves ${m.serves}</span>`:""}${(m.tags||[]).map(t=>`<span class="tag food">${TAG_ICON[t]||""} ${esc(t)}</span>`).join("")}</div>
       <button class="btn" data-make="${m.id}">✅ We're making this!</button>
@@ -1679,8 +849,8 @@ function sheetBody(){
     <label style="display:block;margin-top:6px">Ingredients (one per line)</label><textarea id="ing" placeholder="2 cups rice&#10;1 can chickpeas&#10;1 onion">${esc(e.ingredients||"")}</textarea>
     <label>Steps (one per line, optional)</label><textarea id="stp" placeholder="Rinse the rice&#10;Cook the onion…">${esc(e.steps||"")}</textarea>
     <label>Note (optional)</label><input id="o" placeholder="e.g. marinate overnight" value="${esc(e.note||"")}">
-    <label style="display:block">Picture of the dish (the ingredients you type are drawn on it)</label>
-    <div class="stylepick" id="stylepick">${STYLES.map(([k,n])=>`<button type="button" class="sp ${k===(e.style||"")?"on":""}" data-pickstyle="${k}">${k?stylePreview(k):`<span class="auto">✨</span>`}<span>${n}</span></button>`).join("")}</div>
+    <label style="display:block">Icon (pictures of the main ingredients are added automatically)</label>
+    <div class="fgrid" id="iconpick">${FORM_ICONS.map(i=>`<button type="button" class="chip ip ${i===(e.emoji||"🍽️")?"on":""}" data-pickicon="${i}">${i}</button>`).join("")}</div>
     <label style="display:block">Photo (optional)</label><div class="pprev" id="pprev">${formPhotoHTML(e)}</div>${photoButtons("form",false)}
     <button class="btn" data-act="add">${e.id?"Save changes":"Add this meal"}</button>
     ${e.id?`<button class="btn alt" data-act="cancel">Cancel</button>`:""}
@@ -1733,7 +903,7 @@ sheet.addEventListener("click",e=>{
   if(d.act==="fjump"){ const r=$("#fres"); if(r) sheet.scrollTo({top:r.offsetTop-12,behavior:"smooth"}); return; }
   if(d.act==="ftop"){ sheet.scrollTo({top:0,behavior:"smooth"}); return; }
   if(d.ftag){ t.classList.toggle("on"); return; }
-  if(d.pickstyle!==undefined){ document.querySelectorAll(".sp").forEach(x=>x.classList.toggle("on",x===t)); return; }
+  if(d.pickicon){ document.querySelectorAll(".chip.ip").forEach(x=>x.classList.toggle("on",x===t)); return; }
   if(d.act==="fprem"){ pendingPhoto="remove"; if(pendingURL){ URL.revokeObjectURL(pendingURL); pendingURL=null; } $("#pprev").innerHTML=""; return; }
   if(d.delphoto){ deletePhoto(d.delphoto).then(()=>{ renderSheet(); toast("Photo removed"); }); return; }
   if(d.edit){ editId=d.edit; pendingPhoto=null; pendingURL=null; sheetName="add"; prevSheet=null; renderSheet(); sheet.scrollTop=0; return; }
@@ -1752,7 +922,7 @@ sheet.addEventListener("click",e=>{
   else if(d.act==="unhide"){ S.hidden=[]; save(); }
   else if(d.act==="add"){
     const name=$("#n").value.trim(); if(!name){ toast("Please type a meal name"); return; }
-    const pk=document.querySelector(".sp.on"); const fields={name,style:pk?pk.dataset.pickstyle:"",meal:$("#m").value,cuisine:$("#cu").value,mins:Math.max(1,parseInt($("#t").value)||30),note:$("#o").value.trim(),
+    const pk=document.querySelector(".chip.ip.on"); const fields={name,emoji:pk?pk.dataset.pickicon:"🍽️",meal:$("#m").value,cuisine:$("#cu").value,mins:Math.max(1,parseInt($("#t").value)||30),note:$("#o").value.trim(),
       ingredients:$("#ing").value.trim(),steps:$("#stp").value.trim(),
       tags:[...document.querySelectorAll(".chip.tg.on")].map(x=>x.dataset.ftag)};
     const old=S.custom.find(x=>x.id===editId);
@@ -1828,7 +998,7 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",applyBrandi
 
 applyBranding(); renderFilters(); buildDeck(); renderDeck();
 loadPhotos().then(()=>{ if(Object.keys(photos).length && sheet.hidden) renderDeck(); });
-const APP_VERSION = "v18";
+const APP_VERSION = "v17";
 async function forceUpdate(){
   toast("Updating…");
   try{
