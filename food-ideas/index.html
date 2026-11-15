@@ -125,6 +125,15 @@
   .res{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:18px;padding:12px 14px;margin:8px 0;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.06)}
   .res .e{font-size:1.9rem}.res .t{flex:1;min-width:0}.res b{display:block}.res small{color:var(--muted)}
   .res .go{color:var(--muted);font-size:1.2rem}.ok{color:var(--yes);font-weight:600}
+  .blob.ico{position:relative}
+  .ico .hero{display:block;line-height:1}
+  .blob.ico .hero{transform:translateY(-6%)}
+  .ico .acc{position:absolute;display:flex;align-items:center;justify-content:center;width:1.5em;height:1.5em;border-radius:50%;background:var(--card);box-shadow:0 2px 8px rgba(0,0,0,.22);font-size:.3em;line-height:1}
+  .blob.ico .a0{right:4%;bottom:4%}.blob.ico .a1{left:4%;bottom:4%}
+  .e.ico{position:relative;width:46px;height:46px;display:flex;align-items:center;justify-content:center;flex:none}
+  .mini .acc{font-size:.36em;width:1.5em;height:1.5em;box-shadow:0 1px 3px rgba(0,0,0,.28)}
+  .mini .a0{right:-6px;bottom:-5px}.mini .a1{display:none}
+  .chip.ip{font-size:1.4rem;padding:5px 10px}
   .blob.ph{background-size:cover;background-position:center;border-radius:32%;font-size:0;box-shadow:0 4px 14px rgba(0,0,0,.18)}
   .cam{position:absolute;top:16px;left:16px;width:44px;height:44px;border-radius:50%;background:var(--soft);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:1.25rem;cursor:pointer;user-select:none}
   .th{width:46px;height:46px;border-radius:12px;background-size:cover;background-position:center;font-size:0;flex:none}
@@ -610,9 +619,25 @@ async function shrinkPhoto(file, max=900){
     return await new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(new Error("encode failed")),"image/jpeg",0.82));
   } finally { URL.revokeObjectURL(url); }
 }
+// ---- dish icons: a main picture + small badges for the key ingredients. Every built-in meal has its own combination. ----
+const DISH_ICONS = {"Pancakes":["🥞","🥛","🥚"],"Oatmeal with fruit":["🥣","🌾","🍌"],"Cinnamon toast":["🍞"],"Avocado toast":["🥑","🍞"],"Fruit smoothie bowl":["🥤","🍓","🍌"],"Bagel with cream cheese":["🥯","🧀"],"Waffles with berries":["🧇","🥛","🥚"],"Granola & yogurt":["🌾","🥛"],"Poha":["🍚","🧅"],"Upma":["🥘","🌾","🫛"],"Aloo paratha":["🫓","🥔"],"Dosa with chutney":["🌯"],"Idli & sambar":["🍡","🫘","🍅"],"Grilled cheese & tomato soup":["🥪","🍞","🧀"],"Caprese sandwich":["🥖","🍞","🧀"],"Chickpea salad sandwich":["🌰","🥬","🍞"],"Bean & cheese burritos":["🌯","🫓","🫘"],"Veggie wraps with hummus":["🥙","🫓"],"Lentil soup":["🍲","🥬","🫘"],"Falafel pita":["🧆","🫓","🌰"],"Tomato soup":["🍅","🧅","🧄"],"Quinoa veggie bowl":["🥗","🌾","🥑"],"Caesar-style salad with croutons":["🥬","🥛","🍞"],"Veggie nachos":["🍟","🫘","🧀"],"Curd rice":["🥛","🍚"],"Lemon rice":["🍋","🍚"],"Tacos":["🌮","🫓","🫘"],"Black bean tacos":["🫘","🫓","🧅"],"Veggie fajitas":["🫑","🫓","🍄"],"Burrito bowls":["🍱","🫘","🍚"],"Spaghetti with marinara":["🍝","🍅","🧄"],"Spaghetti with lentil marinara":["🥫","🫘","🍝"],"Pesto pasta":["🌿","🍝"],"Fettuccine Alfredo":["🧈","🥛","🍝"],"Pasta primavera":["🥕","🍝","🧀"],"Baked ziti":["🥘","🥫","🍝"],"Veggie lasagna":["🫕","🥫","🍝"],"Homemade veggie pizza":["🍕","🥫","🧀"],"Veggie burgers":["🍔","🍞","🫘"],"Macaroni & cheese":["🧀","🍝","🥛"],"Eggplant parmesan":["🍆","🍞","🥫"],"Mushroom stroganoff":["🍄","🍜","🧅"],"Three-bean chili":["🌶️","🫘","🫑"],"Loaded baked potatoes":["🥔","🫘","🧀"],"Stuffed bell peppers":["🫑","🍅","🌽"],"Veggie quesadillas":["🫓","🫘","🫑"],"Roasted veggies & potatoes":["🥦","🥔","🥕"],"Big Greek salad with pita":["🫒","🫓","🥒"],"Veggie noodle soup":["🥢","🥬","🫛"],"Veggie ramen":["🍜","🥬","🍵"],"Pad Thai with tofu":["🥜","🍜","⬜"],"Veggie fried rice":["🍘","🫛","🍚"],"Vegetable stir-fry with tofu":["🥡","🥦","🫛"],"Veggie sushi rolls":["🍙","🥑","🥒"],"Veggie dumplings":["🥟","🥬","🍄"],"Chana masala":["🍛","🌰","🍅"],"Paneer butter masala":["🧈","🥛","🍅"],"Palak paneer":["🥬","🧈","🥛"],"Aloo gobi":["🥔","🌸","🍅"],"Rajma chawal":["🍛","🫘","🍅"],"Dal tadka & rice":["🥣","🫘","🍅"],"Khichdi":["🍲","🫘","🍚"],"Vegetable biryani":["🍚","🥛","🍅"],"Vegetable pulao":["🍽️","🍚","🧅"],"Baingan bharta":["🍆","🍅","🧅"],"Veggie curry with naan":["🥘","🥥","🍅"],"Chocolate chip cookies":["🍪","🍫","🥚"],"Baked apples with cinnamon":["🍎","🌾"],"Kheer":["🍮","🍚","🥛"],"Ice cream with fruit":["🍨"],"Banana bread":["🍌","🥚"],"Gulab jamun":["🍩","🥛"],"Brownies":["🍫","🥚"],"Yogurt with honey & nuts":["🍯","🥛"],"Popcorn":["🍿"],"Apple slices with peanut butter":["🥜","🍎"],"Samosas":["🥟","🫛","🥔"],"Cheese & crackers":["🧀","🍘"],"Hummus with pita & veggies":["🥨","🫓"],"French fries":["🍟","🥔"],"Vegetable tempura":["🍠"],"Miso soup with tofu":["🍵","⬜"],"Vegetable udon":["🍜","🍄","🥬"],"Teriyaki tofu with rice":["🍱","🥦","⬜"],"Onigiri (rice balls)":["🍙","🍚"],"Vegetable yakisoba":["🥢","🍜"],"Japanese vegetable curry":["🍛","🥔","🥕"],"Edamame with sea salt":["🫛"],"Cucumber sunomono salad":["🥒"],"Thai green curry":["🍛","🌶️","🥥"],"Thai red curry with sweet potato":["🍠","🌶️","🥥"],"Tom kha mushroom soup":["🥥","🍄","⬜"],"Thai basil tofu stir-fry":["🌿","🫛","⬜"],"Thai peanut noodles":["🥜","🥬","🍜"],"Pineapple fried rice":["🍍","🫛","🍚"],"Mango sticky rice":["🥭","🍓","🥥"],"Thai cucumber salad":["🥒","🧅"],"Gnocchi with tomato sauce":["🥔","🍅","🧄"],"Mushroom risotto":["🍄","🍚","🧀"],"Minestrone soup":["🍲","🥒","🥬"],"Bruschetta":["🍅","🍞","🧄"],"Spaghetti aglio e olio":["🧄","🍝"],"Penne arrabbiata":["🌶️","🍝","🍅"],"Spinach & ricotta stuffed shells":["🧀","🥫","🍝"],"Pasta e fagioli":["🫘","🥬","🍝"],"Panzanella (Italian bread salad)":["🥗","🥒","🍞"],"Affogato":["☕","🍨"],"Bean & cheese enchiladas":["🌮","🍅","🌽"],"Chilaquiles":["🌮","🍟","🍅"],"Esquites (street corn salad)":["🌽","🧀"],"Guacamole & chips":["🥑","🍅","🧅"],"Mexican rice":["🍚","🍅","🧅"],"Tortilla soup":["🍲","🌽","🫓"],"Vegetarian mapo tofu":["🌶️","🍄","⬜"],"Kung pao tofu":["🥜","🥒","⬜"],"Vegetable lo mein":["🍜","🧄"],"Sweet & sour tofu":["🍍","⬜","🫑"],"Vegetable spring rolls":["🥟","🥬","🥕"],"Scallion pancakes":["🫓","🌱"],"Dan dan noodles":["🍜","🥜","🥬"],"Vegetable bibimbap":["🍚","🥒","🍄"],"Japchae (glass noodle stir-fry)":["🍝","🍜","🧄"],"Tteokbokki (spicy rice cakes)":["🍡","🥬"],"Tabbouleh":["🌿","🌾","🥒"],"Mujaddara (lentils & rice)":["🍚","🫘","🧅"],"Baba ganoush":["🍆","🧄"],"Roasted vegetable couscous":["🌾","🌰"],"Chickpea shawarma wrap":["🌯","🫓","🥛"],"Fresh spring rolls with peanut sauce":["🥬","🫓","🥜"],"Vegetarian pho":["🍜","🍄","⬜"],"Tofu banh mi":["🥖","🥒","⬜"],"French toast":["🍞","🥛","🥚"],"Banana oat pancakes":["🍌","🌾","🥛"],"Overnight oats":["🫙","🌾","🥛"],"Chia pudding":["🥄","🌱","🥛"],"Tofu scramble":["🍳","⬜","🥬"],"Veggie breakfast burrito":["🌯","🫓","⬜"],"Besan chilla":["🥞","🌾","🍅"],"Peanut butter banana toast":["🥜","🍌","🍞"],"Crêpes with fruit":["🍓","🥛","🥚"],"Crispy breakfast potatoes":["🍟","🥔","🫑"],"Broccoli cheddar soup":["🥦","🥛","🥕"],"Black bean soup":["🫘","🫑","🧅"],"Potato leek soup":["🥔","🥬","🥛"],"Gazpacho":["🍅","🥒","🫑"],"Cold sesame noodles":["🍜","🥒","🧄"],"Veggie pasta salad":["🥗","🫒","🍝"],"Mediterranean orzo salad":["🫒","🥒","🍝"],"Spanish chickpea & spinach stew":["🍲","🌰","🥬"],"Vegetable paella":["🥘","🌰","🫑"],"Patatas bravas":["🥔","🍅"],"Pan con tomate":["🥖","🍞","🍅"],"Ratatouille":["🍆","🥒","🫑"],"French onion soup":["🧅","🍞","🧀"],"Potato gratin":["🧀","🥛","🥔"],"Tarte tatin":["🍎","🥐"],"Mushroom bourguignon":["🍄","🥕","🍅"],"Matar paneer":["🫛","🧈","🍅"],"Bhindi masala":["🥬","🫛","🍅"],"Mushroom masala":["🍄","🍅","🧅"],"Vegetable korma":["🥥","🧅","🧄"],"Tomato rasam":["🍅","🫘","🧄"],"Pav bhaji":["🍞","🌸","🫛"],"Vegetable pakora":["🧅","🌾","🥬"],"Masoor dal":["🥣","🫘","🧄"],"Lentil shepherd's pie":["🥧","🥬","🫘"],"Stuffed sweet potatoes":["🍠","🌽","🥑"],"Sloppy lentil joes":["🍔","🫘","🫑"],"Cauliflower buffalo bites":["🔥","🌸","🥛"],"Vegetable pot pie":["🥧","🥐","🥬"],"Apple crumble":["🍎"],"Banana nice cream":["🍦","🍌"],"Peanut butter cookies":["🍪","🥜","🥛"],"Suji halwa":["🍮","🌾"],"Coconut ladoo":["🥥","🥛"],"Chocolate avocado mousse":["🥑","🍫","🥛"],"Mango lassi":["🥭","🍓","🥛"],"Roasted chickpeas":["🌰"],"Caprese skewers":["🍅","🧀"],"Moroccan chickpea tagine":["🍲","🌰","🥔"],"Greek lemon potatoes":["🍋","🥔","🧄"],"Scrambled eggs & toast":["🍳","🍞","🥚"],"Veggie omelette":["🥚","🧀"],"Masala omelette":["🍳","🥚","🍅"],"Egg bhurji":["🥚","🍅","🧅"],"Huevos rancheros":["🍳","🍅","🥑"],"Shakshuka":["🍳","🫑","🥚"],"Veggie frittata":["🥚","🥒","🥬"],"Egg & cheese breakfast sandwich":["🥪","🍞","🥚"],"Avocado egg toast":["🥑","🍞","🥚"],"Breakfast egg muffins":["🧁","🥛","🥚"],"Egg in a hole":["🍞","🥚"],"Breakfast for dinner":["🍳","🍞","🍅"],"Egg fried rice":["🍚","🫛","🥕"],"Tomato & egg stir-fry":["🍅","🥚"],"Egg drop soup":["🥣","🥚"],"Egg curry":["🍛","🥚","🍅"],"Spanish tortilla":["🥔","🥚","🧅"],"Spinach quiche":["🥧","🥐","🥛"],"Egg salad sandwich":["🥪","🥬","🍞"],"Mushroom carbonara":["🍝","🍄","🥚"],"Tamagoyaki":["🍳","🥚"],"Deviled eggs":["🥚"],"Spanakopita":["🥧","🥐","🥚"],"Flan":["🍮","🥛","🥚"],"Chocolate mousse":["🍫","🥛","🥚"]};
+const ICON_EMOJI = {"potato":"🥔","onion":"🧅","garlic":"🧄","tomato":"🍅","ginger":"🫚","rice":"🍚","lentils":"🫘","chickpeas":"🌰","beans":"🫘","paneer":"🧈","tofu":"⬜","mushroom":"🍄","eggplant":"🍆","spinach":"🥬","greens":"🥬","lettuce":"🥬","cabbage":"🥬","leek":"🥬","celery":"🥬","broccoli":"🥦","cauliflower":"🌸","carrot":"🥕","bellpepper":"🫑","chili":"🌶️","corn":"🌽","peas":"🫛","okra":"🫛","greenbeans":"🫛","edamame":"🫛","cucumber":"🥒","zucchini":"🥒","avocado":"🥑","lemon":"🍋","lime":"🍋","apple":"🍎","banana":"🍌","berries":"🍓","pineapple":"🍍","coconutmilk":"🥥","coconutflakes":"🥥","nuts":"🥜","peanutbutter":"🥜","pasta":"🍝","noodles":"🍜","bread":"🍞","tortillas":"🫓","pita":"🫓","naan":"🫓","eggs":"🥚","milk":"🥛","cream":"🥛","yogurt":"🥛","milkpowder":"🥛","cheese":"🧀","creamcheese":"🧀","oats":"🌾","granola":"🌾","quinoa":"🌾","bulgur":"🌾","couscous":"🌾","semolina":"🌾","besan":"🌾","poha":"🍚","olives":"🫒","chocolate":"🍫","icecream":"🍨","coffee":"☕","pastry":"🥐","nori":"🍙","parsley":"🌿","basil":"🌿","cilantro":"🌿","mint":"🌿","pesto":"🌿","marinara":"🥫","salsa":"🍅","wrappers":"🥟","ricepaper":"🫓","ricecakes":"🍡","chips":"🍟","gochujang":"🌶️","currypaste":"🌶️","breadcrumbs":"🍞","bagel":"🥯","gnocchi":"🥔","dough":"🍕","popcorn":"🍿","crackers":"🍘","chia":"🌱","scallion":"🌱","miso":"🍵","kombu":"🌊"};          // ingredient -> badge picture
+const ICON_RANK = ["basil","chili","cilantro","ginger","gochujang","kombu","lemon","lime","mint","naan","nuts","bagel","bulgur","chia","coconutflakes","coffee","couscous","crackers","creamcheese","dough","edamame","gnocchi","granola","greenbeans","greens","leek","milkpowder","okra","parsley","pesto","poha","popcorn","quinoa","ricecakes","ricepaper","scallion","besan","breadcrumbs","chips","currypaste","icecream","lettuce","miso","nori","pineapple","semolina","wrappers","berries","cauliflower","olives","paneer","apple","broccoli","cabbage","chocolate","eggplant","pastry","pita","salsa","corn","cream","marinara","oats","zucchini","banana","coconutmilk","peanutbutter","avocado","celery","yogurt","lentils","tortillas","chickpeas","peas","cucumber","noodles","mushroom","pasta","spinach","tofu","beans","bellpepper","potato","rice","bread","milk","carrot","eggs","cheese","tomato","onion","garlic"];           // most distinctive ingredients first (used for her own recipes)
+const FORM_ICONS = ["🍽️","🥘","🍲","🍛","🍜","🍝","🥗","🍕","🌮","🍔","🥪","🍳","🥞","🍞","🥧","🍰","🍪","🍎","🥕","🍅"];
+BUILTIN.forEach(m=>{ const d=DISH_ICONS[m.name]; if(d) m.emoji=d[0]; });
+function iconOf(m){
+  const d=DISH_ICONS[m.name]; if(d) return {hero:d[0],acc:d.slice(1)};
+  const hero=m.emoji||"🍽️", acc=[];
+  if(m.ingredients){
+    const n=needs(m), ks=[...n.req,...n.groups.map(g=>g[0])].sort((a,b)=>ICON_RANK.indexOf(a)-ICON_RANK.indexOf(b));
+    for(const k of ks){ const e=ICON_EMOJI[k]; if(e&&e!==hero&&!acc.includes(e)) acc.push(e); if(acc.length>=2) break; }
+  }
+  return {hero,acc};
+}
+const iconInner = m => { const i=iconOf(m); return `<span class="hero">${i.hero}</span>${i.acc.map((e,k)=>`<span class="acc a${k}">${e}</span>`).join("")}`; };
 const bgImg = id => photos[id] ? `style="background-image:url('${photos[id]}')"` : "";
-const pic = m => photos[m.id] ? `<div class="blob ph" ${bgImg(m.id)} role="img" aria-label="Photo of ${esc(m.name)}"></div>` : `<div class="blob">${m.emoji}</div>`;
-const thumb = m => photos[m.id] ? `<div class="e th" ${bgImg(m.id)}></div>` : `<div class="e">${m.emoji}</div>`;
+const pic = m => photos[m.id] ? `<div class="blob ph" ${bgImg(m.id)} role="img" aria-label="Photo of ${esc(m.name)}"></div>` : `<div class="blob ico">${iconInner(m)}</div>`;
+const thumb = m => photos[m.id] ? `<div class="e th" ${bgImg(m.id)}></div>` : `<div class="e ico mini">${iconInner(m)}</div>`;
 const photoButtons = (id,has) => `<div class="row"><label class="btn alt pbtn">📷 ${has?"Retake":"Take a photo"}<input type="file" accept="image/*" capture="environment" hidden data-photo-for="${id}"></label><label class="btn alt pbtn">🖼 From gallery<input type="file" accept="image/*" hidden data-photo-for="${id}"></label></div>`;
 function formPhotoHTML(e){
   const url = pendingPhoto==="remove" ? null : (pendingURL || (e&&e.id&&photos[e.id]));
@@ -804,7 +829,7 @@ function sheetBody(){
   if(sheetName==="detail"){
     const m=find(detailId); if(!m) return "";
     const ing=lines(m.ingredients), st=lines(m.steps);
-    return `<div class="detail">${photos[m.id]?`<div class="phbig" ${bgImg(m.id)} role="img" aria-label="Photo of ${esc(m.name)}"></div>`:`<div class="blob">${m.emoji}</div>`}<h1>${esc(m.name)}</h1>
+    return `<div class="detail">${photos[m.id]?`<div class="phbig" ${bgImg(m.id)} role="img" aria-label="Photo of ${esc(m.name)}"></div>`:`<div class="blob ico">${iconInner(m)}</div>`}<h1>${esc(m.name)}</h1>
       <div class="sub">${esc(m.note||"")}</div>
       <div class="meta"><span class="tag">${esc(m.meal)}${m.cuisine&&m.cuisine!=="Other"?" · "+esc(m.cuisine):""}</span><span class="tag">⏱ ${mins(m)}</span>${m.serves?`<span class="tag">🍽 Serves ${m.serves}</span>`:""}${(m.tags||[]).map(t=>`<span class="tag food">${TAG_ICON[t]||""} ${esc(t)}</span>`).join("")}</div>
       <button class="btn" data-make="${m.id}">✅ We're making this!</button>
@@ -824,6 +849,8 @@ function sheetBody(){
     <label style="display:block;margin-top:6px">Ingredients (one per line)</label><textarea id="ing" placeholder="2 cups rice&#10;1 can chickpeas&#10;1 onion">${esc(e.ingredients||"")}</textarea>
     <label>Steps (one per line, optional)</label><textarea id="stp" placeholder="Rinse the rice&#10;Cook the onion…">${esc(e.steps||"")}</textarea>
     <label>Note (optional)</label><input id="o" placeholder="e.g. marinate overnight" value="${esc(e.note||"")}">
+    <label style="display:block">Icon (pictures of the main ingredients are added automatically)</label>
+    <div class="fgrid" id="iconpick">${FORM_ICONS.map(i=>`<button type="button" class="chip ip ${i===(e.emoji||"🍽️")?"on":""}" data-pickicon="${i}">${i}</button>`).join("")}</div>
     <label style="display:block">Photo (optional)</label><div class="pprev" id="pprev">${formPhotoHTML(e)}</div>${photoButtons("form",false)}
     <button class="btn" data-act="add">${e.id?"Save changes":"Add this meal"}</button>
     ${e.id?`<button class="btn alt" data-act="cancel">Cancel</button>`:""}
@@ -876,6 +903,7 @@ sheet.addEventListener("click",e=>{
   if(d.act==="fjump"){ const r=$("#fres"); if(r) sheet.scrollTo({top:r.offsetTop-12,behavior:"smooth"}); return; }
   if(d.act==="ftop"){ sheet.scrollTo({top:0,behavior:"smooth"}); return; }
   if(d.ftag){ t.classList.toggle("on"); return; }
+  if(d.pickicon){ document.querySelectorAll(".chip.ip").forEach(x=>x.classList.toggle("on",x===t)); return; }
   if(d.act==="fprem"){ pendingPhoto="remove"; if(pendingURL){ URL.revokeObjectURL(pendingURL); pendingURL=null; } $("#pprev").innerHTML=""; return; }
   if(d.delphoto){ deletePhoto(d.delphoto).then(()=>{ renderSheet(); toast("Photo removed"); }); return; }
   if(d.edit){ editId=d.edit; pendingPhoto=null; pendingURL=null; sheetName="add"; prevSheet=null; renderSheet(); sheet.scrollTop=0; return; }
@@ -894,7 +922,7 @@ sheet.addEventListener("click",e=>{
   else if(d.act==="unhide"){ S.hidden=[]; save(); }
   else if(d.act==="add"){
     const name=$("#n").value.trim(); if(!name){ toast("Please type a meal name"); return; }
-    const fields={name,meal:$("#m").value,cuisine:$("#cu").value,mins:Math.max(1,parseInt($("#t").value)||30),note:$("#o").value.trim(),
+    const pk=document.querySelector(".chip.ip.on"); const fields={name,emoji:pk?pk.dataset.pickicon:"🍽️",meal:$("#m").value,cuisine:$("#cu").value,mins:Math.max(1,parseInt($("#t").value)||30),note:$("#o").value.trim(),
       ingredients:$("#ing").value.trim(),steps:$("#stp").value.trim(),
       tags:[...document.querySelectorAll(".chip.tg.on")].map(x=>x.dataset.ftag)};
     const old=S.custom.find(x=>x.id===editId);
@@ -970,7 +998,7 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",applyBrandi
 
 applyBranding(); renderFilters(); buildDeck(); renderDeck();
 loadPhotos().then(()=>{ if(Object.keys(photos).length && sheet.hidden) renderDeck(); });
-const APP_VERSION = "v16";
+const APP_VERSION = "v17";
 async function forceUpdate(){
   toast("Updating…");
   try{

@@ -1,7 +1,7 @@
 // Dinner Ideas offline helper.
 // Strategy: ask the network first (so updates show up right away) and keep a saved copy
 // only for when there is no internet or the connection is very slow.
-const CACHE = "dinner-ideas-v16";
+const CACHE = "dinner-ideas-v17";
 const FILES = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
