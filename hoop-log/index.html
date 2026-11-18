@@ -84,6 +84,18 @@ svg{width:100%;height:auto;display:block}
 const KEY = 'hooplog.v1';
 let S = { profile:{name:''}, games:[], goals:[] };
 try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(S, JSON.parse(raw)); } catch(e){}
+/* ?demo fills in sample data (only when the log is empty) so the app can be previewed */
+if (/[?&]demo\b/.test(location.search) && !S.games.length){
+  S.profile.name = 'Jaylen';
+  const D = [['2026-11-03','Lincoln','W',52,41,8,4,2,1,3,3,8,1,3,0,2],['2026-11-07','Central','L',44,49,6,5,1,0,5,2,9,0,2,2,4],
+    ['2026-11-12','Eastside','W',58,47,11,6,3,2,2,4,10,1,3,1,2],['2026-11-18','North','W',49,45,9,7,4,1,4,3,9,0,2,3,4],
+    ['2026-11-22','West','L',40,46,7,3,2,0,6,3,12,0,4,1,2],['2026-12-02','Lincoln','W',61,50,14,6,5,2,3,5,11,2,4,2,3],
+    ['2026-12-06','Central','W',55,52,16,8,4,3,2,6,12,1,3,2,2],['2026-12-13','Riverside','W',63,48,18,7,6,2,3,7,13,2,5,2,2]];
+  S.games = D.map((d,i)=>({id:'d'+i,created:i,date:d[0],opponent:d[1],level:'JV',result:d[2],us:d[3],them:d[4],pts:d[5],reb:d[6],ast:d[7],stl:d[8],blk:0,tov:d[9],
+    fgm:d[10],fga:d[11],tpm:d[12],tpa:d[13],ftm:d[14],fta:d[15],notes:i===7?'Best game yet. Left hand finishing is way better. Need to cut turnovers.':i===1?'Rushed shots in the 4th. Slow down.':'',links:[],videos:[]}));
+  S.games.forEach(g=>{ g.pts = 2*g.fgm+g.tpm+g.ftm; });
+  S.goals = [{id:'g1',metric:'pts',target:15},{id:'g2',metric:'fg',target:45},{id:'g3',metric:'ast',target:3}];
+}
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){ alert('Could not save — storage may be full.'); } }
 
 /* videos live in IndexedDB (too big for localStorage) */
