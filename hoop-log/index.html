@@ -11,8 +11,11 @@
   --orange:#ff6b1a; --orange-d:#d9520a; --green:#1e9e5a; --red:#d8403a; --blue:#2f6fed;
 }
 @media (prefers-color-scheme:dark){
-  :root{--bg:#141416; --card:#1f1f23; --ink:#f2f2f4; --muted:#9a9aa2; --line:#2e2e34;}
+  :root:not([data-theme="light"]){--bg:#141416; --card:#1f1f23; --ink:#f2f2f4; --muted:#9a9aa2; --line:#2e2e34; color-scheme:dark;}
 }
+:root[data-theme="dark"]{--bg:#141416; --card:#1f1f23; --ink:#f2f2f4; --muted:#9a9aa2; --line:#2e2e34; color-scheme:dark;}
+#theme{position:fixed;top:calc(10px + env(safe-area-inset-top));right:12px;z-index:5;width:42px;height:42px;padding:0;border-radius:99px;
+  background:var(--card);border:1px solid var(--line);font-size:20px;line-height:1}
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
@@ -76,10 +79,22 @@ svg{width:100%;height:auto;display:block}
 </style>
 </head>
 <body>
+<button id="theme" onclick="toggleTheme()" aria-label="Toggle dark mode"></button>
 <main id="app"></main>
 <nav id="nav"></nav>
 
 <script>
+/* ---------- theme: follows the phone until the user picks one ---------- */
+function isDark(){ const t=document.documentElement.dataset.theme; return t ? t==='dark' : matchMedia('(prefers-color-scheme:dark)').matches; }
+function paintTheme(){ document.getElementById('theme').textContent = isDark()?'☀️':'🌙'; }
+function toggleTheme(){
+  const t = isDark()?'light':'dark'; document.documentElement.dataset.theme=t;
+  try{ localStorage.setItem('hooplog.theme',t); }catch(e){} paintTheme();
+}
+try{ const t=localStorage.getItem('hooplog.theme'); if(t) document.documentElement.dataset.theme=t; }catch(e){}
+matchMedia('(prefers-color-scheme:dark)').addEventListener?.('change',paintTheme);
+addEventListener('DOMContentLoaded',paintTheme);
+
 /* ---------- storage ---------- */
 const KEY = 'hooplog.v1';
 let S = { profile:{name:''}, games:[], goals:[] };
