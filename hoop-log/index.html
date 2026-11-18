@@ -67,6 +67,12 @@ svg{width:100%;height:auto;display:block}
 .chk{display:flex;align-items:center;gap:8px;font-weight:500;color:var(--ink);margin:6px 0}
 .chk input{width:auto}
 .hint{font-size:12px;color:var(--muted);margin-top:4px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10;overflow:auto;padding:16px;display:flex;justify-content:center;align-items:flex-start}
+.sheet{background:var(--card);border-radius:18px;padding:14px;width:100%;max-width:440px;margin:auto}
+.sheet canvas{width:100%;height:auto;border-radius:12px;display:block}
+.sheet .primary{margin-top:12px}
+.sheet .row{margin-top:10px}
+.sheet .ghost{padding:12px}
 </style>
 </head>
 <body>
@@ -162,6 +168,7 @@ function homeView(){
     <div class="tile"><b>${fp(pct(gs,'fgm','fga'))}</b><span>FG%</span></div>
     <div class="tile"><b>${fp(pct(gs,'tpm','tpa'))}</b><span>3P%</span></div>
     <div class="tile"><b>${fp(pct(gs,'ftm','fta'))}</b><span>FT%</span></div></div>`;
+  h += `<button class="primary" style="margin-top:12px" onclick="openShare('season')">📤 Share my season</button>`;
   h += `<h2>Progress</h2><div class="card">
     <select onchange="chartStat=this.value;render()">${STATS.map(([k,n])=>`<option value="${k}" ${k===chartStat?'selected':''}>${n} per game</option>`).join('')}</select>
     <div id="chart" style="margin-top:10px"></div>${trendNote(gs)}</div>`;
@@ -297,7 +304,7 @@ function gamesView(){
       ${g.notes?`<div class="notes">${esc(g.notes)}</div>`:''}
       ${(g.videos||[]).map(id=>`<video controls playsinline preload="metadata" data-vid="${id}"></video>`).join('')}
       ${(g.links||[]).length?`<div class="links">${g.links.map(u=>`<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">🔗 ${esc(u.replace(/^https?:\/\/(www\.)?/,'').slice(0,34))}</a>`).join('')}</div>`:''}
-      <div class="actions"><button class="ghost" onclick="editGame('${g.id}')">Edit</button><button class="ghost danger" onclick="delGame('${g.id}')">Delete</button></div></div>`;
+      <div class="actions"><button class="ghost" onclick="openShare('game','${g.id}')">📤 Share</button><button class="ghost" onclick="editGame('${g.id}')">Edit</button><button class="ghost danger" onclick="delGame('${g.id}')">Delete</button></div></div>`;
   }).join('');
 }
 async function hydrateVideos(){
@@ -330,6 +337,86 @@ function goalsView(){
 }
 function addGoal(){ const t=num($('#gt').value); if(!t||t<=0) return alert('Enter a target number.'); S.goals.push({id:uid(),metric:$('#gm').value,target:t}); save(); render(); }
 function delGoal(id){ S.goals=S.goals.filter(g=>g.id!==id); save(); render(); }
+
+/* ----- SHARING (no server: image card + phone's share menu) ----- */
+let shareCtx = null;
+function gameShare(g){
+  const nm = S.profile.name, stats = [['pts','PTS'],['reb','REB'],['ast','AST'],['stl','STL'],['blk','BLK'],['tov','TO']].filter(([k])=>g[k]!=null);
+  const big = stats.slice(0,6).map(([k,l])=>[g[k],l]);
+  const lines = [g.fga!=null&&`FG ${g.fgm??0}/${g.fga}`, g.tpa!=null&&`3PT ${g.tpm??0}/${g.tpa}`, g.fta!=null&&`FT ${g.ftm??0}/${g.fta}`].filter(Boolean);
+  const score = g.us!=null&&g.them!=null ? ` ${g.us}–${g.them}` : '';
+  return { title: nm||'Game recap', sub: `${g.opponent?'vs '+g.opponent+' · ':''}${fmtDate(g.date)}`, badge:g.result, scoreLine: score.trim(), bigs:big, lines,
+    text: `🏀 ${nm?nm+' — ':''}${g.result==='W'?'W':'L'}${score}${g.opponent?' vs '+g.opponent:''} (${fmtDate(g.date)})\n${stats.map(([k,l])=>g[k]+' '+l).join(' · ')}${lines.length?'\n'+lines.join(' · '):''}\nTracked with Hoop Log`,
+    videos: g.videos||[] };
+}
+function seasonShare(){
+  const gs = filtered(), nm = S.profile.name, w=gs.filter(g=>g.result==='W').length, l=gs.length-w;
+  const lvl = levelFilter==='all' ? 'Season stats' : levelFilter+' season';
+  const bigs = [[f1(avg(gs,'pts')),'PPG'],[f1(avg(gs,'reb')),'RPG'],[f1(avg(gs,'ast')),'APG'],[f1(avg(gs,'stl')),'SPG'],[fp(pct(gs,'fgm','fga')),'FG%'],[fp(pct(gs,'tpm','tpa')),'3P%']];
+  return { title: nm||'My season', sub: `${lvl} · ${gs.length} games`, badge:'', scoreLine:`${w}-${l} record`, bigs, lines:[],
+    text:`🏀 ${nm?nm+' — ':''}${lvl}: ${w}-${l} in ${gs.length} games\n${bigs.map(([v,k])=>v+' '+k).join(' · ')}\nTracked with Hoop Log`, videos:[] };
+}
+function rr(x,a,b,w,h,r){ x.beginPath(); x.roundRect?x.roundRect(a,b,w,h,r):x.rect(a,b,w,h); }
+function cardCanvas(o){
+  const c=document.createElement('canvas'); c.width=1080; c.height=1350; const x=c.getContext('2d');
+  const gr=x.createLinearGradient(0,0,1080,1350); gr.addColorStop(0,'#ff8a3d'); gr.addColorStop(1,'#c2410c'); x.fillStyle=gr; x.fillRect(0,0,1080,1350);
+  x.fillStyle='rgba(0,0,0,.12)'; x.beginPath(); x.arc(980,120,340,0,7); x.fill();
+  const font=(s,w='800')=>x.font=`${w} ${s}px system-ui,-apple-system,Segoe UI,Roboto,sans-serif`;
+  x.fillStyle='#fff'; x.textBaseline='alphabetic';
+  font(30,'700'); x.globalAlpha=.85; x.fillText('HOOP LOG',70,100); x.globalAlpha=1;
+  let t=o.title, size=96; font(size); while(x.measureText(t).width>(o.badge?760:940)&&size>40){size-=4;font(size);} x.fillText(t,70,210);
+  font(40,'600'); x.globalAlpha=.9; x.fillText(o.sub.slice(0,44),70,275); x.globalAlpha=1;
+  if (o.badge){ x.fillStyle=o.badge==='W'?'#1e9e5a':'#d8403a'; x.beginPath(); x.arc(930,170,80,0,7); x.fill(); x.fillStyle='#fff'; font(96); x.textAlign='center'; x.fillText(o.badge,930,205); x.textAlign='left'; }
+  font(64); x.fillStyle='#fff'; x.fillText(o.scoreLine,70,380);
+  const cols=3, bw=300, bh=270, gap=30, sx=(1080-(cols*bw+(cols-1)*gap))/2;
+  o.bigs.forEach(([v,l],i)=>{
+    const cx=sx+(i%cols)*(bw+gap), cy=440+Math.floor(i/cols)*(bh+gap);
+    x.fillStyle='rgba(255,255,255,.18)'; rr(x,cx,cy,bw,bh,36); x.fill();
+    x.fillStyle='#fff'; x.textAlign='center'; font(130); x.fillText(String(v),cx+bw/2,cy+150); font(40,'700'); x.globalAlpha=.85; x.fillText(l,cx+bw/2,cy+215); x.globalAlpha=1; x.textAlign='left';
+  });
+  if (o.lines.length){ font(48,'700'); x.textAlign='center'; x.fillText(o.lines.join('   ·   '),540,1085); x.textAlign='left'; }
+  font(30,'600'); x.globalAlpha=.7; x.textAlign='center'; x.fillText('Tracked with Hoop Log 🏀',540,1290); x.textAlign='left'; x.globalAlpha=1;
+  return c;
+}
+function openShare(kind,id){
+  const o = kind==='game' ? gameShare(S.games.find(g=>g.id===id)) : seasonShare();
+  const c = cardCanvas(o); shareCtx={o,c};
+  const m = document.createElement('div'); m.className='modal'; m.id='shm'; m.onclick=e=>{ if(e.target===m) closeShare(); };
+  m.innerHTML = `<div class="sheet"><div id="shc"></div>
+    <button class="primary" onclick="doShare()">📤 Share</button>
+    <div class="row"><button class="ghost" onclick="saveCard()">⬇️ Save image</button><button class="ghost" onclick="copyText()">📋 Copy text</button></div>
+    ${o.videos.map((v,i)=>`<button class="ghost" style="width:100%;margin-top:10px" onclick="shareVideo('${v}')">🎥 Share video${o.videos.length>1?' '+(i+1):''}</button>`).join('')}
+    <p class="hint">You choose who gets it. Notes stay private — they're never included. Nothing is uploaded anywhere.</p>
+    <button class="ghost" style="width:100%" onclick="closeShare()">Close</button></div>`;
+  document.body.appendChild(m); $('#shc').appendChild(c);
+}
+function closeShare(){ const m=$('#shm'); if(m) m.remove(); shareCtx=null; }
+function cardBlob(){ return new Promise(r=>shareCtx.c.toBlob(r,'image/png')); }
+async function doShare(){
+  const {o}=shareCtx;
+  try {
+    const file = new File([await cardBlob()],'hoop-log.png',{type:'image/png'});
+    if (navigator.canShare && navigator.canShare({files:[file]})) return await navigator.share({files:[file],text:o.text});
+    if (navigator.share) return await navigator.share({text:o.text});
+  } catch(e){ if (e && e.name==='AbortError') return; }
+  await copyText('Sharing isn’t available here, so the text was copied. Paste it into a message — or save the image.');
+}
+async function shareVideo(id){
+  try {
+    const b = await vGet(id); if(!b) return alert('Video not found.');
+    const ext = (b.type.split('/')[1]||'mp4').replace('quicktime','mov');
+    const file = new File([b],'clip.'+ext,{type:b.type});
+    if (navigator.canShare && navigator.canShare({files:[file]})) await navigator.share({files:[file]});
+    else alert('Your browser can’t share video files directly. Try it from your phone, or send the clip from your camera roll.');
+  } catch(e){ if(!e||e.name!=='AbortError') alert('Couldn’t share that video.'); }
+}
+function saveCard(){ cardBlob().then(b=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='hoop-log.png'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); }); }
+async function copyText(msg){
+  const text = shareCtx.o.text;
+  try { await navigator.clipboard.writeText(text); alert(typeof msg==='string'?msg:'Copied!'); }
+  catch(e){ prompt('Copy this:',text); }
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeShare(); });
 
 render();
 </script>
