@@ -70,6 +70,20 @@ svg{width:100%;height:auto;display:block}
 .chk{display:flex;align-items:center;gap:8px;font-weight:500;color:var(--ink);margin:6px 0}
 .chk input{width:auto}
 .hint{font-size:12px;color:var(--muted);margin-top:4px}
+.livehead{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.bigpts{font-size:76px;font-weight:900;line-height:.9;letter-spacing:-3px;color:var(--orange)}
+.strip{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0}
+.strip div{background:var(--card);border:1px solid var(--line);border-radius:12px;text-align:center;padding:8px 2px}
+.strip b{display:block;font-size:19px;font-variant-numeric:tabular-nums}.strip span{font-size:11px;color:var(--muted);font-weight:700}
+.lgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.lgrid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
+.lb{height:68px;border-radius:16px;font-size:19px;background:var(--card);color:var(--ink);border:2px solid var(--line);
+  touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.lb:active{transform:scale(.96)}
+.lb.make{background:var(--green);border-color:var(--green);color:#fff}
+.lb.miss{color:var(--muted)}
+.lb small{display:block;font-size:11px;font-weight:600;opacity:.8}
+.lastline{text-align:center;color:var(--muted);font-size:14px;margin:4px 0 10px;min-height:20px}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10;overflow:auto;padding:16px;display:flex;justify-content:center;align-items:flex-start}
 .sheet{background:var(--card);border-radius:18px;padding:14px;width:100%;max-width:440px;margin:auto}
 .sheet canvas{width:100%;height:auto;border-radius:12px;display:block}
@@ -161,12 +175,13 @@ function nav(v){ view=v; if(v==='add' && !form) form = blankForm(); render(); wi
 /* ---------- render ---------- */
 function render(){
   urls.splice(0).forEach(u=>URL.revokeObjectURL(u));
-  $('#nav').innerHTML = [['home','🏠','Home'],['add','➕','Add Game'],['games','📋','Games'],['goals','🎯','Goals']]
+  $('#nav').innerHTML = [['home','🏠','Home'],['live','🏀','Live'],['add','➕','Log'],['games','📋','Games'],['goals','🎯','Goals']]
     .map(([k,i,l])=>`<button class="${view===k?'on':''}" onclick="nav('${k}')"><i>${i}</i>${l}</button>`).join('');
   const el = $('#app');
   if (view==='home') el.innerHTML = homeView();
   else if (view==='add') el.innerHTML = addView();
   else if (view==='games') { el.innerHTML = gamesView(); hydrateVideos(); }
+  else if (view==='live') { el.innerHTML = liveView(); if (live) keepAwake(); }
   else el.innerHTML = goalsView();
   if (view==='home') drawChart();
 }
@@ -364,6 +379,50 @@ function goalsView(){
 }
 function addGoal(){ const t=num($('#gt').value); if(!t||t<=0) return alert('Enter a target number.'); S.goals.push({id:uid(),metric:$('#gm').value,target:t}); save(); render(); }
 function delGoal(id){ S.goals=S.goals.filter(g=>g.id!==id); save(); render(); }
+
+/* ----- LIVE TRACKER: tap during the game (or replay it afterwards), then it fills in the log form ----- */
+let live = null, wake = null;
+try { live = JSON.parse(localStorage.getItem('hooplog.live')); } catch(e){}
+if (live && Array.isArray(live.ev)) view = 'live'; else live = null; // reopen mid-game on the tracker
+function saveLive(){ try { live ? localStorage.setItem('hooplog.live',JSON.stringify(live)) : localStorage.removeItem('hooplog.live'); } catch(e){} }
+const EVT = {m2:'+2',x2:'Missed 2',m3:'+3',x3:'Missed 3',mf:'+1 free throw',xf:'Missed free throw',reb:'Rebound',ast:'Assist',stl:'Steal',blk:'Block',tov:'Turnover'};
+function tally(ev){
+  const c={}; ev.forEach(e=>c[e]=(c[e]||0)+1); const g=k=>c[k]||0;
+  return { reb:g('reb'),ast:g('ast'),stl:g('stl'),blk:g('blk'),tov:g('tov'), pts:2*g('m2')+3*g('m3')+g('mf'),
+    fgm:g('m2')+g('m3'), fga:g('m2')+g('x2')+g('m3')+g('x3'), tpm:g('m3'), tpa:g('m3')+g('x3'), ftm:g('mf'), fta:g('mf')+g('xf') };
+}
+async function keepAwake(){ try { if (navigator.wakeLock && !wake) { wake = await navigator.wakeLock.request('screen'); wake.addEventListener('release',()=>wake=null); } } catch(e){} }
+function liveView(){
+  if (!live) {
+    const lastLevel = S.games.length ? S.games[S.games.length-1].level : 'Freshman';
+    return `<h1>Live tracker</h1><p class="sub">Tap during the game — or have a friend or parent do it. Missed the game? Replay it from memory afterwards.</p>
+    <div class="card"><label style="margin-top:0">Opponent</label><input id="lo" placeholder="Who are you playing?" maxlength="40">
+    <label>Level</label><select id="ll">${LEVELS.map(l=>`<option ${l===lastLevel?'selected':''}>${l}</option>`).join('')}</select>
+    <button class="primary" style="margin-top:14px" onclick="startLive()">▶ Start tracking</button></div>
+    <p class="hint">Keeps your screen on while tracking. Your tally is saved as you go, so closing the app won’t lose it.</p>`;
+  }
+  const t = tally(live.ev), last = live.ev.length ? EVT[live.ev[live.ev.length-1]] : '';
+  const b = (k,cls,main,sub)=>`<button class="lb ${cls}" onclick="tap('${k}')">${main}${sub?`<small>${sub}</small>`:''}</button>`;
+  return `<div class="livehead"><div><div class="muted">${live.opp?'vs '+esc(live.opp):'Live game'} · ${esc(live.level)}</div><div class="bigpts">${t.pts}</div><div class="muted" style="font-weight:700">POINTS</div></div>
+      <button class="ghost" onclick="undo()" ${live.ev.length?'':'disabled'}>↩ Undo</button></div>
+    <div class="strip"><div><b>${t.reb}</b><span>REB</span></div><div><b>${t.ast}</b><span>AST</span></div><div><b>${t.stl}</b><span>STL</span></div><div><b>${t.tov}</b><span>TO</span></div>
+      <div><b>${t.fgm}/${t.fga}</b><span>FG</span></div><div><b>${t.tpm}/${t.tpa}</b><span>3PT</span></div><div><b>${t.ftm}/${t.fta}</b><span>FT</span></div><div><b>${t.blk}</b><span>BLK</span></div></div>
+    <div class="lastline">${last?'Last: '+last:'Tap what just happened'}</div>
+    <div class="lgrid">${b('m2','make','+2','made')}${b('x2','miss','Miss','2-pointer')}${b('m3','make','+3','made')}${b('x3','miss','Miss','3-pointer')}${b('mf','make','+1','free throw')}${b('xf','miss','Miss','free throw')}</div>
+    <div class="lgrid3">${b('reb','','Reb')}${b('ast','','Ast')}${b('stl','','Stl')}${b('blk','','Blk')}${b('tov','','TO')}</div>
+    <button class="primary" onclick="finishLive()">🏁 Finish game</button>
+    <button class="ghost" style="width:100%;margin-top:10px" onclick="cancelLive()">Cancel this game</button>`;
+}
+function startLive(){ live = {opp:$('#lo').value.trim(), level:$('#ll').value, ev:[]}; saveLive(); render(); }
+function tap(k){ live.ev.push(k); saveLive(); try{navigator.vibrate&&navigator.vibrate(12);}catch(e){} render(); }
+function undo(){ live.ev.pop(); saveLive(); render(); }
+function cancelLive(){ if (live.ev.length && !confirm('Throw away this tally?')) return; live=null; saveLive(); if(wake){wake.release();} render(); }
+function finishLive(){
+  if (!live.ev.length && !confirm('Nothing tracked yet. Finish anyway?')) return;
+  const t = tally(live.ev); form = blankForm(); form.opponent=live.opp; form.level=live.level; form.ptsTouched=true;
+  for (const k of ['pts','reb','ast','stl','blk','tov','fgm','fga','tpm','tpa','ftm','fta']) form[k]=String(t[k]);
+  live=null; saveLive(); if(wake){wake.release();} nav('add');
+}
 
 /* ----- SHARING (no server: image card + phone's share menu) ----- */
 let shareCtx = null;
