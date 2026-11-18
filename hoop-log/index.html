@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ff6b1a">
+<title>Hoop Log</title>
+<style>
+:root{
+  --bg:#f6f3ee; --card:#fff; --ink:#1c1c1e; --muted:#6b6b70; --line:#e6e1d8;
+  --orange:#ff6b1a; --orange-d:#d9520a; --green:#1e9e5a; --red:#d8403a; --blue:#2f6fed;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#141416; --card:#1f1f23; --ink:#f2f2f4; --muted:#9a9aa2; --line:#2e2e34;}
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  padding-bottom:calc(76px + env(safe-area-inset-bottom));}
+main{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:26px;margin:4px 0 2px;letter-spacing:-.5px}
+h2{font-size:18px;margin:22px 0 10px}
+.sub{color:var(--muted);margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 8px;text-align:center}
+.tile b{display:block;font-size:24px;letter-spacing:-.5px}
+.tile span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:10px 0 4px}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);
+  border-radius:10px;padding:11px 12px}
+textarea{min-height:90px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--orange);border-color:transparent}
+.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.row4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:12px 16px;font-weight:700}
+.primary{background:var(--orange);color:#fff;width:100%;font-size:17px;padding:15px}
+.primary:active{background:var(--orange-d)}
+.ghost{background:transparent;color:var(--muted);border:1px solid var(--line);padding:8px 12px;font-size:14px}
+.danger{color:var(--red)}
+.seg{display:flex;gap:8px}
+.seg button{flex:1;background:var(--bg);border:2px solid var(--line);color:var(--muted)}
+.seg button.on.w{background:var(--green);border-color:var(--green);color:#fff}
+.seg button.on.l{background:var(--red);border-color:var(--red);color:#fff}
+.badge{display:inline-block;font-weight:800;font-size:13px;border-radius:8px;padding:2px 8px;color:#fff}
+.badge.W{background:var(--green)}.badge.L{background:var(--red)}
+.game-h{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.game-h strong{font-size:17px}
+.muted{color:var(--muted);font-size:14px}
+.line{font-variant-numeric:tabular-nums;margin:8px 0;font-weight:600}
+.notes{background:var(--bg);border-radius:10px;padding:10px;margin-top:8px;white-space:pre-wrap;font-size:15px}
+video{width:100%;border-radius:12px;margin-top:8px;background:#000;max-height:320px}
+.links a{display:inline-block;margin:6px 8px 0 0;color:var(--blue)}
+.actions{display:flex;gap:8px;margin-top:10px}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);
+  display:flex;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;border-radius:0;color:var(--muted);padding:10px 0 8px;font-size:12px;font-weight:600}
+nav button i{display:block;font-style:normal;font-size:22px;line-height:1.1}
+nav button.on{color:var(--orange)}
+.empty{text-align:center;padding:36px 16px;color:var(--muted)}
+.empty .big{font-size:48px}
+.bar{height:10px;background:var(--bg);border-radius:99px;overflow:hidden;margin-top:8px}
+.bar>div{height:100%;background:var(--orange);border-radius:99px}
+.bar.done>div{background:var(--green)}
+svg{width:100%;height:auto;display:block}
+.chk{display:flex;align-items:center;gap:8px;font-weight:500;color:var(--ink);margin:6px 0}
+.chk input{width:auto}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<nav id="nav"></nav>
+
+<script>
+/* ---------- storage ---------- */
+const KEY = 'hooplog.v1';
+let S = { profile:{name:''}, games:[], goals:[] };
+try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(S, JSON.parse(raw)); } catch(e){}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){ alert('Could not save — storage may be full.'); } }
+
+/* videos live in IndexedDB (too big for localStorage) */
+let dbp;
+function db(){
+  if (!dbp) dbp = new Promise((res,rej)=>{
+    const r = indexedDB.open('hooplog-videos',1);
+    r.onupgradeneeded = ()=> r.result.createObjectStore('v');
+    r.onsuccess = ()=> res(r.result); r.onerror = ()=> rej(r.error);
+  });
+  return dbp;
+}
+async function vPut(id,blob){ const d=await db(); return new Promise((res,rej)=>{const t=d.transaction('v','readwrite');t.objectStore('v').put(blob,id);t.oncomplete=res;t.onerror=()=>rej(t.error);}); }
+async function vGet(id){ const d=await db(); return new Promise((res,rej)=>{const r=d.transaction('v').objectStore('v').get(id);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);}); }
+async function vDel(id){ const d=await db(); return new Promise((res)=>{const t=d.transaction('v','readwrite');t.objectStore('v').delete(id);t.oncomplete=res;t.onerror=res;}); }
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const today = () => { const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
+const num = v => (v===''||v==null||isNaN(+v)) ? null : +v;
+const fmtDate = s => new Date(s+'T12:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+const LEVELS = ['6th grade','7th grade','8th grade','Freshman','JV','Varsity','Other'];
+const STATS = [['pts','Points'],['reb','Rebounds'],['ast','Assists'],['stl','Steals'],['blk','Blocks'],['tov','Turnovers']];
+const GOAL_METRICS = {
+  pts:{label:'Points per game',get:g=>avg(g,'pts'),unit:''},
+  reb:{label:'Rebounds per game',get:g=>avg(g,'reb'),unit:''},
+  ast:{label:'Assists per game',get:g=>avg(g,'ast'),unit:''},
+  stl:{label:'Steals per game',get:g=>avg(g,'stl'),unit:''},
+  fg:{label:'Field goal %',get:g=>pct(g,'fgm','fga'),unit:'%'},
+  tp:{label:'3-point %',get:g=>pct(g,'tpm','tpa'),unit:'%'},
+  ft:{label:'Free throw %',get:g=>pct(g,'ftm','fta'),unit:'%'},
+};
+function avg(gs,k){ const v=gs.map(g=>g[k]).filter(x=>x!=null); return v.length? v.reduce((a,b)=>a+b,0)/v.length : null; }
+function pct(gs,m,a){ let M=0,A=0; gs.forEach(g=>{ if(g[a]!=null&&g[m]!=null){M+=g[m];A+=g[a];} }); return A? M/A*100 : null; }
+const f1 = v => v==null ? '–' : (Math.round(v*10)/10).toString();
+const fp = v => v==null ? '–' : Math.round(v)+'%';
+const sorted = gs => [...gs].sort((a,b)=> a.date===b.date ? a.created-b.created : a.date<b.date?-1:1);
+
+/* ---------- state ---------- */
+let view = 'home', levelFilter = 'all', chartStat = 'pts';
+let form = null; // current add/edit form state
+const urls = []; // object URLs to revoke on re-render
+
+function nav(v){ view=v; if(v==='add' && !form) form = blankForm(); render(); window.scrollTo(0,0); }
+
+/* ---------- render ---------- */
+function render(){
+  urls.splice(0).forEach(u=>URL.revokeObjectURL(u));
+  $('#nav').innerHTML = [['home','🏠','Home'],['add','➕','Add Game'],['games','📋','Games'],['goals','🎯','Goals']]
+    .map(([k,i,l])=>`<button class="${view===k?'on':''}" onclick="nav('${k}')"><i>${i}</i>${l}</button>`).join('');
+  const el = $('#app');
+  if (view==='home') el.innerHTML = homeView();
+  else if (view==='add') el.innerHTML = addView();
+  else if (view==='games') { el.innerHTML = gamesView(); hydrateVideos(); }
+  else el.innerHTML = goalsView();
+  if (view==='home') drawChart();
+}
+
+/* ----- HOME ----- */
+function filtered(){ return sorted(S.games.filter(g=> levelFilter==='all' || g.level===levelFilter)); }
+function homeView(){
+  const gs = filtered();
+  const name = S.profile.name;
+  const levels = [...new Set(S.games.map(g=>g.level).filter(Boolean))];
+  let h = `<h1>${name?`Hey ${esc(name)} 👋`:'Hoop Log'}</h1><p class="sub">Your stats. Your progress. Only you see this.</p>`;
+  if (!name) h += `<div class="card"><label style="margin-top:0">What's your name?</label>
+    <div class="row"><input id="nm" placeholder="First name" maxlength="30"><button class="ghost" style="flex:0 0 auto" onclick="setName()">Save</button></div></div>`;
+  if (!S.games.length) return h + `<div class="empty"><div class="big">🏀</div><p><b>No games yet.</b><br>Log your first game to start tracking.</p>
+    <button class="primary" onclick="nav('add')">Add a game</button></div>${dataCard()}`;
+  if (levels.length>1) h += `<select onchange="levelFilter=this.value;render()" style="margin-bottom:12px">
+    <option value="all">All levels</option>${levels.map(l=>`<option ${l===levelFilter?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
+  const w = gs.filter(g=>g.result==='W').length, l = gs.filter(g=>g.result==='L').length;
+  h += `<div class="grid">
+    <div class="tile"><b>${gs.length}</b><span>Games</span></div>
+    <div class="tile"><b>${w}-${l}</b><span>Record</span></div>
+    <div class="tile"><b>${f1(avg(gs,'pts'))}</b><span>PPG</span></div>
+    <div class="tile"><b>${f1(avg(gs,'reb'))}</b><span>RPG</span></div>
+    <div class="tile"><b>${f1(avg(gs,'ast'))}</b><span>APG</span></div>
+    <div class="tile"><b>${f1(avg(gs,'stl'))}</b><span>SPG</span></div>
+    <div class="tile"><b>${fp(pct(gs,'fgm','fga'))}</b><span>FG%</span></div>
+    <div class="tile"><b>${fp(pct(gs,'tpm','tpa'))}</b><span>3P%</span></div>
+    <div class="tile"><b>${fp(pct(gs,'ftm','fta'))}</b><span>FT%</span></div></div>`;
+  h += `<h2>Progress</h2><div class="card">
+    <select onchange="chartStat=this.value;render()">${STATS.map(([k,n])=>`<option value="${k}" ${k===chartStat?'selected':''}>${n} per game</option>`).join('')}</select>
+    <div id="chart" style="margin-top:10px"></div>${trendNote(gs)}</div>`;
+  return h + dataCard();
+}
+function trendNote(gs){
+  if (gs.length<4) return `<p class="hint">Log a few more games to see your trend.</p>`;
+  const last = gs.slice(-3), prev = gs.slice(0,-3);
+  const a = avg(last,chartStat), b = avg(prev,chartStat);
+  if (a==null||b==null) return '';
+  const d = a-b, name = STATS.find(s=>s[0]===chartStat)[1].toLowerCase();
+  const good = chartStat==='tov' ? d<0 : d>0;
+  return `<p style="margin:10px 0 0">${Math.abs(d)<0.05?'➡️ Holding steady':good?'📈 Trending up':'📉 Down a bit'}: last 3 games avg <b>${f1(a)}</b> ${name} vs <b>${f1(b)}</b> before.</p>`;
+}
+function drawChart(){
+  const box = $('#chart'); if(!box) return;
+  const pts = filtered().map((g,i)=>({i,v:g[chartStat],g})).filter(p=>p.v!=null).slice(-15);
+  if (pts.length<2){ box.innerHTML = `<p class="hint">Need at least 2 games with this stat to draw a chart.</p>`; return; }
+  const W=320,H=150,P=24, max=Math.max(...pts.map(p=>p.v),1), n=pts.length;
+  const x=i=>P+(W-2*P)*(n===1?0:i/(n-1)), y=v=>H-P-(H-2*P)*(v/max);
+  const path = pts.map((p,i)=>`${i?'L':'M'}${x(i)},${y(p.v)}`).join(' ');
+  const mean = pts.reduce((a,p)=>a+p.v,0)/n;
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${chartStat} per game">
+    <line x1="${P}" x2="${W-P}" y1="${H-P}" y2="${H-P}" stroke="var(--line)"/>
+    <line x1="${P}" x2="${W-P}" y1="${y(mean)}" y2="${y(mean)}" stroke="var(--muted)" stroke-dasharray="4 4" opacity=".6"/>
+    <text x="${P}" y="${y(mean)+12}" text-anchor="start" font-size="9" fill="var(--muted)">avg ${f1(mean)}</text>
+    <path d="${path}" fill="none" stroke="var(--orange)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+    ${pts.map((p,i)=>`<circle cx="${x(i)}" cy="${y(p.v)}" r="4.5" fill="${p.g.result==='W'?'var(--green)':'var(--red)'}" stroke="var(--card)" stroke-width="2"/>
+      <text x="${x(i)}" y="${y(p.v)-9}" text-anchor="middle" font-size="10" fill="var(--ink)">${p.v}</text>`).join('')}
+  </svg><p class="hint">Green dot = win, red dot = loss. Last ${n} games.</p>`;
+}
+function setName(){ const v=$('#nm').value.trim(); if(!v) return; S.profile.name=v; save(); render(); }
+
+/* ----- backup ----- */
+function dataCard(){
+  return `<h2>Your data</h2><div class="card"><p class="muted" style="margin-top:0">Everything is saved on this device only. Download a backup so you never lose it.</p>
+  <div class="actions"><button class="ghost" onclick="exportData()">⬇️ Backup</button>
+  <button class="ghost" onclick="$('#imp').click()">⬆️ Restore</button>
+  <input id="imp" type="file" accept="application/json" hidden onchange="importData(this)"></div>
+  <p class="hint">Backups include stats and notes, not video files.</p></div>`;
+}
+function exportData(){
+  const b = new Blob([JSON.stringify(S,null,1)],{type:'application/json'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`hoop-log-backup-${today()}.json`; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function importData(inp){
+  const f = inp.files[0]; if(!f) return;
+  f.text().then(t=>{
+    const d = JSON.parse(t);
+    if(!Array.isArray(d.games)) throw 0;
+    if(!confirm(`Replace what's on this device with the backup (${d.games.length} games)?`)) return;
+    S = {profile:d.profile||{name:''},games:d.games,goals:d.goals||[]}; save(); render();
+  }).catch(()=>alert("That file doesn't look like a Hoop Log backup."));
+}
+
+/* ----- ADD / EDIT ----- */
+function blankForm(){ return {id:null,date:today(),opponent:'',level:S.games.length?S.games[S.games.length-1].level:'Freshman',result:'',us:'',them:'',
+  pts:'',reb:'',ast:'',stl:'',blk:'',tov:'',fgm:'',fga:'',tpm:'',tpa:'',ftm:'',fta:'',notes:'',links:[],keepVideos:[],newFiles:[],ptsTouched:false}; }
+function editGame(id){
+  const g = S.games.find(x=>x.id===id); if(!g) return;
+  form = blankForm();
+  for (const k of ['date','opponent','level','result','pts','reb','ast','stl','blk','tov','fgm','fga','tpm','tpa','ftm','fta','notes'])
+    form[k] = g[k]==null ? '' : g[k];
+  form.us = g.us ?? ''; form.them = g.them ?? ''; form.id = id; form.links=[...(g.links||[])]; form.keepVideos=[...(g.videos||[])]; form.ptsTouched=true;
+  nav('add');
+}
+function addView(){
+  const f = form, n = (k,l,ph='')=>`<div><label>${l}</label><input type="number" inputmode="numeric" min="0" id="f_${k}" value="${esc(f[k])}" placeholder="${ph}" oninput="fld('${k}',this.value)"></div>`;
+  return `<h1>${f.id?'Edit game':'Add a game'}</h1><p class="sub">Takes about 30 seconds. Leave blank anything you didn't track.</p>
+  <div class="card"><div class="row"><div><label style="margin-top:0">Date</label><input type="date" id="f_date" value="${f.date}" oninput="fld('date',this.value)"></div>
+    <div><label style="margin-top:0">Level</label><select id="f_level" onchange="fld('level',this.value)">${LEVELS.map(l=>`<option ${l===f.level?'selected':''}>${l}</option>`).join('')}</select></div></div>
+    <label>Opponent</label><input id="f_opponent" value="${esc(f.opponent)}" placeholder="Who did you play?" maxlength="40" oninput="fld('opponent',this.value)">
+    <label>Result</label><div class="seg"><button class="w ${f.result==='W'?'on':''}" onclick="setResult('W')">Win</button><button class="l ${f.result==='L'?'on':''}" onclick="setResult('L')">Loss</button></div>
+    <div class="row" style="margin-top:4px">${n('us','Your team score')}${n('them','Their score')}</div></div>
+  <h2>Your stats</h2><div class="card"><div class="row3">${n('pts','Points')}${n('reb','Rebounds')}${n('ast','Assists')}${n('stl','Steals')}${n('blk','Blocks')}${n('tov','Turnovers')}</div></div>
+  <h2>Shooting</h2><div class="card"><div class="row"><div>${n('fgm','FG made')}</div><div>${n('fga','FG attempted')}</div></div>
+    <div class="row">${n('tpm','3PT made')}${n('tpa','3PT attempted')}</div><div class="row">${n('ftm','FT made')}${n('fta','FT attempted')}</div>
+    <p class="hint">FG includes your 3s. Points fill in automatically from shooting until you type your own.</p></div>
+  <h2>Notes</h2><div class="card"><textarea id="f_notes" placeholder="What went well? What do you need to work on?" oninput="fld('notes',this.value)">${esc(f.notes)}</textarea></div>
+  <h2>Video</h2><div class="card">
+    ${f.keepVideos.map(id=>`<div class="chk">🎥 Saved clip <button class="ghost danger" onclick="dropVideo('${id}')">Remove</button></div>`).join('')}
+    ${f.newFiles.map((x,i)=>`<div class="chk">🎥 ${esc(x.name)} <button class="ghost danger" onclick="dropNew(${i})">Remove</button></div>`).join('')}
+    <button class="ghost" onclick="$('#vid').click()">📹 Add video from phone</button>
+    <input id="vid" type="file" accept="video/*" multiple hidden onchange="pickVideos(this)">
+    <label>Or paste a link (YouTube, Hudl, Drive…)</label>
+    <div class="row"><input id="lnk" placeholder="https://" inputmode="url"><button class="ghost" style="flex:0 0 auto" onclick="addLink()">Add</button></div>
+    ${f.links.map((u,i)=>`<div class="chk">🔗 <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(u)}</span><button class="ghost danger" onclick="dropLink(${i})">✕</button></div>`).join('')}
+  </div>
+  <button class="primary" onclick="saveGame()">${f.id?'Save changes':'Save game'}</button>
+  ${f.id?`<button class="ghost" style="width:100%;margin-top:10px" onclick="form=null;nav('games')">Cancel</button>`:''}`;
+}
+function fld(k,v){
+  form[k]=v;
+  if (k==='pts') form.ptsTouched = v!=='';
+  if (['fgm','tpm','ftm'].includes(k) && !form.ptsTouched){
+    const fg=num(form.fgm), tp=num(form.tpm), ft=num(form.ftm);
+    if (fg!=null||ft!=null){ form.pts = String(2*(fg||0)+(tp||0)+(ft||0)); const el=$('#f_pts'); if(el) el.value=form.pts; }
+  }
+}
+function setResult(r){ form.result=r; document.querySelectorAll('.seg button').forEach(b=>b.classList.toggle('on',b.classList.contains(r.toLowerCase()))); }
+function pickVideos(inp){ form.newFiles.push(...inp.files); inp.value=''; render(); }
+function dropNew(i){ form.newFiles.splice(i,1); render(); }
+function dropVideo(id){ form.keepVideos=form.keepVideos.filter(x=>x!==id); form.removed=(form.removed||[]).concat(id); render(); }
+function addLink(){ let v=$('#lnk').value.trim(); if(!v) return; if(!/^https?:\/\//i.test(v)) v='https://'+v; form.links.push(v); render(); }
+function dropLink(i){ form.links.splice(i,1); render(); }
+
+async function saveGame(){
+  const f = form;
+  if (!f.date) return alert('Pick a date.');
+  if (!f.result) return alert('Was it a win or a loss?');
+  const ids = [...f.keepVideos];
+  try { for (const file of f.newFiles){ const id=uid(); await vPut(id,file); ids.push(id); } }
+  catch(e){ return alert('Could not save a video — your phone may be out of space.'); }
+  const g = { id:f.id||uid(), created:Date.now(), date:f.date, opponent:f.opponent.trim(), level:f.level, result:f.result,
+    us:num(f.us), them:num(f.them), notes:f.notes.trim(), links:f.links, videos:ids };
+  ['pts','reb','ast','stl','blk','tov','fgm','fga','tpm','tpa','ftm','fta'].forEach(k=>g[k]=num(f[k]));
+  if (f.id){ const old=S.games.find(x=>x.id===f.id); g.created=old.created; S.games[S.games.indexOf(old)]=g; for (const id of f.removed||[]) await vDel(id); }
+  else S.games.push(g);
+  save(); form=null; view='games'; render(); window.scrollTo(0,0);
+}
+
+/* ----- GAMES ----- */
+function gamesView(){
+  if (!S.games.length) return `<h1>Games</h1><div class="empty"><div class="big">📋</div><p>Nothing here yet.</p><button class="primary" onclick="nav('add')">Add a game</button></div>`;
+  const gs = sorted(S.games).reverse();
+  return `<h1>Games</h1><p class="sub">${gs.length} logged</p>` + gs.map(g=>{
+    const stats = [g.pts!=null&&`${g.pts} PTS`, g.reb!=null&&`${g.reb} REB`, g.ast!=null&&`${g.ast} AST`, g.stl!=null&&`${g.stl} STL`, g.blk!=null&&`${g.blk} BLK`, g.tov!=null&&`${g.tov} TO`].filter(Boolean).join(' · ');
+    const shoot = [g.fga!=null&&`FG ${g.fgm??0}/${g.fga}`, g.tpa!=null&&`3P ${g.tpm??0}/${g.tpa}`, g.fta!=null&&`FT ${g.ftm??0}/${g.fta}`].filter(Boolean).join(' · ');
+    return `<div class="card"><div class="game-h"><div><strong>${g.opponent?'vs '+esc(g.opponent):'Game'}</strong><div class="muted">${fmtDate(g.date)} · ${esc(g.level||'')}</div></div>
+      <div style="text-align:right"><span class="badge ${g.result}">${g.result}</span>${g.us!=null&&g.them!=null?`<div class="muted">${g.us}–${g.them}</div>`:''}</div></div>
+      ${stats?`<div class="line">${stats}</div>`:''}${shoot?`<div class="muted">${shoot}</div>`:''}
+      ${g.notes?`<div class="notes">${esc(g.notes)}</div>`:''}
+      ${(g.videos||[]).map(id=>`<video controls playsinline preload="metadata" data-vid="${id}"></video>`).join('')}
+      ${(g.links||[]).length?`<div class="links">${g.links.map(u=>`<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">🔗 ${esc(u.replace(/^https?:\/\/(www\.)?/,'').slice(0,34))}</a>`).join('')}</div>`:''}
+      <div class="actions"><button class="ghost" onclick="editGame('${g.id}')">Edit</button><button class="ghost danger" onclick="delGame('${g.id}')">Delete</button></div></div>`;
+  }).join('');
+}
+async function hydrateVideos(){
+  for (const v of document.querySelectorAll('video[data-vid]')){
+    try { const b = await vGet(v.dataset.vid); if (b){ const u=URL.createObjectURL(b); urls.push(u); v.src=u; } else v.remove(); } catch(e){ v.remove(); }
+  }
+}
+async function delGame(id){
+  const g = S.games.find(x=>x.id===id); if(!g||!confirm('Delete this game? This can’t be undone.')) return;
+  for (const v of g.videos||[]) await vDel(v);
+  S.games = S.games.filter(x=>x.id!==id); save(); render();
+}
+
+/* ----- GOALS ----- */
+function goalsView(){
+  const gs = sorted(S.games);
+  let h = `<h1>Goals</h1><p class="sub">Pick a target and watch your season numbers move toward it.</p>`;
+  if (!S.goals.length) h += `<div class="empty"><div class="big">🎯</div><p>No goals yet. Try “shoot 40% from the field” or “average 8 points.”</p></div>`;
+  h += S.goals.map(go=>{
+    const m = GOAL_METRICS[go.metric], cur = m.get(gs), p = cur==null?0:Math.min(100,cur/go.target*100), done = cur!=null&&cur>=go.target;
+    return `<div class="card"><div class="game-h"><strong>${m.label}</strong><button class="ghost danger" onclick="delGoal('${go.id}')">✕</button></div>
+      <div class="line">${cur==null?'No data yet':f1(cur)+m.unit} <span class="muted">/ goal ${go.target}${m.unit}</span> ${done?'✅':''}</div>
+      <div class="bar ${done?'done':''}"><div style="width:${p}%"></div></div></div>`;
+  }).join('');
+  h += `<h2>New goal</h2><div class="card"><label style="margin-top:0">I want to improve my…</label>
+    <select id="gm">${Object.entries(GOAL_METRICS).map(([k,m])=>`<option value="${k}">${m.label}</option>`).join('')}</select>
+    <label>Target</label><input id="gt" type="number" inputmode="decimal" min="0" placeholder="e.g. 10 or 40">
+    <button class="primary" style="margin-top:14px" onclick="addGoal()">Add goal</button></div>`;
+  return h;
+}
+function addGoal(){ const t=num($('#gt').value); if(!t||t<=0) return alert('Enter a target number.'); S.goals.push({id:uid(),metric:$('#gm').value,target:t}); save(); render(); }
+function delGoal(id){ S.goals=S.goals.filter(g=>g.id!==id); save(); render(); }
+
+render();
+</script>
+</body>
+</html>
