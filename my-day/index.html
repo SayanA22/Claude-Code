@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>My Day</title>
-<meta name="theme-color" content="#0f7b6c">
+<meta name="theme-color" content="#c4572f">
 <meta name="color-scheme" content="light dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -17,16 +17,16 @@
 <style>
 /* Layout: greeting + clock band on top, then a responsive grid of widgets (focus list, countdown, habits, notes, links). */
 :root{
-  --bg:#f3f5f8; --surface:#ffffff; --fg:#17202b; --muted:#62707f; --line:#dde3ea;
-  --accent:#0f7b6c; --accent-fg:#ffffff; --accent-soft:#dff1ee; --warn:#b4530a;
+  --bg:#f7efe5; --surface:#fffaf3; --fg:#3b2a22; --muted:#86705f; --line:#e8d9c8;
+  --accent:#c4572f; --accent-fg:#ffffff; --accent-soft:#f6e0d2; --warn:#a03d0c;
   --font-display:"Space Grotesk",system-ui,sans-serif; --font-body:"Inter",system-ui,sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0f151c; --surface:#18202a; --fg:#e8edf2; --muted:#93a1b0; --line:#2a3541;
-  --accent:#3fc4af; --accent-fg:#06201b; --accent-soft:#16332f; --warn:#f0a15c; color-scheme:dark}}
+  --bg:#1e1512; --surface:#2a1f1a; --fg:#f4e7d8; --muted:#b39c89; --line:#41322a;
+  --accent:#f2a266; --accent-fg:#2a1608; --accent-soft:#3d2a1e; --warn:#f0b27a; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0f151c; --surface:#18202a; --fg:#e8edf2; --muted:#93a1b0; --line:#2a3541;
-  --accent:#3fc4af; --accent-fg:#06201b; --accent-soft:#16332f; --warn:#f0a15c; color-scheme:dark}
+  --bg:#1e1512; --surface:#2a1f1a; --fg:#f4e7d8; --muted:#b39c89; --line:#41322a;
+  --accent:#f2a266; --accent-fg:#2a1608; --accent-soft:#3d2a1e; --warn:#f0b27a; color-scheme:dark}
 *{box-sizing:border-box}
 html{color-scheme:light dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 body{margin:0}
