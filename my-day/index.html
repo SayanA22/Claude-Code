@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My Day</title>
+<meta name="theme-color" content="#0f7b6c">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="My Day">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: greeting + clock band on top, then a responsive grid of widgets (focus list, countdown, habits, notes, links). */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --fg:#17202b; --muted:#62707f; --line:#dde3ea;
+  --accent:#0f7b6c; --accent-fg:#ffffff; --accent-soft:#dff1ee; --warn:#b4530a;
+  --font-display:"Space Grotesk",system-ui,sans-serif; --font-body:"Inter",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f151c; --surface:#18202a; --fg:#e8edf2; --muted:#93a1b0; --line:#2a3541;
+  --accent:#3fc4af; --accent-fg:#06201b; --accent-soft:#16332f; --warn:#f0a15c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f151c; --surface:#18202a; --fg:#e8edf2; --muted:#93a1b0; --line:#2a3541;
+  --accent:#3fc4af; --accent-fg:#06201b; --accent-soft:#16332f; --warn:#f0a15c; color-scheme:dark}
+*{box-sizing:border-box}
+html{color-scheme:light dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--font-body);
+  padding-block:24px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+h1{font:600 clamp(1.6rem,4vw,2.3rem)/1.15 var(--font-display);margin:0;text-wrap:balance}
+.date{color:var(--muted);margin:4px 0 0}
+.clock{font:500 clamp(2rem,6vw,3rem)/1 var(--font-display);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.wide{grid-column:1/-1}
+h2{font:600 .78rem/1 var(--font-body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:0}
+input,textarea,button{font:inherit;color:inherit}
+input[type=text],input[type=date],textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;min-width:0}
+textarea{resize:vertical;min-height:140px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button{cursor:pointer;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px}
+button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:600}
+.row{display:flex;gap:8px}
+ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.todo{display:flex;align-items:center;gap:10px;padding:7px 4px;border-radius:6px}
+.todo input{width:18px;height:18px;accent-color:var(--accent);flex:none}
+.todo span{flex:1;min-width:0;overflow-wrap:anywhere}
+.todo.done span{color:var(--muted);text-decoration:line-through}
+.x{border:0;background:none;color:var(--muted);padding:2px 8px;font-size:1.1rem}
+.x:hover{color:var(--warn)}
+.progress{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--accent);transition:width .25s}
+.count{font:600 3.4rem/1 var(--font-display);font-variant-numeric:tabular-nums}
+.count small{font:500 1rem var(--font-body);color:var(--muted);margin-left:6px}
+.habit{display:grid;grid-template-columns:minmax(80px,1fr) repeat(7,28px);align-items:center;gap:6px;font-size:.9rem}
+.habit .name{overflow-wrap:anywhere}
+.dh{color:var(--muted);font-size:.7rem;text-align:center;letter-spacing:.04em}
+.dot{width:28px;height:28px;padding:0;border-radius:50%;border:1.5px solid var(--line);background:none}
+.dot.on{background:var(--accent);border-color:var(--accent)}
+.dot.today{border-color:var(--fg)}
+.links{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.links a{color:var(--fg);text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-weight:500}
+.links a:hover{border-color:var(--accent);color:var(--accent)}
+.hint{color:var(--muted);font-size:.8rem;margin:0}
+.tools{display:flex;gap:8px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1 id="greet">Hello</h1>
+      <p class="date" id="date"></p>
+    </div>
+    <div class="clock" id="clock">--:--</div>
+  </header>
+
+  <div class="grid">
+    <section class="card" aria-labelledby="h-todo">
+      <h2 id="h-todo">Today's focus</h2>
+      <form class="row" id="todo-form">
+        <input type="text" id="todo-in" placeholder="Add a task" aria-label="New task" autocomplete="off">
+        <button class="primary" type="submit">Add</button>
+      </form>
+      <div class="progress" aria-hidden="true"><i id="bar"></i></div>
+      <p class="hint" id="todo-sum"></p>
+      <ul id="todos"></ul>
+    </section>
+
+    <section class="card" aria-labelledby="h-count">
+      <h2 id="h-count">Countdown</h2>
+      <input type="text" id="ev-name" aria-label="Event name" placeholder="Event name">
+      <input type="date" id="ev-date" aria-label="Event date">
+      <div class="count" id="count">0<small>days</small></div>
+      <p class="hint" id="count-sub"></p>
+    </section>
+
+    <section class="card wide" aria-labelledby="h-habit">
+      <h2 id="h-habit">Habits, last 7 days</h2>
+      <div id="habits" style="display:flex;flex-direction:column;gap:8px;overflow-x:auto"></div>
+      <form class="row" id="habit-form">
+        <input type="text" id="habit-in" placeholder="Add a habit" aria-label="New habit" autocomplete="off">
+        <button type="submit">Add</button>
+      </form>
+    </section>
+
+    <section class="card" aria-labelledby="h-notes">
+      <h2 id="h-notes">Scratchpad</h2>
+      <textarea id="notes" aria-label="Notes" placeholder="Jot something down. It saves as you type."></textarea>
+    </section>
+
+    <section class="card" aria-labelledby="h-links">
+      <h2 id="h-links">Quick links</h2>
+      <div class="links" id="links"></div>
+      <form class="row" id="link-form">
+        <input type="text" id="link-in" placeholder="Name, URL" aria-label="Name and URL, separated by a comma" autocomplete="off">
+        <button type="submit">Add</button>
+      </form>
+      <p class="hint">Format: Name, https://example.com</p>
+    </section>
+  </div>
+  <p class="hint">Saved in this browser only. Starter tasks, habits and links are examples. Delete a habit or link by right-clicking (long-press on a phone).</p>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const DEFAULT = {
+  todos:[{t:"Plan the week",d:false},{t:"Reply to one overdue message",d:false},{t:"20 minute walk",d:true}],
+  event:{name:"New Year",date:"2027-01-01"},
+  habits:[{n:"Read 20 pages",days:[]},{n:"Exercise",days:[]},{n:"Water, 2 litres",days:[]}],
+  notes:"",
+  links:[{n:"Calendar",u:"https://calendar.google.com"},{n:"Mail",u:"https://mail.google.com"},{n:"Drive",u:"https://drive.google.com"},{n:"Claude",u:"https://claude.ai"}]
+};
+let S;
+try{ S = JSON.parse(localStorage.getItem("my-day")) || structuredClone(DEFAULT) }catch(e){ S = structuredClone(DEFAULT) }
+const save = () => { try{ localStorage.setItem("my-day", JSON.stringify(S)) }catch(e){} };
+const key = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+
+function tick(){
+  const n = new Date(), h = n.getHours();
+  $("greet").textContent = (h<5?"Still up":h<12?"Good morning":h<18?"Good afternoon":"Good evening");
+  $("date").textContent = n.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+  $("clock").textContent = n.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+}
+function el(tag, props={}, ...kids){ const e = Object.assign(document.createElement(tag), props); e.append(...kids); return e }
+
+function renderTodos(){
+  const ul = $("todos"); ul.replaceChildren();
+  S.todos.forEach((t,i)=>{
+    const cb = el("input",{type:"checkbox",checked:t.d,ariaLabel:"Done: "+t.t});
+    cb.onchange = ()=>{ t.d = cb.checked; save(); renderTodos() };
+    const x = el("button",{className:"x",type:"button",textContent:"×",ariaLabel:"Delete "+t.t});
+    x.onclick = ()=>{ S.todos.splice(i,1); save(); renderTodos() };
+    ul.append(el("li",{className:"todo"+(t.d?" done":"")}, cb, el("span",{textContent:t.t}), x));
+  });
+  const done = S.todos.filter(t=>t.d).length, n = S.todos.length;
+  $("bar").style.width = (n? done/n*100 : 0)+"%";
+  $("todo-sum").textContent = n ? `${done} of ${n} done` : "Nothing planned yet. Add your first task.";
+}
+$("todo-form").onsubmit = e => { e.preventDefault(); const v = $("todo-in").value.trim(); if(!v) return;
+  S.todos.push({t:v,d:false}); $("todo-in").value=""; save(); renderTodos() };
+
+function renderCount(){
+  $("ev-name").value = S.event.name; $("ev-date").value = S.event.date;
+  const now = new Date(); now.setHours(0,0,0,0);
+  const d = new Date(S.event.date+"T00:00:00");
+  if(isNaN(d)){ $("count").innerHTML = "–"; $("count-sub").textContent = "Pick a date."; return }
+  const diff = Math.round((d-now)/864e5);
+  $("count").innerHTML = `${Math.abs(diff)}<small>${Math.abs(diff)===1?"day":"days"} ${diff<0?"ago":diff===0?"· today":"to go"}</small>`;
+  $("count-sub").textContent = `${S.event.name||"Event"}, ${d.toLocaleDateString(undefined,{weekday:"long",month:"short",day:"numeric",year:"numeric"})}`;
+}
+$("ev-name").oninput = e => { S.event.name = e.target.value; save(); renderCount(); };
+$("ev-name").onchange = null;
+$("ev-date").onchange = e => { S.event.date = e.target.value; save(); renderCount() };
+
+function renderHabits(){
+  const box = $("habits"); box.replaceChildren();
+  const days = [...Array(7)].map((_,i)=>{ const d = new Date(); d.setDate(d.getDate()-(6-i)); return d });
+  const head = el("div",{className:"habit"}, el("span"), ...days.map(d=>el("span",{className:"dh",textContent:d.toLocaleDateString(undefined,{weekday:"narrow"})})));
+  box.append(head);
+  S.habits.forEach((h,hi)=>{
+    const row = el("div",{className:"habit"}, el("span",{className:"name",textContent:h.n}));
+    days.forEach((d,i)=>{
+      const k = key(d), on = h.days.includes(k);
+      const b = el("button",{type:"button",className:"dot"+(on?" on":"")+(i===6?" today":""),ariaPressed:on,
+        ariaLabel:`${h.n}, ${d.toLocaleDateString(undefined,{weekday:"long"})}`});
+      b.onclick = ()=>{ h.days = on ? h.days.filter(x=>x!==k) : [...h.days,k].slice(-60); save(); renderHabits() };
+      row.append(b);
+    });
+    row.oncontextmenu = e => { e.preventDefault(); S.habits.splice(hi,1); save(); renderHabits() };
+    box.append(row);
+  });
+  if(!S.habits.length) box.append(el("p",{className:"hint",textContent:"No habits yet. Add one below."}));
+}
+$("habit-form").onsubmit = e => { e.preventDefault(); const v = $("habit-in").value.trim(); if(!v) return;
+  S.habits.push({n:v,days:[]}); $("habit-in").value=""; save(); renderHabits() };
+
+$("notes").value = S.notes;
+$("notes").oninput = e => { S.notes = e.target.value; save() };
+
+function renderLinks(){
+  const box = $("links"); box.replaceChildren();
+  S.links.forEach((l,i)=>{
+    const a = el("a",{href:l.u,target:"_blank",rel:"noopener noreferrer",textContent:l.n});
+    a.oncontextmenu = e => { e.preventDefault(); S.links.splice(i,1); save(); renderLinks() };
+    box.append(a);
+  });
+}
+$("link-form").onsubmit = e => { e.preventDefault();
+  const [n,...r] = $("link-in").value.split(","); let u = r.join(",").trim();
+  if(!n.trim()||!u) return; if(!/^https?:\/\//i.test(u)) u = "https://"+u;
+  S.links.push({n:n.trim(),u}); $("link-in").value=""; save(); renderLinks() };
+
+tick(); setInterval(tick, 15000);
+renderTodos(); renderCount(); renderHabits(); renderLinks();
+
+if("serviceWorker" in navigator){ window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{})) }
+</script>
+
+</body>
+</html>
