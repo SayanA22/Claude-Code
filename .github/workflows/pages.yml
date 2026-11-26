@@ -1,5 +1,5 @@
-# Publishes the my-day/ folder to GitHub Pages whenever it changes on main.
-name: Deploy My Day to Pages
+# Publishes one Pages site: the existing mile-time app at the root and My Day at /my-day/.
+name: Deploy site to Pages
 
 on:
   push:
@@ -24,9 +24,18 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: claude/mile-time-training-app-yi62go
+          path: site
+      - name: Combine apps
+        run: |
+          rm -rf site/.git site/server site/render.yaml
+          mkdir -p site/my-day
+          cp -r my-day/. site/my-day/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: my-day
+          path: site
       - id: deployment
         uses: actions/deploy-pages@v4
