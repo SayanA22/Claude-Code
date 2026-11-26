@@ -125,6 +125,14 @@ ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
 .editing .link{animation:wiggle .35s ease-in-out infinite alternate}
 @keyframes wiggle{from{transform:rotate(-.6deg)}to{transform:rotate(.6deg)}}
 
+
+.up-row{display:flex;align-items:center;gap:14px;min-width:0}
+.up-ico{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
+.up-ico svg{width:22px;height:22px}
+.up-text{flex:1;min-width:0}
+.up-text b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.up-text span{display:block;color:var(--muted);font-size:.82rem}
+.up-in{flex:none;font:600 .95rem var(--font-display);color:var(--accent);font-variant-numeric:tabular-nums;text-align:right}
 .card.compact,.wx{padding:16px 20px;gap:12px}
 .compact .card-head .ghost,.wx .card-head .ghost{min-height:36px;margin:-6px -10px}
 .wx-body{display:flex;align-items:center;gap:16px;min-width:0}
@@ -163,6 +171,14 @@ nav button[aria-current=page]{color:var(--accent);background:var(--accent-soft)}
       <button class="stat" type="button" data-go="tasks"><b id="s-tasks">0/0</b><span>Tasks done</span></button>
       <button class="stat" type="button" data-go="habits"><b id="s-habits">0/0</b><span>Habits today</span></button>
     </div>
+
+    <section class="card compact" id="up-card" aria-label="Up next" hidden>
+      <div class="up-row">
+        <div class="up-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+        <div class="up-text"><b id="up-t">Up next</b><span id="up-s"></span></div>
+        <div class="up-in" id="up-in"></div>
+      </div>
+    </section>
 
     <section class="card wx" id="wx-card" aria-labelledby="h-wx">
       <div class="card-head"><h2 id="h-wx">Weather</h2><button class="ghost" type="button" id="edit-wx">Edit</button></div>
@@ -464,9 +480,37 @@ $("wx-form").onsubmit = async e => { e.preventDefault();
 document.querySelectorAll("#wx-fields .tabs button").forEach(b => b.onclick = () => {
   S.weather = Object.assign({}, S.weather, {unit:b.dataset.u}); save(); renderWeather(); loadWeather(true) });
 
-tick(); setInterval(tick, 15000);
-document.addEventListener("visibilitychange", () => { if(!document.hidden){ tick(); renderCount(); renderHabits(); loadWeather() } });
-renderTodos(); renderCount(); renderHabits(); renderLinks(); renderWeather(); loadWeather(); show(S.tab);
+/* Up next: read from upcoming.json, which is refreshed from Notion Calendar every 12 hours */
+let UP = null;
+try{ UP = JSON.parse(localStorage.getItem("my-day-up")) }catch(e){}
+async function loadUpcoming(){
+  try{
+    const r = await fetch("upcoming.json?"+Date.now(), {cache:"no-store"}); if(!r.ok) throw 0;
+    UP = await r.json();
+    try{ localStorage.setItem("my-day-up", JSON.stringify(UP)) }catch(e){}
+  }catch(e){}
+  renderUp();
+}
+function renderUp(){
+  const card = $("up-card"), now = Date.now();
+  const stale = !UP || !UP.updated || now - Date.parse(UP.updated) > 48*3600e3;
+  const ev = !stale && (UP.events||[]).map(e => ({...e, s:Date.parse(e.start), e:Date.parse(e.end||e.start)}))
+    .filter(e => !isNaN(e.s) && Math.max(e.e, e.s+36e5) > now).sort((a,b)=>a.s-b.s)[0];
+  if(!ev){ card.hidden = true; return }
+  card.hidden = false;
+  const d = new Date(ev.s), t0 = new Date(); t0.setHours(0,0,0,0);
+  const days = Math.round((new Date(d).setHours(0,0,0,0) - t0)/864e5);
+  const day = days===0 ? "Today" : days===1 ? "Tomorrow" : d.toLocaleDateString(undefined,{weekday:"long"});
+  const time = ev.allDay ? "All day" : d.toLocaleTimeString([], {hour:"numeric",minute:"2-digit"});
+  $("up-t").textContent = ev.label || "Event";
+  $("up-s").textContent = `${day} · ${time}`;
+  const mins = Math.round((ev.s-now)/60000);
+  $("up-in").textContent = mins<=0 ? "Now" : mins<60 ? `in ${mins} min` : mins<1440 ? `in ${Math.floor(mins/60)} h ${mins%60 ? (mins%60)+" min":""}`.trim() : `in ${Math.floor(mins/1440)} d`;
+}
+
+tick(); setInterval(()=>{ tick(); renderUp() }, 15000);
+document.addEventListener("visibilitychange", () => { if(!document.hidden){ tick(); renderCount(); renderHabits(); loadWeather(); loadUpcoming() } });
+renderTodos(); renderCount(); renderHabits(); renderLinks(); renderWeather(); loadWeather(); renderUp(); loadUpcoming(); show(S.tab);
 
 if("serviceWorker" in navigator){ window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{})) }
 </script>

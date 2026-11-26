@@ -1,5 +1,5 @@
 // Offline support: cache the app shell, serve it first, refresh in the background.
-const CACHE = "my-day-v7";
+const CACHE = "my-day-v8";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
@@ -13,6 +13,11 @@ self.addEventListener("fetch", e => {
   const host = new URL(e.request.url).hostname;
   // Only same-origin files and fonts are cached; weather and other API calls always go to the network.
   if (host !== self.location.hostname && !/(^|\.)(googleapis|gstatic)\.com$/.test(host)) return;
+  // Event data: always try the network first so it stays fresh, fall back to the last copy offline.
+  if (new URL(e.request.url).pathname.endsWith("/upcoming.json")) {
+    e.respondWith(fetch(e.request).catch(() => caches.match(e.request, {ignoreSearch: true})));
+    return;
+  }
   e.respondWith(
     caches.match(e.request).then(hit => {
       const net = fetch(e.request).then(res => {
