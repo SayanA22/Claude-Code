@@ -1,5 +1,5 @@
 // Offline support: cache the app shell, serve it first, refresh in the background.
-const CACHE = "my-day-v10";
+const CACHE = "my-day-v11";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
